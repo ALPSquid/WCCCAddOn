@@ -1,0 +1,18 @@
+## Interface: 80200
+## Title: Worgen Cub Clubbing Club - Official AddOn
+## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
+## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
+## Version: 1.0.1
+## SavedVariables: WCCCDB
+
+embeds.xml
+
+Utils.lua
+WCCCAddOn.lua
+UI.lua
+Modules\ModuleBase.lua
+Modules\WCCCADCore\WCCCADCore.lua
+
+# Modules
+Modules\ClubbingComp\ClubbingComp.lua
+Modules\ClubbingComp\ClubbingCompUI.lua
