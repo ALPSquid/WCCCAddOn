@@ -6,8 +6,8 @@
 local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 104
-WCCCAD.versionString = "1.0.4"
+WCCCAD.version = 105
+WCCCAD.versionString = "1.0.5"
 WCCCAD.newVersionAvailable = false;
 
 
@@ -28,7 +28,7 @@ end
 
 function WCCCADCore:OnEnable()
     WCCCADCore:InitiateSync()
-    
+
     if WCCCADCore.moduleDB.firstTimeUser == true then
         WCCCADCore:ShowFTUEWindow()
     end
