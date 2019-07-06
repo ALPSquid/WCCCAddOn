@@ -143,5 +143,5 @@ function WCCCAD_UI:PrintAddonDisabledMessage()
     if WCCCAD.addonActive == true then
         return
     end
-    WCCCAD:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
+    WCCCAD_UI:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
 end
