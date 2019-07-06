@@ -15,19 +15,23 @@ local CLUBBINGCOMP_UI_CONFIG =
     childGroups = "tab",    
     args = 
     {
+        logo = 
+        {
+            type = "description",
+            name = "",
+            image ="Interface\\AddOns\\WCCCAddOn\\assets\\wccc-header-clubbingcomp.tga",
+            imageWidth=256,
+            imageHeight=64,
+            order = 0
+        },
+
         homePanel = 
         {
             name = "Home",
             type = "group",
             order = 1,
             args = 
-            {
-                logo = 
-                {
-                    type = "description",
-                    name = "",
-                    image ="Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo"
-                },
+            {               
 
                 scoreInfo = 
                 {

@@ -26,47 +26,38 @@ local WCCC_UI_CONFIG =
     type = "group",
     args = 
     {
+        logo = 
+        {
+            type = "description",
+            name = "",
+            image ="Interface\\AddOns\\WCCCAddOn\\assets\\wccc-header.tga",
+            imageWidth=256,
+            imageHeight=64,
+            order = 0
+        },
+
         wcccDesc = 
         {
             type = "description",
             fontSize = "medium",
-            name = "Official AddOn of the <Worgen Cub Clubbing Club>.\nParticipate in the Clubbing Competition along with more features to come!\nClick the '+' on the left hand panel to access module windows, such as the Clubbing Competition.",
+            name = "Official AddOn of the <Worgen Cub Clubbing Club>.\
+\
+Participate in the Clubbing Competition along with more features to come!\
+Click the '+' on the left hand panel next to Worgen Cub Clubbing Club to access module windows, such as the Clubbing Competition.\
+\
+Use the 'WCCC AddOn' escape menu button or type '/wccc' to open this window.\
+\
+Happy Clubbing!",
             order = 0
-        },
-
-        group =
-        {
-            type = "group",
-            name = "Club Usage and Useful Macro",
-            inline = true,
-            order = 1,
-            args = 
-            {
-                wcccMacroDesc = 
-                {
-                    type = "description",
-                    name = "A useful macro for using the addon and the commands you can use: \n Left click: Use club (/wccc club) \n Ctrl+click: Open Clubbing Competition UI (/wccc club info) \n Alt+click: Open WCCC AddOn UI (this window) (/wccc).",
-                    order = 1.01
-                },
-
-                wcccMacro = 
-                {
-                    type = "input",
-                    name = "Useful Macro",
-                    width = "full",
-                    multiline = 2,
-                    get = function() return "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end" 
-                    end,
-                    order = 1.02
-                },
-            },
         },
 
         settingsPanel = 
         {
             type = "group",
-            name = "Settings",
+            name = "Settings",            
             inline = true,
+            disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
+            hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
             order = 10,
             args =
             {
