@@ -138,86 +138,136 @@ local CLUBBINGCOMP_UI_CONFIG =
                     }
                 },
 
-                seasonCurrentRace =
-                {
-                    type = "header",
-                    name = function() 
-                        local seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace
-                        if seasonRace == nil then
-                            return "Sync Required"
-                        end
-                        return seasonRace .. " Season (1.5x)"
-                    end,
-                    order = 1.11          
-                },
-
-                seasonOCLastUpdateDate =
-                {
-                    type = "description",     
-                    order = 1.111,
-                    fontSize = "medium",
-                    name = function() 
-                        return format("Season started on %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
-                    end,        
-                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
-                },
-
-                seasonSyncInstructions = 
-                {
-                    type = "description",
-                    fontSize = "medium",
-                    name = "Syncing will happen automatically when a guildy with updated season data comes online. You can still club in the meantime and your progress will be saved!",
-                    descStyle = "inline",
-                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= nil end,
-                    order = 1.12
-                },
-                seasonDesc = 
-                {
-                    type = "description",
-                    fontSize = "medium",
-                    name = "Seasons reset monthly after each Clubbing Ceremony when prizes are awarded for the top clubbers.\nPoints for clubbing a player of the current season's race will be multiplied by the above multiplier.",
-                    descStyle = "inline",
-                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
-                    order = 1.13
-                },
-
-                reportSeasonButtons = 
+                seasonInfo = 
                 {
                     type = "group",
-                    name = "Post season info to...",
+                    name = "Season",
+                    inline = true,
+                    order = 1.1,
+                    args =
+                    {
+                        seasonCurrentRace =
+                        {
+                            type = "header",
+                            name = function() 
+                                local seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace
+                                if seasonRace == nil then
+                                    return "Sync Required"
+                                end
+                                return seasonRace .. " Season (1.5x)"
+                            end,
+                            order = 1.11          
+                        },
+
+                        seasonOCLastUpdateDate =
+                        {
+                            type = "description",     
+                            order = 1.12,
+                            fontSize = "medium",
+                            name = function() 
+                                return format("Season started on %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
+                            end,        
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                        },
+
+                        seasonSyncInstructions = 
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = "Syncing will happen automatically when a guildy with updated season data comes online. You can still club in the meantime and your progress will be saved!",
+                            descStyle = "inline",
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= nil end,
+                            order = 1.13
+                        },
+                        seasonDesc = 
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = "Seasons reset monthly after each Clubbing Ceremony when prizes are awarded for the top clubbers.\nPoints for clubbing a player of the current season's race will be multiplied by the above multiplier.",
+                            descStyle = "inline",
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                            order = 1.14
+                        },
+
+                        reportSeasonButtons = 
+                        {
+                            type = "group",
+                            name = "Post season info to...",
+                            inline = true,
+                            hidden = true,
+                            order = 1.15,
+                            args =
+                            {
+                                reportSeasonGuildBtn =
+                                {
+                                    type = "execute",
+                                    name = "Guild",
+                                    desc = "Post the current season to guild chat.",
+                                    func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.GUILD) end,
+                                    order = 1.151,
+                                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                                },
+                                reportSeasonPartyBtn =
+                                {
+                                    type = "execute",
+                                    name = "Party",
+                                    desc = "Post the current season to party chat.",
+                                    func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.PARTY) end,
+                                    order = 1.152,
+                                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                                },
+                                reportSeasonSayBtn =
+                                {
+                                    type = "execute",
+                                    name = "Say",
+                                    desc = "Post the current season to say.",
+                                    func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.SAY) end,
+                                    order = 1.153,
+                                    hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                                },
+                            },
+                        },    
+                    },
+                },         
+                
+                frenzyInfo = 
+                {
+                    type = "group",
+                    name = "Frenzy",
                     inline = true,
                     order = 1.2,
                     args =
                     {
-                        reportSeasonGuildBtn =
+                        frenzyRace =
                         {
-                            type = "execute",
-                            name = "Guild",
-                            desc = "Post the current season to guild chat.",
-                            func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.GUILD) end,
-                            order = 1.21,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
+                            type = "header",
+                            name = function() 
+                                local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
+                                if frenzyRace == nil then
+                                    return "No Frenzy Active"
+                                end
+
+                                local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60) + 1
+                                local minString = "min"
+                                if timeRemaining > 1 then minString = "mins" end
+                                return format("%sx %s Frenzy for %s"..minString.."!", 
+                                    ClubbingComp.moduleDB.frenzyData.multiplier,
+                                    ClubbingComp:GetRaceScoreData(ClubbingComp.moduleDB.frenzyData.race).name,
+                                    timeRemaining)
+                            end,
+                            order = 1.21         
                         },
-                        reportSeasonPartyBtn =
+
+                        frenzyDesc = 
                         {
-                            type = "execute",
-                            name = "Party",
-                            desc = "Post the current season to party chat.",
-                            func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.PARTY) end,
-                            order = 1.22,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
-                        },
-                        reportSeasonSayBtn =
-                        {
-                            type = "execute",
-                            name = "Say",
-                            desc = "Post the current season to say.",
-                            func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.SAY) end,
-                            order = 1.23,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
-                        },
+                            type = "description",
+                            fontSize = "medium",
+                            name = "Clubbing Frenzies are short periods where clubbing a particular race awards a large point multiplier. Frenzies are started by officers for social events, look out for the next one on the calendar!",
+                            descStyle = "inline",
+                            order = 1.22
+                        },                           
                     },
-                },                              
+                },  
             },
         },
 
@@ -368,6 +418,94 @@ Happy Clubbing!",
                         },                        
                     }
                 },
+
+                frenzyOfficerControls = 
+                {
+                    type = "group",
+                    name = "Frenzy Controls",
+                    order = 10.2,
+                    args =
+                    {
+                        frenzyOCStartTime =
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            order = 10.2,
+                            hidden = function() return ClubbingComp.moduleDB.frenzyData.startTimestamp <= 0 end,
+                            name = function() 
+                                return format("Frenzy started on %s %s.", ns.utils.LongData(ClubbingComp.moduleDB.frenzyData.startTimestamp), date("%H:%M", ClubbingComp.moduleDB.frenzyData.startTimestamp))
+                            end,        
+                        },
+
+                        frenzyOCRaceSelect =
+                        {
+                            type = "select",
+                            name = "Frenzy Race",
+                            order = 10.21,
+                            values = function()
+                                local raceOptions = {}
+                                for k,v in pairs(ClubbingComp:GetRaceScoreDataTable()) do
+                                    if raceOptions[v.type] == nil then
+                                        raceOptions[v.type] = v.name
+                                    end
+                                end
+                                return raceOptions
+                            end,
+                            get = function()
+                                return ClubbingComp.UI.OC_FrenzySelectedRace
+                            end,
+                            set = function(options, key)
+                                ClubbingComp.UI.OC_FrenzySelectedRace = key
+                            end                         
+                        },
+
+                        frenzyOCMultiplierSelect =
+                        {
+                            type = "select",
+                            name = "Frenzy Multiplier",
+                            order = 10.22,
+                            values = function()
+                                return ClubbingComp.UI.OC_FrenzyMultiplierOptions
+                            end,
+                            get = function()
+                                return ClubbingComp.UI.OC_FrenzySelectedMultiplier
+                            end,
+                            set = function(options, key)
+                                ClubbingComp.UI.OC_FrenzySelectedMultiplier = key
+                            end                         
+                        },
+
+                        frenzyOCDurationSelect =
+                        {
+                            type = "select",
+                            name = "Frenzy Duration (mins)",
+                            order = 10.23,
+                            values = function()
+                                return ClubbingComp.UI.OC_FrenzyDurationOptions
+                            end,
+                            get = function()
+                                return ClubbingComp.UI.OC_FrenzySelectedDuration
+                            end,
+                            set = function(options, key)
+                                ClubbingComp.UI.OC_FrenzySelectedDuration = key
+                            end                         
+                        },
+
+                        frenzyOCStartFrenzyBtn =
+                        {
+                            type = "execute",     
+                            order = 10.24,
+                            name = "Start Frenzy",
+                            desc = "Start a new frenzy for the selected race, multiplier and duration.",                            
+                            func = function() ClubbingComp:OC_StartFrenzy(
+                                ClubbingComp.UI.OC_FrenzySelectedRace, 
+                                ClubbingComp.UI.OC_FrenzyMultiplierOptions[ClubbingComp.UI.OC_FrenzySelectedMultiplier], 
+                                ClubbingComp.UI.OC_FrenzyDurationOptions[ClubbingComp.UI.OC_FrenzySelectedDuration] * 60) 
+                            end,        
+                            confirm = function() return format( "Start new %s frenzy?", ClubbingComp.UI.OC_FrenzySelectedRace) end,
+                        },
+                    }
+                },
             }
         },
     }
@@ -377,6 +515,25 @@ local ClubbingComp_UI = WCCCAD.UI:LoadModuleUI(ClubbingComp, "Clubbing Competiti
 
 -- Officer control vars
 ClubbingComp_UI.OC_SelectedSeason = "Worgen"
+ClubbingComp_UI.OC_FrenzySelectedRace = "Worgen"
+ClubbingComp_UI.OC_FrenzySelectedMultiplier = 1
+ClubbingComp_UI.OC_FrenzySelectedDuration = 2
+
+ClubbingComp_UI.OC_FrenzyMultiplierOptions = 
+{
+    [1] = 2,
+    [2] = 3,
+    [4] = 5,    
+}
+
+ClubbingComp_UI.OC_FrenzyDurationOptions = 
+{
+    [1] = 5,
+    [2] = 10,
+    [3] = 15,
+    [5] = 30,
+    [6] = 1
+}
 --
 
 function ClubbingComp_UI:PostSeasonTo(channel)

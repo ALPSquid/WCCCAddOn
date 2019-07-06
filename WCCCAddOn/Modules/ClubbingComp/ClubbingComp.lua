@@ -131,6 +131,7 @@ local clubbingCompData =
 }
 
 local ClubbingComp = WCCCAD:CreateModule("WCCC_ClubbingCompetition", clubbingCompData)
+ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
     ClubbingComp:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
@@ -141,6 +142,7 @@ end
 
 function ClubbingComp:OnEnable()
     ClubbingComp:InitiateSync()
+    ClubbingComp:UpdateActiveFrenzy()
 end
 
 function ClubbingComp:GetRaceScoreData(race)
@@ -399,6 +401,9 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
 end
 
+---
+--- Called when new data is received from a client.
+---
 function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration) 
     if startTime < ClubbingComp.moduleDB.frenzyData.startTimestamp
         or (startTime == ClubbingComp.moduleDB.frenzyData.startTimestamp 
@@ -411,20 +416,66 @@ function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration)
     end
 
     if GetServerTime() > startTime + duration then
-        WCCCAD.UI:PrintDebugMessage("Frenzy has ended, clearing data.", ClubbingComp.moduleDB.debugMode)
+        WCCCAD.UI:PrintDebugMessage("UpdateFrenzyData: Frenzy has ended, clearing data.", ClubbingComp.moduleDB.debugMode)
         ClubbingComp.moduleDB.frenzyData.startTimestamp = 0
         ClubbingComp.moduleDB.frenzyData.race = nil
         ClubbingComp.moduleDB.frenzyData.multiplier = 0
         ClubbingComp.moduleDB.frenzyData.duration = 0
+        ClubbingComp:UpdateFrenzyTimer()
         return
     end
 
     ClubbingComp.moduleDB.frenzyData.startTimestamp = startTime
-    ClubbingComp.moduleDB.frenzyData.race = raceKey
+    ClubbingComp.moduleDB.frenzyData.race = race
     ClubbingComp.moduleDB.frenzyData.multiplier = multiplier
     ClubbingComp.moduleDB.frenzyData.duration = duration
 
-    WCCCAD.UI:PrintAddOnMessage(format("A %s %s frenzy has started, get clubbing!", multiplier, ClubbingComp:GetRaceScoreData(seasonRace).name))
+    WCCCAD.UI:PrintAddOnMessage(format("A %sx %s frenzy has started for %smins, get clubbing!", multiplier, ClubbingComp:GetRaceScoreData(race).name, duration / 60))
+    ClubbingComp:UpdateActiveFrenzy()
+end
+
+function ClubbingComp:GetFrenzyTimeRemaining() 
+    return (ClubbingComp.moduleDB.frenzyData.startTimestamp + ClubbingComp.moduleDB.frenzyData.duration) - GetServerTime()
+end
+---
+--- Called internally to update frenzy timers.
+---
+function ClubbingComp:UpdateActiveFrenzy()
+    local frenzyDurationRemaining = ClubbingComp:GetFrenzyTimeRemaining()
+    local frenzyEnded = frenzyDurationRemaining  <= 0
+    WCCCAD.UI:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining, tostring(frenzyEnded)), ClubbingComp.moduleDB.debugMode)
+
+    if frenzyEnded == true then
+        if ClubbingComp.activeFrenzyTimerID ~= nil then
+            WCCCAD:CancelTimer(ClubbingComp.activeFrenzyTimerID)
+            ClubbingComp.activeFrenzyTimerID = nil
+            WCCCAD.UI:PrintAddOnMessage(format("%s frenzy has ended.", ClubbingComp:GetRaceScoreData(ClubbingComp.moduleDB.frenzyData.race).name))
+        end
+
+        WCCCAD.UI:PrintDebugMessage("UpdateActiveFrenzy - Cleared frenzy data.", ClubbingComp.moduleDB.debugMode)
+
+        ClubbingComp.moduleDB.frenzyData.startTimestamp = 0
+        ClubbingComp.moduleDB.frenzyData.race = nil
+        ClubbingComp.moduleDB.frenzyData.multiplier = 0
+        ClubbingComp.moduleDB.frenzyData.duration = 0
+    end
+
+    if frenzyEnded == false then        
+        -- Kill active timer if time left != frenzyDurationRemaining 
+        if ClubbingComp.activeFrenzyTimerID ~= nil then
+            local timerDurationRemaining = WCCCAD:TimeLeft(ClubbingComp.activeFrenzyTimerID)
+            if frenzyDurationRemaining ~= timerDurationRemaining then
+                WCCCAD.UI:PrintDebugMessage(format("Cancelling existing frenzy timer, duration: %s actual duration remaining: %s", timerDurationRemaining, frenzyDurationRemaining), ClubbingComp.moduleDB.debugMode)
+                WCCCAD:CancelTimer(ClubbingComp.activeFrenzyTimerID)
+                ClubbingComp.activeFrenzyTimerID = nil
+            end
+        end
+        
+        if frenzyDurationRemaining > 0 and ClubbingComp.activeFrenzyTimerID == nil then
+            ClubbingComp.activeFrenzyTimerID = WCCCAD:ScheduleTimer(function() ClubbingComp:UpdateActiveFrenzy() end, frenzyDurationRemaining)
+            WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", ClubbingComp.moduleDB.debugMode) 
+        end   
+    end    
 end
 
 ---
