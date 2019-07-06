@@ -41,9 +41,10 @@ local WCCC_UI_CONFIG =
             type = "description",
             fontSize = "medium",
             name = "Official AddOn of the <Worgen Cub Clubbing Club>.\
-\
 Participate in the Clubbing Competition along with more features to come!\
-Click the '+' on the left hand panel next to Worgen Cub Clubbing Club to access module windows, such as the Clubbing Competition.\
+\
+Accessing Modules:\
+Click the '+' on the left hand panel next to 'Worgen Cub Clubbing Club' to access module windows such as the Clubbing Competition.\
 \
 Use the 'WCCC AddOn' escape menu button or type '/wccc' to open this window.\
 \
