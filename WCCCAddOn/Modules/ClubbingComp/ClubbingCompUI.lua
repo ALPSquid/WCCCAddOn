@@ -12,16 +12,23 @@ local CLUBBINGCOMP_UI_CONFIG =
     name = "Clubbing Competition",
     handler = ClubbingComp,
     type = "group",
+    childGroups = "tab",    
     args = 
     {
-        seasonInfo = 
+        homePanel = 
         {
+            name = "Home",
             type = "group",
-            name = "Current Clubbing Season",
-            inline = true,
             order = 1,
-            args =
+            args = 
             {
+                logo = 
+                {
+                    type = "description",
+                    name = "",
+                    image ="Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo"
+                },
+
                 scoreInfo = 
                 {
                     type = "group",
@@ -43,42 +50,49 @@ local CLUBBINGCOMP_UI_CONFIG =
                         hitCountWorgen =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Worgen") end,
                             order = 1.02
                         },
                         hitCountHuman =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Human") end,
                             order = 1.03
                         },
                         hitCountDraenei =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Draenei") end,
                             order = 1.04
                         },
                         hitCountDwarf =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Dwarf") end,
                             order = 1.05
                         },
                         hitCountElves =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("NightElf") end,
                             order = 1.06
                         },
                         hitCountGnome =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Gnome") end,
                             order = 1.07
                         },
                         hitCountPandaren =
                         {
                             type = "description",
+                            fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Pandaren") end,
                             order = 1.08
                         },     
@@ -137,7 +151,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                 {
                     type = "description",     
                     order = 1.111,
-                    fontSize = "small",
+                    fontSize = "medium",
                     name = function() 
                         return format("Season started on %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
                     end,        
@@ -147,6 +161,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                 seasonSyncInstructions = 
                 {
                     type = "description",
+                    fontSize = "medium",
                     name = "Syncing will happen automatically when a guildy with updated season data comes online. You can still club in the meantime and your progress will be saved!",
                     descStyle = "inline",
                     hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= nil end,
@@ -155,6 +170,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                 seasonDesc = 
                 {
                     type = "description",
+                    fontSize = "medium",
                     name = "Seasons reset monthly after each Clubbing Ceremony when prizes are awarded for the top clubbers.\nPoints for clubbing a player of the current season's race will be multiplied by the above multiplier.",
                     descStyle = "inline",
                     hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
@@ -197,7 +213,54 @@ local CLUBBINGCOMP_UI_CONFIG =
                             hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                         },
                     },
-                },                
+                },                              
+            },
+        },
+
+        helpPanel = 
+        {
+            type = "group",
+            name = "How to Use",
+            order = 8,
+            args =
+            {
+                helpText = 
+                {
+                    type = "description",
+                    fontSize = "medium",
+                    name = "Welcome to the Clubbing Competition, a spectacle of excitement and social clubbing!\
+\
+Using your club (commands):\
+'/wccc club' - Use your club on the target.\
+'/wccc club info' - Open the Clubbing Compeition Window.\
+Below is a handy macro script to paste into a new macro which makes using your club much easier!\
+\
+Seasons:\
+Each month, a new season will start focussing on a different race. Clubbing that race awards 1.5x the normal points.\
+At the end of each season, we'll hold a Clubbing Ceremony to share scores and award prize to the top 3 clubbers! These clubbers will be shown in the Clubbing Competition window for all to see.\
+\
+Happy Clubbing!",
+                    order = 1.01
+                },
+
+                wcccMacroDesc = 
+                {
+                    type = "description",
+                    fontSize = "medium",
+                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC AddOn window.",
+                    order = 1.02
+                },
+
+                wcccMacro = 
+                {
+                    type = "input",
+                    name = "",
+                    width = "full",
+                    multiline = 2,
+                    get = function() return "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end" 
+                    end,
+                    order = 1.03
+                },
             }
         },
 
@@ -205,7 +268,6 @@ local CLUBBINGCOMP_UI_CONFIG =
         {
             type = "group",
             name = "Settings",
-            inline = true,
             order = 9,
             args =
             {
@@ -232,7 +294,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                 },
             }
         },
-
+        
         officerControlsPanel = 
         {
             type = "group",
@@ -266,7 +328,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             fontSize = "medium",
                             name = function() 
                                 return format("Last season update on %s %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), date("%H:%M", ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
-                             end,        
+                            end,        
                         },
 
                         seasonOCNewSeasonSelect =

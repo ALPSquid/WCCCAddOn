@@ -13,6 +13,8 @@ UI.lua
 Modules\ModuleBase.lua
 Modules\WCCCADCore\WCCCADCore.lua
 
+WCCCAddOn.xml
+
 # Modules
 Modules\ClubbingComp\ClubbingComp.lua
 Modules\ClubbingComp\ClubbingCompUI.lua
