@@ -9,7 +9,7 @@ ignore: # Files and directories beginning with a dot (such as .git) are automati
     - build.py
 
 manual-changelog:
-    filename: WCCCAddOn/CHANGELOG.md
+    filename: CHANGELOG.md
     markup-type: markdown
 
-license-output: WCCCAddOn/LICENSE.txt
+license-output: LICENSE.txt
