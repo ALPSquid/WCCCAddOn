@@ -1,9 +1,12 @@
 import os
 import shutil
+import zipfile
+
 
 addon_name = "WCCCAddOn"
 addon_root_folder = "WCCCAddOn"
 builds_folder = "Builds"
+extra_archive_files = ["CHANGELOG.md", "LICENSE.txt"]
 
 version_num = 0
 
@@ -24,3 +27,8 @@ if os.path.isfile(release_zip_path):
     os.rm(release_zip_path)
     
 shutil.make_archive(release_zip_path, "zip", os.path.join(addon_root_folder, os.pardir), addon_root_folder)
+# Add changelog and license
+archive_file = zipfile.ZipFile(release_zip_path+".zip", 'a')
+for extra_file in extra_archive_files:
+    archive_file.write(extra_file, os.path.join(addon_root_folder, os.path.basename(extra_file)))
+archive_file.close()
