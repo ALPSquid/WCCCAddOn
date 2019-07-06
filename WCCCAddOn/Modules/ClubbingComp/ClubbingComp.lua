@@ -134,7 +134,6 @@ end
 
 function ClubbingComp:OnEnable()
     ClubbingComp:InitiateSync()
-    ClubbingComp:_SendSyncComm(ns.utils.GetPlayerNameRealmString(), false)
 end
 
 function ClubbingComp:GetRaceScoreData(race)
