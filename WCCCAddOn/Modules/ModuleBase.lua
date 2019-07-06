@@ -35,7 +35,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
     -- @param targetplayer only used for whisper channel.
     wcccModule.SendModuleComm = function(self, messageKey, data, channel, targetPlayer)
-        WCCCAD:SendModuleComm(moduleName, messageKey, data, channel)
+        WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlayer)
     end
 
 
@@ -64,7 +64,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         end 
 
         local data = wcccModule:GetSyncData()
-        data.sendingPlayer = UnitName("player")
+        data.sendingPlayer = ns.utils.GetPlayerNameRealmString()
         data.targetPlayer = targetPlayer
         data.expectResponse = expectResponse
 
@@ -78,7 +78,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
     end
 
     wcccModule._OnSyncReceivedComm = function(self, data)
-        if data.sendingPlayer == UnitName("player") then
+        if data.sendingPlayer == ns.utils.GetPlayerNameRealmString() then
             return 
         end
         WCCCAD.UI:PrintDebugMessage("Received "..moduleName.." sync data from ", wcccModule.moduleDB.debugMode)

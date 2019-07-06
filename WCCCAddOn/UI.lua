@@ -52,7 +52,7 @@ local WCCC_UI_CONFIG =
                 wcccMacro = 
                 {
                     type = "input",
-                    name = "wcccMacroBox",
+                    name = "Useful Macro",
                     width = "full",
                     multiline = 2,
                     get = function() return "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end" 

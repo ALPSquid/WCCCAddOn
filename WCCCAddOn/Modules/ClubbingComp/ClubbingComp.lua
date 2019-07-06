@@ -102,9 +102,7 @@ local GUILDY_CLUBBED_MESSAGES =
     [4] = "{playerName} just showed {worgenName} the Worgen what it means to be in the <WCCC>!",
 }
 
-local COMM_KEY_NEW_SEASON = "newSeason"
 local COMM_KEY_GUILDY_CLUBBED_WORGEN = "guildyClubbedWorgen"
-local COMM_KEY_REQUEST_SEASON_DATA = "requestSeasonData"
 
 local clubbingCompData = 
 {
@@ -131,15 +129,10 @@ function ClubbingComp:InitializeModule()
     ClubbingComp:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
     WCCCAD.UI:PrintAddOnMessage("Clubbing Competition module loaded.")
 
-    --ClubbingComp.RegisterModuleComm(COMM_KEY_NEW_SEASON, ClubbingComp.OnStartSeasonCommReceieved)
     ClubbingComp:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceieved)
-    --ClubbingComp.RegisterModuleComm(COMM_KEY_REQUEST_SEASON_DATA, ClubbingComp.OnRequestSeasonDataCommReceieved)
-
-    --ClubbingComp:SendCurrentSeasonComm()
 end
 
-function ClubbingComp:OnEnable() 
-    --ClubbingComp:RequestSeasonData()
+function ClubbingComp:OnEnable()
     ClubbingComp:InitiateSync()
 end
 
@@ -409,32 +402,6 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
 
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
 end
-
-function ClubbingComp:RequestSeasonData()
-    WCCCAD.UI:PrintDebugMessage("Requesting season data", ClubbingComp.moduleDB.debugMode)
-    local localData = 
-    {
-        targetPlayer = UnitName("player"),
-        updateTime = ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp,
-        seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace
-    }
-
-    ClubbingComp:SendModuleComm(COMM_KEY_REQUEST_SEASON_DATA, localData, ns.consts.CHAT_CHANNEL.GUILD)
-end
-
-function ClubbingComp:OnRequestSeasonDataCommReceieved(data)
-    if data.targetPlayer == UnitName("player") then
-        return
-    end
-
-    WCCCAD.UI:PrintDebugMessage("Received season data request from "..data.targetPlayer, ClubbingComp.moduleDB.debugMode)
-
-    
-
-    WCCCAD.UI:PrintDebugMessage("Sending season data to "..data.targetPlayer, ClubbingComp.moduleDB.debugMode)
-    ClubbingComp:SendCurrentSeasonComm(data.targetPlay)
-end
-
 
 ---
 --- Sync functions

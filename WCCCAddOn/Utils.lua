@@ -40,6 +40,11 @@ ns.consts.EVENTS =
 --- UTILS
 ---
 
+ns.utils.GetPlayerNameRealmString = function()
+    local name, realm = UnitFullName("player")
+    return name.."-"..realm
+end
+
 ns.utils.Pronoun = function(tense, upper)
     local pronouns = 
     {
