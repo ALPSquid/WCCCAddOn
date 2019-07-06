@@ -8,8 +8,8 @@ ignore: # Files and directories beginning with a dot (such as .git) are automati
     - build.bat
     - build.py
 
-manual-changelog: 
-    filename: CHANGELOG.md
+manual-changelog:
+    filename: WCCCAddOn/CHANGELOG.md
     markup-type: markdown
 
-license-output: LICENSE.txt
+license-output: WCCCAddOn/LICENSE.txt
