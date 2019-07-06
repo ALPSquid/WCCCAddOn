@@ -1,0 +1,10 @@
+package-as: WCCCAddOn
+enable-nolib-creation: no
+
+ignore: # Files and directories beginning with a dot (such as .git) are automatically ignored, as is the pgkmeta file itself.
+    - build.bat
+    - build.py
+
+manual-changelog: CHANGELOG.md
+
+license-output: LICENSE.txt

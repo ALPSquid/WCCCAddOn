@@ -15,7 +15,7 @@
 				end
 
 				GameMenuButtonMacros:ClearAllPoints()
-				GameMenuButtonMacros:SetPoint("TOP", self, "BOTTOM", 0, - 1)
+				GameMenuButtonMacros:SetPoint("TOP", self, "BOTTOM", 0, -1)
 			</OnLoad>
 			<OnClick>
 				InterfaceOptionsFrame_OpenToCategory("Worgen Cub Clubbing Club")
