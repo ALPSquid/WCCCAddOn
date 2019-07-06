@@ -28,7 +28,7 @@ end
 
 function WCCCADCore:OnEnable()
     WCCCADCore:InitiateSync()
-
+    
     if WCCCADCore.moduleDB.firstTimeUser == true then
         WCCCADCore:ShowFTUEWindow()
     end

@@ -14,6 +14,7 @@ ns.consts.CHAT_CHANNEL = {
     GUILD = "GUILD",
     PARTY = "PARTY",
     RAID = "RAID",
+    WHISPER = "WHISPER",
     INSTANCE_CHAT = "INSTANCE_CHAT"
 }
 

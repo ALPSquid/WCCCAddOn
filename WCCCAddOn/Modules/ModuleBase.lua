@@ -70,10 +70,10 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
         if targetPlayer ~= nil then
             WCCCAD.UI:PrintDebugMessage("Sending "..moduleName.." sync data to "..targetPlayer, wcccModule.moduleDB.debugMode)        
-            wcccModule:SendModuleComm("sync", data, ns.consts.MSG_TYPE.WHISPER, targetPlayer)
+            wcccModule:SendModuleComm("sync", data, ns.consts.CHAT_CHANNEL.WHISPER, targetPlayer)
         else
             WCCCAD.UI:PrintDebugMessage("Performing "..moduleName.." sync broadcast", wcccModule.moduleDB.debugMode)        
-            wcccModule:SendModuleComm("sync", data, ns.consts.MSG_TYPE.GUILD)
+            wcccModule:SendModuleComm("sync", data, ns.consts.CHAT_CHANNEL.GUILD)
         end
     end
 
