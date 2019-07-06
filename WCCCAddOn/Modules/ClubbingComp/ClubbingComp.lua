@@ -120,6 +120,13 @@ local clubbingCompData =
         {
             -- [raceScoreType] = { [name] = { actualRace, hits = {time} }
         },
+        frenzyData =
+        {
+            startTimestamp = 0,
+            race = nil,
+            multiplier = 0,
+            duration = 0,
+        }
     }
 }
 
@@ -227,7 +234,7 @@ function ClubbingComp:RegisterHit(targetName, targetRaceEn)
         }
     end
 
-    table.insert(targetHitData.hits, time())
+    table.insert(targetHitData.hits, GetServerTime())
 
     self.moduleDB.hitTable[raceScoreType][targetName] = targetHitData
 end
@@ -270,7 +277,7 @@ function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
 
     local lastHitTime = targetHitData.hits[#targetHitData.hits]
 	-- Check current time and time the target was last hit.
-	if time() > lastHitTime + HIT_COOLDOWN then
+	if GetServerTime() > lastHitTime + HIT_COOLDOWN then
 		return false;
 	end
 
@@ -337,34 +344,23 @@ function ClubbingComp:OC_SetSeason(raceKey)
         return
     end
 
-    ClubbingComp:StartNewSeason(raceKey, time())
+    ClubbingComp:StartNewSeason(raceKey, GetServerTime())
+    ClubbingComp:BroadcastSyncData()
+end
+
+--- @duration  Duration in seconds.
+function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
+    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+        return
+    end
+
+    ClubbingComp:UpdateFrenzyData(raceKey, multiplier, GetServerTime(), duration)
     ClubbingComp:BroadcastSyncData()
 end
 
 ---
 --- Sends local season data to the target, or whole guild if target is null.
 ---
-function ClubbingComp:SendCurrentSeasonComm(targetPlayer)
-    local seasonData = 
-    {
-        seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace,
-        updateTime = ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp
-    }
-
-    if targetPlayer ~= nil then
-        WCCCAD.UI:PrintDebugMessage("Sending current season comm to "..targetPlayer, ClubbingComp.moduleDB.debugMode)
-        ClubbingComp:SendModuleComm(COMM_KEY_NEW_SEASON, seasonData, ns.consts.CHAT_CHANNEL.WHISPER, targetPlayer)
-    else 
-        WCCCAD.UI:PrintDebugMessage("Sending current season comm to guild.", ClubbingComp.moduleDB.debugMode)
-        ClubbingComp:SendModuleComm(COMM_KEY_NEW_SEASON, seasonData, ns.consts.CHAT_CHANNEL.GUILD)
-    end
-end
-
-function ClubbingComp:OnStartSeasonCommReceieved(seasonData) 
-    WCCCAD.UI:PrintDebugMessage("Received new season comm.", ClubbingComp.moduleDB.debugMode)
-    ClubbingComp:StartNewSeason(seasonData.seasonRace, seasonData.updateTime)
-end
-
 function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     -- If current timestamp and race are same as the new, we have the latest data.
     if updateTimestamp < ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
@@ -403,6 +399,34 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
 end
 
+function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration) 
+    if startTime < ClubbingComp.moduleDB.frenzyData.startTimestamp
+        or (startTime == ClubbingComp.moduleDB.frenzyData.startTimestamp 
+            and race == ClubbingComp.moduleDB.frenzyData.race
+            and multiplier == ClubbingComp.moduleDB.frenzyData.multiplier
+            and duration == ClubbingComp.moduleDB.frenzyData.duration)
+    then
+        WCCCAD.UI:PrintDebugMessage("Already have equal or newer data, skipping frenzy update.", ClubbingComp.moduleDB.debugMode)
+        return
+    end
+
+    if GetServerTime() > startTime + duration then
+        WCCCAD.UI:PrintDebugMessage("Frenzy has ended, clearing data.", ClubbingComp.moduleDB.debugMode)
+        ClubbingComp.moduleDB.frenzyData.startTimestamp = 0
+        ClubbingComp.moduleDB.frenzyData.race = nil
+        ClubbingComp.moduleDB.frenzyData.multiplier = 0
+        ClubbingComp.moduleDB.frenzyData.duration = 0
+        return
+    end
+
+    ClubbingComp.moduleDB.frenzyData.startTimestamp = startTime
+    ClubbingComp.moduleDB.frenzyData.race = raceKey
+    ClubbingComp.moduleDB.frenzyData.multiplier = multiplier
+    ClubbingComp.moduleDB.frenzyData.duration = duration
+
+    WCCCAD.UI:PrintAddOnMessage(format("A %s %s frenzy has started, get clubbing!", multiplier, ClubbingComp:GetRaceScoreData(seasonRace).name))
+end
+
 ---
 --- Sync functions
 ---
@@ -413,6 +437,13 @@ function ClubbingComp:GetSyncData()
         {
             seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace,
             updateTime = ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp
+        },
+        frenzyData = 
+        {
+            startTimestamp = ClubbingComp.moduleDB.frenzyData.startTimestamp,
+            race = ClubbingComp.moduleDB.frenzyData.race,
+            multiplier = ClubbingComp.moduleDB.frenzyData.multiplier,
+            duration = ClubbingComp.moduleDB.frenzyData.duration
         }
     }
 
@@ -420,19 +451,41 @@ function ClubbingComp:GetSyncData()
 end
 
 function ClubbingComp:CompareSyncData(remoteData)
+    -- Season
+    local seasonComparison = -1
     if remoteData.seasonData.updateTime > ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp then
-        return 1
-    end
+        seasonComparison = 1
 
-    if remoteData.seasonData.updateTime == ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
+    elseif remoteData.seasonData.updateTime == ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
         and remoteData.seasonData.seasonRace == ClubbingComp.moduleDB.seasonData.currentSeasonRace 
     then
-        return 0
+        seasonComparison = 0
     end
 
-    return -1
+    -- Frenzy
+    local frenzyComparison = -1
+    if remoteData.frenzyData.startTimestamp > ClubbingComp.moduleDB.frenzyData.startTimestamp then
+        frenzyComparison = 1
+
+    elseif remoteData.frenzyData.startTimestamp == ClubbingComp.moduleDB.frenzyData.startTimestamp
+        and remoteData.frenzyData.race == ClubbingComp.moduleDB.frenzyData.race
+        and remoteData.frenzyData.multiplier == ClubbingComp.moduleDB.frenzyData.multiplier
+        and remoteData.frenzyData.duration == ClubbingComp.moduleDB.frenzyData.duration
+    then
+        frenzyComparison = 0
+    end
+
+    -- Result
+    if seasonComparison == 1 or frenzyComparison == 1 then
+        return 1
+    elseif seasonComparison == -1 or frenzyComparison == -1 then
+        return -1
+    else
+        return 0
+    end
 end
 
 function ClubbingComp:OnSyncDataReceived(data)
     ClubbingComp:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
+    ClubbingComp:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
 end

@@ -85,7 +85,7 @@ ns.utils.LongData = function(timeStamp)
 end
 
 ns.utils.DaysSince = function(timeStamp)
-    local timeDelta = time() - timeStamp
+    local timeDelta = GetServerTime() - timeStamp
 
     return ceil(timeDelta / 86400)
 end
