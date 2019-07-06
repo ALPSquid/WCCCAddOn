@@ -2,7 +2,7 @@ package-as: WCCCAddOn
 enable-nolib-creation: no
 
 move-folders:
-    WCCCAddOn/WCCCAddOn/*: WCCCAddOn
+    WCCCAddOn/WCCCAddOn: WCCCAddOn
 
 ignore: # Files and directories beginning with a dot (such as .git) are automatically ignored, as is the pgkmeta file itself.
     - build.bat
