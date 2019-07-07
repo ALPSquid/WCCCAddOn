@@ -1,3 +1,7 @@
+# Alpha v1.0.6
+* Adds Frenzy mode.
+* Adds version and update notice to main UI.
+
 # Alpha v1.0.5
 * Fixes direct sync comms not sending.
 
