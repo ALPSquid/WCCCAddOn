@@ -36,11 +36,28 @@ local WCCC_UI_CONFIG =
             order = 0
         },
 
-        wcccDesc = 
+        wcccVersion = 
+        {
+            type = "description",
+            fontSize = "small",
+            name = function() return "Version " .. WCCCAD.versionString end,
+            order = 1
+        },
+
+        wcccNewVersionNotice = 
         {
             type = "description",
             fontSize = "medium",
-            name = "Official AddOn of the <Worgen Cub Clubbing Club>.\
+            name = function() return "New version available, please update." end,
+            hidden = function() return WCCCAD.newVersionAvailable == false end,
+            order = 2
+        },
+
+        wcccDesc =
+        {
+            type = "description",
+            fontSize = "medium",
+            name = "\nOfficial AddOn of the <Worgen Cub Clubbing Club>.\
 Participate in the Clubbing Competition along with more features to come!\
 \
 Accessing Modules:\
@@ -49,8 +66,9 @@ Click the '+' on the left hand panel next to 'Worgen Cub Clubbing Club' to acces
 Use the 'WCCC AddOn' escape menu button or type '/wccc' to open this window.\
 \
 Happy Clubbing!",
-            order = 0
+            order = 3
         },
+        
 
         settingsPanel = 
         {
