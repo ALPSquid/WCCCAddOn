@@ -168,7 +168,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 if seasonRace == nil then
                                     return "Sync Required"
                                 end
-                                return seasonRace .. " Season (1.5x)"
+                                return seasonRace .. " Season" -- (1.5x)
                             end,
                             order = 1.11          
                         },
@@ -197,7 +197,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                         {
                             type = "description",
                             fontSize = "medium",
-                            name = "Seasons reset monthly after each Clubbing Ceremony when prizes are awarded for the top clubbers.\nPoints for clubbing a player of the current season's race will be multiplied by the above multiplier.",
+                            name = "Seasons reset monthly after each Clubbing Ceremony when prizes are awarded for the top clubbers.\nClubbing the season race will also award points.",
                             descStyle = "inline",
                             hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                             order = 1.14
@@ -304,7 +304,7 @@ Using your club (commands):\
 Below is a handy macro script to paste into a new macro which makes using your club much easier!\
 \
 Seasons:\
-Each month, a new season will start focussing on a different race. Clubbing that race awards 1.5x the normal points.\
+Each month, a new season will start focussing on a different race, allowing you to club Worgen and the season race.\
 At the end of each season, we'll hold a Clubbing Ceremony to share scores and award prize to the top 3 clubbers! These clubbers will be shown in the Clubbing Competition window for all to see.\
 \
 Happy Clubbing!",
