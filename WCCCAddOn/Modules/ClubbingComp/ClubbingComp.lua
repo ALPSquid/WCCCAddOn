@@ -159,7 +159,7 @@ end
 function ClubbingComp:GetRaceScore(race)
     local raceScoreData = ClubbingComp:GetRaceScoreData(race)
     local score = raceScoreData.score
-    
+
     if self.moduleDB.seasonData.currentSeasonRace ~= nil and self.moduleDB.seasonData.currentSeasonRace == raceScoreData.type then
         score = score * SEASON_MULTIPLIER
     end
@@ -194,13 +194,13 @@ function ClubbingComp:ClubCommand(args)
 
     elseif ClubbingComp:IsTargetInRange() then
         -- If there was a valid target, then it's a success hit!
-        if targetFactionEn == "Alliance" and raceScoreData ~= nil then
+        if targetFactionEn == "Alliance" and raceScoreData ~= nil and ClubbingComp:IsRaceClubbable(targetRaceEn) then
             ClubbingComp:PlayEmote("very forcefully clubs %t with " .. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club].",
             SUCCESS_HIT_MESSAGES[math.random(1, #SUCCESS_HIT_MESSAGES)])
             PlaySoundFile(SUCCESS_HIT_SOUND, "SFX")
 
             -- If the target is clubbable.
-            if (ClubbingComp:HasRecentlyHit(targetName, targetRaceEn) == false) then
+            if ClubbingComp:HasRecentlyHit(targetName, targetRaceEn) == false then
                 -- Update score
                 local raceScore = ClubbingComp:GetRaceScore(targetRaceEn)
                 self.moduleDB.score = self.moduleDB.score + raceScore
@@ -290,6 +290,22 @@ function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
 	end
 
     return true;
+end
+
+function ClubbingComp:IsRaceClubbable(targetRaceEn)
+    local raceData = ClubbingComp:GetRaceScoreData(targetRaceEn)
+    if raceData == nil then
+        return false
+    end
+
+    if raceData.type == "Worgen" 
+        or raceData.type == ClubbingComp.moduleDB.seasonData.currentSeasonRace
+        or raceData.type == ClubbingComp.moduleDB.frenzyData.race
+    then
+        return true
+    end
+
+    return false
 end
 
 function ClubbingComp:IsTargetInRange()

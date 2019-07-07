@@ -63,6 +63,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Human") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Human" end,
                             order = 1.03
                         },
                         hitCountDraenei =
@@ -70,6 +71,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Draenei") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Draenei" end,
                             order = 1.04
                         },
                         hitCountDwarf =
@@ -77,6 +79,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Dwarf") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Dwarf" end,
                             order = 1.05
                         },
                         hitCountElves =
@@ -84,6 +87,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("NightElf") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "NightElf" end,
                             order = 1.06
                         },
                         hitCountGnome =
@@ -91,6 +95,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Gnome") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Gnome" end,
                             order = 1.07
                         },
                         hitCountPandaren =
@@ -98,8 +103,17 @@ local CLUBBINGCOMP_UI_CONFIG =
                             type = "description",
                             fontSize = "medium",
                             name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Pandaren") end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Pandaren" end,
                             order = 1.08
-                        },     
+                        },    
+                        
+                        hitCountDescription =
+                        {
+                            type = "description",
+                            fontSize = "small",
+                            name = "Hit counts show the current season races and don't show frenzy multipliers or non-season frenzy races (these still count to your total score).",
+                            order = 1.09
+                        }, 
                         
                         reportSeasonButtons = 
                         {
@@ -564,6 +578,7 @@ end
 function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
     local raceScoreData = ClubbingComp:GetRaceScoreData(race)
     local hitCount = ClubbingComp:GetRaceHitCount(raceScoreData.type)
+    local raceScore = ClubbingComp:GetRaceScore(race)
 
-    return format("%s Clubbed: %i = %ipts (%i each)", raceScoreData.pluralName, hitCount, hitCount * raceScoreData.score, raceScoreData.score)
+    return format("%s Clubbed: %i = %ipts (%i each)", raceScoreData.pluralName, hitCount, hitCount * raceScore, raceScore)
 end
