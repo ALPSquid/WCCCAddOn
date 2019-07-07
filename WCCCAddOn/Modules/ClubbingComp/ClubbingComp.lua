@@ -154,15 +154,21 @@ function ClubbingComp:GetRaceScoreDataTable()
 end
 
 ---
---- Returns the score for clubbing the specified race including season multiplier if in season.
+--- Returns the score for clubbing the specified race including season multiplier if in season and frenzy multiplier if in frenzy.
 ---
 function ClubbingComp:GetRaceScore(race)
     local raceScoreData = ClubbingComp:GetRaceScoreData(race)
+    local score = raceScoreData.score
+    
     if self.moduleDB.seasonData.currentSeasonRace ~= nil and self.moduleDB.seasonData.currentSeasonRace == raceScoreData.type then
-        return raceScoreData.score * SEASON_MULTIPLIER
+        score = score * SEASON_MULTIPLIER
     end
 
-    return raceScoreData.score
+    if self.moduleDB.frenzyData.race ~= nil and self.moduleDB.frenzyData.race == raceScoreData.type then
+        score = score * self.moduleDB.frenzyData.multiplier
+    end
+
+    return score
 end
 
 function ClubbingComp:ClubCommand(args)
