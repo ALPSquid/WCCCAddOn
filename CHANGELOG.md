@@ -1,3 +1,6 @@
+# Alpha v1.0.7
+* Changes clubbing competition to only award points for Worgen, the current season race and the current frenzy race.
+
 # Alpha v1.0.6
 * Adds Frenzy mode.
 * Adds version and update notice to main UI.
