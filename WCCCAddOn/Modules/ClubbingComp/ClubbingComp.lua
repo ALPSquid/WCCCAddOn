@@ -168,7 +168,7 @@ function ClubbingComp:GetRaceScore(race)
         score = score * self.moduleDB.frenzyData.multiplier
     end
 
-    return score
+    return math.floor(score)
 end
 
 function ClubbingComp:ClubCommand(args)
