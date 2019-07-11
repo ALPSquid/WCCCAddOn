@@ -1,3 +1,6 @@
+# Alpha v1.0.8
+* Adds "/wccc ver" version check command which behaves similar to the DBM command of the same name.
+
 # Alpha v1.0.7
 * Changes clubbing competition to only award points for Worgen, the current season race and the current frenzy race.
 
