@@ -11,6 +11,8 @@ WCCCAD.versionString = "1.0.7"
 WCCCAD.newVersionAvailable = false;
 
 
+local COMM_KEY_SHARE_VERSION = "shareVersionRequest"
+
 local wcccCoreData = 
 {
     profile =
@@ -23,7 +25,9 @@ local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
 
 
 function WCCCADCore:InitializeModule()
+    WCCCADCore:RegisterModuleSlashCommand("ver", WCCCADCore.VersionCommand)
 
+    WCCCADCore:RegisterModuleComm(COMM_KEY_SHARE_VERSION, WCCCADCore.OnShareVersionCommReceieved)
 end
 
 function WCCCADCore:OnEnable()
@@ -62,6 +66,56 @@ Happy Clubbing!")
     ftueFrame:AddChild(welcomeText)
 end
 
+---
+--- Version Command
+---
+local lastVerTimestamp = 0
+local verSendDelay = 20
+function WCCCADCore:VersionCommand(args)
+    if GetServerTime() < lastVerTimestamp + verSendDelay then
+        WCCCAD.UI:PrintAddOnMessage("Please wait a short time before sending another version request.", ns.consts.MSG_TYPE.WARN)
+        return
+    end
+
+    lastVerTimestamp = GetServerTime()
+    WCCCADCore:SenRequestVersionComm()
+end
+
+function WCCCADCore:SenRequestVersionComm()
+    local data = 
+    {
+        requestingPlayer = ns.utils.GetPlayerNameRealmString()
+    }
+
+    WCCCAD.UI:PrintDebugMessage("Sending version request", WCCCAD.db.profile.debugMode)
+    WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s", WCCCAD.versionString))
+    WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
+end
+
+function WCCCADCore:OnShareVersionCommReceieved(data)
+    if data.requestingPlayer ~= nil then
+        -- We've received a request.
+        WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, WCCCAD.db.profile.debugMode)
+        local responseData = 
+        {
+            respondingPlayer = ns.utils.GetPlayerNameRealmString(),
+            version = WCCCAD.version,
+            versionString = WCCCAD.versionString
+        }
+        WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, responseData, ns.consts.CHAT_CHANNEL.WHISPER, data.requestingPlayer)
+    
+    elseif data.respondingPlayer ~= nil then
+        -- It's a response to a request we made.
+        WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, WCCCAD.db.profile.debugMode)
+        local versionOutput = "v"..data.versionString
+        if data.version < WCCCAD.version then
+            versionOutput =  "|cFFE91100"..versionOutput.."|r (out of date)"
+        elseif data.version > WCCCAD.version then
+            versionOutput =  "|cFF00D42D"..versionOutput.."|r (newer version)"
+        end
+        WCCCAD.UI:PrintAddOnMessage(format("%s - %s", data.respondingPlayer, versionOutput))
+    end
+end
 
 ---
 --- Sync functions
