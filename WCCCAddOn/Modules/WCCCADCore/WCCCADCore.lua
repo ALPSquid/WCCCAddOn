@@ -6,9 +6,9 @@
 local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 107
-WCCCAD.versionString = "1.0.7"
-WCCCAD.newVersionAvailable = false;
+WCCCAD.version = 108
+WCCCAD.versionString = "1.0.8"
+WCCCAD.newVersionAvailable = false
 
 
 local COMM_KEY_SHARE_VERSION = "shareVersionRequest"
@@ -112,6 +112,7 @@ function WCCCADCore:OnShareVersionCommReceieved(data)
             versionOutput =  "|cFFE91100"..versionOutput.."|r (out of date)"
         elseif data.version > WCCCAD.version then
             versionOutput =  "|cFF00D42D"..versionOutput.."|r (newer version)"
+            WCCCAD.newVersionAvailable = true
         end
         WCCCAD.UI:PrintAddOnMessage(format("%s - %s", data.respondingPlayer, versionOutput))
     end
