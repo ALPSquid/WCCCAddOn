@@ -360,6 +360,15 @@ Happy Clubbing!",
                     get = function() return ClubbingComp.moduleDB.sayEmotesEnabled end,
                     order = 9.1
                 },
+
+                toggleHUDBtn =
+                {
+                    type = "execute",
+                    name = function() if ClubbingComp.moduleDB.hudData.showHUD then return "Hide HUD" else return "Show HUD" end end,
+                    desc = "Toggle the Clubbing Competition score HUD.",
+                    func = function() ClubbingComp.UI:SetHUDShown(not ClubbingComp.moduleDB.hudData.showHUD) end,
+                    order = 9.2,
+                },
             }
         },
         
@@ -581,4 +590,153 @@ function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
     local raceScore = ClubbingComp:GetRaceScore(race)
 
     return format("%s Clubbed: %i = %ipts (%i each)", raceScoreData.pluralName, hitCount, hitCount * raceScore, raceScore)
+end
+
+function ClubbingComp_UI:CreateHUD() 
+    local hudFrame = CreateFrame("Frame", nil, UIParent)
+    ClubbingComp_UI.hudFrame = hudFrame
+    hudFrame:SetFrameStrata("MEDIUM")
+    hudFrame:SetPoint(
+        ClubbingComp.moduleDB.hudData.framePoint, 
+        nil,
+        ClubbingComp.moduleDB.hudData.framePoint,
+        ClubbingComp.moduleDB.hudData.offsetX, 
+        ClubbingComp.moduleDB.hudData.offsetY)
+    hudFrame:SetWidth(220)
+    hudFrame:SetHeight(60)
+    hudFrame:SetMovable(true)
+    hudFrame:SetResizable(false)
+    hudFrame:SetClampedToScreen(true)
+    hudFrame:SetBackdrop(
+    {
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
+        tile = true, tileSize = 16, edgeSize = 16, 
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    hudFrame:SetBackdropColor(0, 0, 0, 0.2)
+
+    hudFrame:EnableMouse(false)
+    hudFrame:RegisterForDrag("LeftButton")
+    hudFrame:SetScript("OnDragStart", hudFrame.StartMoving)
+    hudFrame:SetScript("OnDragStop", function()
+        hudFrame:StopMovingOrSizing()
+
+        point, relativeTo, relativePoint, offsetX, offsetY = hudFrame:GetPoint()
+        ClubbingComp.moduleDB.hudData.framePoint = point
+        ClubbingComp.moduleDB.hudData.offsetX = offsetX
+        ClubbingComp.moduleDB.hudData.offsetY = offsetY
+    end)
+
+    hudFrame.SetLocked = function(self, locked)
+        hudFrame.IsLocked = locked
+        hudFrame:EnableMouse(not locked) 
+
+        local lockTexture = "Interface\\LFGFRAME\\UI-LFG-ICON-LOCK"
+        local backdropAlpha = 0.3
+        local borderAlpha = 0.4
+        if not locked then
+            backdropAlpha = 0.8
+            borderAlpha = 1
+            lockTexture = "Interface\\CURSOR\\UI-Cursor-Move"
+        end
+
+        hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
+        hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
+
+        hudFrame.lockIcon:SetNormalTexture(lockTexture)
+    end
+
+    hudFrame.lockIcon = CreateFrame("Button", nil, hudFrame)
+	hudFrame.lockIcon:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
+	hudFrame.lockIcon:SetPoint("TOPRIGHT", -10, -5)
+	hudFrame.lockIcon:SetWidth(12)
+	hudFrame.lockIcon:SetHeight(14)
+    hudFrame.lockIcon:SetScript("OnClick", function() 
+        hudFrame:SetLocked(not hudFrame.IsLocked) 
+    end)
+
+
+    local infoBtn = CreateFrame("Button", nil, hudFrame)
+	infoBtn:SetNormalTexture("Interface\\FriendsFrame\\InformationIcon")
+	infoBtn:SetPoint("TOPRIGHT", -25, -5)
+	infoBtn:SetWidth(12)
+	infoBtn:SetHeight(14)
+    infoBtn:SetScript("OnClick", function()
+        ClubbingComp_UI:Show()
+    end)    
+
+    local guildLogo = CreateFrame("Button", nil, hudFrame)
+	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+	guildLogo:SetPoint("TOPLEFT", 5, -5)
+	guildLogo:SetWidth(12)
+	guildLogo:SetHeight(12)
+    guildLogo:SetScript("OnClick", function()
+        ClubbingComp_UI:Show()
+    end) 
+
+
+    hudFrame.title = hudFrame:CreateFontString()
+    hudFrame.title:SetFontObject(GameFontNormal)
+    hudFrame.title:SetTextColor(1, 0.62, 0, 1)
+    hudFrame.title:SetPoint("TOPLEFT", 18, -5)
+    hudFrame.title:SetText("Clubbing Competition")
+
+    hudFrame.scoreDisplay = hudFrame:CreateFontString()
+    hudFrame.scoreDisplay:SetFontObject(GameFontNormal)
+    hudFrame.scoreDisplay:SetTextColor(1, 1, 1, 1)
+    hudFrame.scoreDisplay:SetPoint("TOPLEFT", 10, -20)
+
+    hudFrame.frenzyDisplay = hudFrame:CreateFontString()
+    hudFrame.frenzyDisplay:SetFontObject(GameFontNormal)
+    hudFrame.frenzyDisplay:SetTextColor(1, 1, 1, 1)
+    hudFrame.frenzyDisplay:SetPoint("TOPLEFT", 10, -35)
+
+    hudFrame:SetLocked(true)
+    ClubbingComp_UI:UpdateHUD()
+end
+
+function ClubbingComp_UI:UpdateHUD() 
+    if ClubbingComp_UI.hudFrame == nil then
+        return
+    end
+
+    ClubbingComp_UI.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubbingComp.moduleDB.score))
+
+    local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
+    local frenzyString = format("Frenzy Inactive")
+    if frenzyRace ~= nil then
+        local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60) + 1
+        local minString = "min"
+        if timeRemaining > 1 then minString = "mins" end
+        frenzyString = format("%sx %s Frenzy for %s"..minString.."!", 
+            ClubbingComp.moduleDB.frenzyData.multiplier,
+            ClubbingComp:GetRaceScoreData(ClubbingComp.moduleDB.frenzyData.race).name,
+            timeRemaining)
+    end
+
+    ClubbingComp_UI.hudFrame.frenzyDisplay:SetText(frenzyString)
+end
+
+
+function ClubbingComp_UI:SetHUDShown(shown) 
+    ClubbingComp.moduleDB.hudData.showHUD = shown
+
+    if shown then
+        ClubbingComp_UI:ShowHUDIfEnabled()
+    elseif ClubbingComp_UI.hudFrame ~= nil then
+        ClubbingComp_UI.hudFrame:Hide()
+    end
+end
+
+function ClubbingComp_UI:ShowHUDIfEnabled() 
+    if ClubbingComp.moduleDB.hudData.showHUD == false then
+        return
+    end
+
+    if ClubbingComp_UI.hudFrame == nil then
+        ClubbingComp_UI:CreateHUD()
+    end
+
+    ClubbingComp_UI.hudFrame:Show()    
 end

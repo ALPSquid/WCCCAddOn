@@ -6,7 +6,8 @@ local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local HIT_COOLDOWN = 15 * 60; -- 15 mins between hitting the same target.
-local SEASON_MULTIPLIER = 1.5;
+--local SEASON_MULTIPLIER = 1.5;
+local SEASON_MULTIPLIER = 1;
 
 local RACES = 
 {
@@ -15,7 +16,7 @@ local RACES =
         type = "Human",
         name = "Human",
         pluralName = "Humans",
-		score = 10
+		score = 1
 	},
 	
 	["Draenei"] = 
@@ -23,7 +24,7 @@ local RACES =
         type = "Draenei",
         name = "Draenei",
         pluralName = "Draenei",
-		score = 10
+		score = 1
 	},
 	
 	["Dwarf"] = 
@@ -31,7 +32,7 @@ local RACES =
         type = "Dwarf",
         name = "Dwarf",
         pluralName = "Dwarves",
-		score = 10
+		score = 1
 	},
 	
 	["NightElf"] = 
@@ -39,7 +40,7 @@ local RACES =
         type = "NightElf",
         name = "Elf",        
         pluralName = "Elves",        
-		score = 10
+		score = 1
 	},
 	
 	["Gnome"] = 
@@ -47,7 +48,7 @@ local RACES =
         type = "Gnome",
         name = "Gnome",   
         pluralName = "Gnomes",   
-		score = 15
+		score = 2
 	},
 	
 	["Pandaren"] = 
@@ -55,7 +56,7 @@ local RACES =
         type = "Pandaren",
         name = "Pandaren", 
         pluralName = "Pandaren", 
-		score = 15
+		score = 2
 	},
 	
 	["Worgen"] = 
@@ -63,7 +64,7 @@ local RACES =
         type = "Worgen",
         name = "Worgen", 
         pluralName = "Worgen", 
-		score = 25,
+		score = 3,
 	},
 };
 RACES["LightforgedDraenei"] = RACES["Draenei"];
@@ -111,15 +112,26 @@ local clubbingCompData =
         showGuildMemberClubNotification = true,
         sayEmotesEnabled = true,
         score = 0,
+
+        hudData = 
+        {
+            framePoint = "CENTER",
+            offsetX = 0,
+            offsetY = 0,
+            showHUD = true
+        },
+
         seasonData = 
         {
             lastUpdateTimestamp = 0,
             currentSeasonRace = nil
         },
+
         hitTable =
         {
             -- [raceScoreType] = { [name] = { actualRace, hits = {time} }
         },
+
         frenzyData =
         {
             startTimestamp = 0,
@@ -143,6 +155,8 @@ end
 function ClubbingComp:OnEnable()
     ClubbingComp:InitiateSync()
     ClubbingComp:UpdateActiveFrenzy()
+
+    ClubbingComp.UI:ShowHUDIfEnabled()
 end
 
 function ClubbingComp:GetRaceScoreData(race)
@@ -207,6 +221,7 @@ function ClubbingComp:ClubCommand(args)
                 WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, self.moduleDB.score))
                 
                 ClubbingComp:RegisterHit(targetName, targetRaceEn)
+                ClubbingComp.UI:UpdateHUD()
 
                 if raceScoreData.type == "Worgen" then
                     ClubbingComp:SendGuildyClubbedWorgenComm(targetName)
@@ -420,6 +435,7 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     end
     WCCCAD.UI:PrintDebugMessage("Pruned hit table, new score: "..ClubbingComp.moduleDB.score, ClubbingComp.moduleDB.debugMode)
 
+    ClubbingComp.UI:UpdateHUD()
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
 end
 
@@ -443,7 +459,7 @@ function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration)
         ClubbingComp.moduleDB.frenzyData.race = nil
         ClubbingComp.moduleDB.frenzyData.multiplier = 0
         ClubbingComp.moduleDB.frenzyData.duration = 0
-        ClubbingComp:UpdateFrenzyTimer()
+        ClubbingComp:UpdateActiveFrenzy()
         return
     end
 
@@ -498,6 +514,8 @@ function ClubbingComp:UpdateActiveFrenzy()
             WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", ClubbingComp.moduleDB.debugMode) 
         end   
     end    
+    
+    ClubbingComp.UI:UpdateHUD()
 end
 
 ---
