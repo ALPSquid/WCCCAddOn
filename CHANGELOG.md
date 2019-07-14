@@ -1,3 +1,7 @@
+# Alpha v1.0.9
+* Tweaks points worth of each race.
+* Adds Clubbing Competition HUD
+
 # Alpha v1.0.8
 * Adds "/wccc ver" version check command which behaves similar to the DBM command of the same name.
 

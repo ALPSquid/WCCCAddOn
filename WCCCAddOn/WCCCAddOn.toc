@@ -2,7 +2,7 @@
 ## Title: Worgen Cub Clubbing Club
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
-## Version: 1.0.8
+## Version: 1.0.9
 ## SavedVariables: WCCCDB
 
 embeds.xml
@@ -18,3 +18,5 @@ WCCCAddOn.xml
 # Modules
 Modules\ClubbingComp\ClubbingComp.lua
 Modules\ClubbingComp\ClubbingCompUI.lua
+
+#Modules\InfoHUD\InfoHUD.lua
