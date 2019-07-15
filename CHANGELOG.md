@@ -1,5 +1,8 @@
+# Alpha v1.0.11
+* Adds option to toggle club button on the Clubbing Competition HUD.
+
 # Alpha v1.0.10
-* Adds club button to the Clubbing Competition HUD
+* Adds club button to the Clubbing Competition HUD.
 * Adds new emote when the player clubs themself.
 * Adds create macro button to the Clubbing Competition help menu.
 
