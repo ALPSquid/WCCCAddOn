@@ -315,7 +315,7 @@ Happy Clubbing!",
                 {
                     type = "description",
                     fontSize = "medium",
-                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC AddOn window.",
+                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro or press the 'Create Macro' button below: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC AddOn window.",
                     order = 1.02
                 },
 
@@ -334,7 +334,7 @@ Happy Clubbing!",
                 {
                     type = "execute",
                     name = "Create Macro",
-                    desc = "Create the Worgen Cub macro above.",
+                    desc = "Creates the Worgen Club macro above.",
                     func = function() 
                         CreateMacro("Worgen Club", 631502, "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end") 
                         ShowUIPanel(MacroFrame)
@@ -346,7 +346,7 @@ Happy Clubbing!",
                 {
                     type = "execute",
                     name = "View Macros",
-                    desc = "Open the macros UI.",
+                    desc = "Open the macros UI (note, this might not always work. Type '/m' to open macros manually).",
                     func = function() ShowUIPanel(MacroFrame) end,
                     order = 1.04,
                 },
