@@ -232,7 +232,11 @@ function ClubbingComp:ClubCommand(args)
 
          -- Otherwise, if there wasn't a valid target but the target is in range, then it's a bog standard emote hit.
         else
-            ClubbingComp:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.");    
+            if targetName == UnitName("player") then
+                ClubbingComp:PlayEmote("flails ".. ns.utils.Pronoun(ns.consts.TENSE.POS)  .." [Worgen Cub Clubbing Club] around and hits ".. ns.utils.Pronoun(ns.consts.TENSE.OBJ) .. "self. It makes the most satisfying 'thwack'.");    
+            else
+                ClubbingComp:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.");    
+            end
             PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)]);
         end
     end   

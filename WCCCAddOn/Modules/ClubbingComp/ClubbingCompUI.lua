@@ -329,6 +329,27 @@ Happy Clubbing!",
                     end,
                     order = 1.03
                 },
+
+                createMacroBtn =
+                {
+                    type = "execute",
+                    name = "Create Macro",
+                    desc = "Create the Worgen Cub macro above.",
+                    func = function() 
+                        CreateMacro("Worgen Club", 631502, "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end") 
+                        ShowUIPanel(MacroFrame)
+                    end,
+                    order = 1.04,
+                },
+
+                copenMacrosBtn =
+                {
+                    type = "execute",
+                    name = "View Macros",
+                    desc = "Open the macros UI.",
+                    func = function() ShowUIPanel(MacroFrame) end,
+                    order = 1.04,
+                },
             }
         },
 
@@ -603,7 +624,7 @@ function ClubbingComp_UI:CreateHUD()
         ClubbingComp.moduleDB.hudData.offsetX, 
         ClubbingComp.moduleDB.hudData.offsetY)
     hudFrame:SetWidth(220)
-    hudFrame:SetHeight(60)
+    hudFrame:SetHeight(90)
     hudFrame:SetMovable(true)
     hudFrame:SetResizable(false)
     hudFrame:SetClampedToScreen(true)
@@ -691,6 +712,16 @@ function ClubbingComp_UI:CreateHUD()
     hudFrame.frenzyDisplay:SetFontObject(GameFontNormal)
     hudFrame.frenzyDisplay:SetTextColor(1, 1, 1, 1)
     hudFrame.frenzyDisplay:SetPoint("TOPLEFT", 10, -35)
+
+    local clubBtn = CreateFrame("Button", nil, hudFrame)
+	clubBtn:SetNormalTexture(631502)
+	clubBtn:SetPushedTexture(1500803)
+	clubBtn:SetPoint("BOTTOMLEFT", 5, 5)
+	clubBtn:SetWidth(35)
+	clubBtn:SetHeight(35)
+    clubBtn:SetScript("OnClick", function()
+        ClubbingComp:ClubCommand()
+    end)  
 
     hudFrame:SetLocked(true)
     ClubbingComp_UI:UpdateHUD()

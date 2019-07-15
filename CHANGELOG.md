@@ -1,3 +1,8 @@
+# Alpha v1.0.10
+* Adds club button to the Clubbing Competition HUD
+* Adds new emote when the player clubs themself.
+* Adds create macro button to the Clubbing Competition help menu.
+
 # Alpha v1.0.9
 * Tweaks points worth of each race.
 * Adds Clubbing Competition HUD
