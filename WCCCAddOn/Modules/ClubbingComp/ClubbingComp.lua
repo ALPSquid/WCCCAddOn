@@ -118,7 +118,8 @@ local clubbingCompData =
             framePoint = "CENTER",
             offsetX = 0,
             offsetY = 0,
-            showHUD = true
+            showHUD = true,
+            showClubBtn = true,
         },
 
         seasonData = 

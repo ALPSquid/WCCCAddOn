@@ -382,14 +382,35 @@ Happy Clubbing!",
                     order = 9.1
                 },
 
-                toggleHUDBtn =
+                settingsPanel = 
                 {
-                    type = "execute",
-                    name = function() if ClubbingComp.moduleDB.hudData.showHUD then return "Hide HUD" else return "Show HUD" end end,
-                    desc = "Toggle the Clubbing Competition score HUD.",
-                    func = function() ClubbingComp.UI:SetHUDShown(not ClubbingComp.moduleDB.hudData.showHUD) end,
+                    type = "group",
+                    name = "Score HUD",
+                    inline = true,
                     order = 9.2,
-                },
+                    args =
+                    {
+                        toggleHUDClubBtn =
+                        {
+                            type = "toggle",
+                            name = "Show Club Button",
+                            desc = "Whether to the club button on the Clubbing Competition score HUD.",
+                            width = "full",
+                            set = function(info, val) ClubbingComp.UI.hudFrame:SetClubBtnShown(val) end,
+                            get = function() return ClubbingComp.moduleDB.hudData.showClubBtn end,
+                            order = 9.21
+                        },
+
+                        toggleHUDBtn =
+                        {
+                            type = "execute",
+                            name = function() if ClubbingComp.moduleDB.hudData.showHUD then return "Hide HUD" else return "Show HUD" end end,
+                            desc = "Toggle the Clubbing Competition score HUD.",
+                            func = function() ClubbingComp.UI:SetHUDShown(not ClubbingComp.moduleDB.hudData.showHUD) end,
+                            order = 9.22,
+                        },
+                    },
+                },                
             }
         },
         
@@ -668,6 +689,21 @@ function ClubbingComp_UI:CreateHUD()
         hudFrame.lockIcon:SetNormalTexture(lockTexture)
     end
 
+    hudFrame.SetClubBtnShown = function(self, btnShown)
+        local frameHeight = hudFrame:GetHeight()
+        if btnShown and hudFrame.clubBtn:IsShown() == false then
+            hudFrame.clubBtn:Show()
+            frameHeight = frameHeight + hudFrame.clubBtn:GetHeight()
+        elseif btnShown == false and hudFrame.clubBtn:IsShown() then
+            hudFrame.clubBtn:Hide()
+            frameHeight = frameHeight - hudFrame.clubBtn:GetHeight()
+        end
+
+        hudFrame:SetHeight(frameHeight)
+        ClubbingComp.moduleDB.hudData.showClubBtn = btnShown
+    end
+
+
     hudFrame.lockIcon = CreateFrame("Button", nil, hudFrame)
 	hudFrame.lockIcon:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
 	hudFrame.lockIcon:SetPoint("TOPRIGHT", -10, -5)
@@ -676,7 +712,6 @@ function ClubbingComp_UI:CreateHUD()
     hudFrame.lockIcon:SetScript("OnClick", function() 
         hudFrame:SetLocked(not hudFrame.IsLocked) 
     end)
-
 
     local infoBtn = CreateFrame("Button", nil, hudFrame)
 	infoBtn:SetNormalTexture("Interface\\FriendsFrame\\InformationIcon")
@@ -713,13 +748,13 @@ function ClubbingComp_UI:CreateHUD()
     hudFrame.frenzyDisplay:SetTextColor(1, 1, 1, 1)
     hudFrame.frenzyDisplay:SetPoint("TOPLEFT", 10, -35)
 
-    local clubBtn = CreateFrame("Button", nil, hudFrame)
-	clubBtn:SetNormalTexture(631502)
-	clubBtn:SetPushedTexture(1500803)
-	clubBtn:SetPoint("BOTTOMLEFT", 5, 5)
-	clubBtn:SetWidth(35)
-	clubBtn:SetHeight(35)
-    clubBtn:SetScript("OnClick", function()
+    hudFrame.clubBtn = CreateFrame("Button", nil, hudFrame)
+	hudFrame.clubBtn:SetNormalTexture(631502)
+	hudFrame.clubBtn:SetPushedTexture(1500803)
+	hudFrame.clubBtn:SetPoint("BOTTOMLEFT", 5, 5)
+	hudFrame.clubBtn:SetWidth(35)
+	hudFrame.clubBtn:SetHeight(35)
+    hudFrame.clubBtn:SetScript("OnClick", function()
         ClubbingComp:ClubCommand()
     end)  
 
@@ -747,6 +782,8 @@ function ClubbingComp_UI:UpdateHUD()
     end
 
     ClubbingComp_UI.hudFrame.frenzyDisplay:SetText(frenzyString)
+
+    ClubbingComp_UI.hudFrame:SetClubBtnShown(ClubbingComp.moduleDB.hudData.showClubBtn)
 end
 
 
