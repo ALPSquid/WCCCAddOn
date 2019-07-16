@@ -65,7 +65,7 @@ Click the '+' on the left hand panel next to 'Worgen Cub Clubbing Club' to acces
 \
 Use the 'WCCC AddOn' escape menu button or type '/wccc' to open this window.\
 \
-Happy Clubbing!",
+Happy Clubbing!\n\n",
             order = 3
         },
         

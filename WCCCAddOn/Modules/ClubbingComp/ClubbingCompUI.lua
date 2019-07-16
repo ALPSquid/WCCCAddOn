@@ -300,7 +300,7 @@ local CLUBBINGCOMP_UI_CONFIG =
 \
 Using your club (commands):\
 '/wccc club' - Use your club on the target.\
-'/wccc club info' - Open the Clubbing Compeition Window.\
+'/wccc club info' - Open the Clubbing Competition Window.\
 Below is a handy macro script to paste into a new macro which makes using your club much easier!\
 \
 Seasons:\
