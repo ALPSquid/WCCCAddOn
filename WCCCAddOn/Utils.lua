@@ -89,3 +89,106 @@ ns.utils.DaysSince = function(timeStamp)
 
     return ceil(timeDelta / 86400)
 end
+
+
+---
+--- Creates a floating UI panel themed in the WCCC style. Includes lock and dragging.
+--- @param framePointGetter - Function that returns the point, offsetX, offsetY for the framem
+--- @param framePointSetter - Function that takes the point, offsetX, offsetY for the frame to be saved.
+--- @param infoPressedCallback - Function called when the info button or guild logo is pressed.
+---
+ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback) 
+    local hudFrame = CreateFrame("Frame", nil, UIParent)
+    hudFrame:SetFrameStrata("MEDIUM")
+
+    point, offsetX, offsetY = framePointGetter()
+    hudFrame:SetPoint(
+        point, 
+        nil,
+        point,
+        offsetX, 
+        offsetY)
+    hudFrame:SetWidth(200)
+    hudFrame:SetHeight(200)
+    hudFrame:SetMovable(true)
+    hudFrame:SetResizable(false)
+    hudFrame:SetClampedToScreen(true)
+    hudFrame:SetBackdrop(
+    {
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
+        tile = true, tileSize = 16, edgeSize = 16, 
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    hudFrame:SetBackdropColor(0, 0, 0, 0.2)
+
+    hudFrame:EnableMouse(false)
+    hudFrame:RegisterForDrag("LeftButton")
+    hudFrame:SetScript("OnDragStart", hudFrame.StartMoving)
+    hudFrame:SetScript("OnDragStop", function()
+        hudFrame:StopMovingOrSizing()
+
+        point, relativeTo, relativePoint, offsetX, offsetY = hudFrame:GetPoint()
+        framePointSetter(point, offsetX, offsetY)
+    end)
+
+    hudFrame.SetLocked = function(self, locked)
+        hudFrame.IsLocked = locked
+        hudFrame:EnableMouse(not locked) 
+
+        local lockTexture = "Interface\\LFGFRAME\\UI-LFG-ICON-LOCK"
+        local backdropAlpha = 0.3
+        local borderAlpha = 0.4
+        if not locked then
+            backdropAlpha = 0.8
+            borderAlpha = 1
+            lockTexture = "Interface\\CURSOR\\UI-Cursor-Move"
+        end
+
+        hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
+        hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
+
+        hudFrame.lockIcon:SetNormalTexture(lockTexture)
+    end
+
+    --- Lock Icon
+    hudFrame.lockIcon = CreateFrame("Button", nil, hudFrame)
+	hudFrame.lockIcon:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
+	hudFrame.lockIcon:SetPoint("TOPRIGHT", -10, -5)
+	hudFrame.lockIcon:SetWidth(12)
+	hudFrame.lockIcon:SetHeight(14)
+    hudFrame.lockIcon:SetScript("OnClick", function() 
+        hudFrame:SetLocked(not hudFrame.IsLocked) 
+    end)
+
+    --- Info Button
+    local infoBtn = CreateFrame("Button", nil, hudFrame)
+	infoBtn:SetNormalTexture("Interface\\FriendsFrame\\InformationIcon")
+	infoBtn:SetPoint("TOPRIGHT", -25, -5)
+	infoBtn:SetWidth(12)
+	infoBtn:SetHeight(14)
+    infoBtn:SetScript("OnClick", function()
+        infoPressedCallback()
+    end)
+
+    --- Guild Logo
+    local guildLogo = CreateFrame("Button", nil, hudFrame)
+	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+	guildLogo:SetPoint("TOPLEFT", 5, -5)
+	guildLogo:SetWidth(12)
+	guildLogo:SetHeight(12)
+    guildLogo:SetScript("OnClick", function()
+        infoPressedCallback()
+    end) 
+
+    --- Title
+    hudFrame.title = hudFrame:CreateFontString()
+    hudFrame.title:SetFontObject(GameFontNormal)
+    hudFrame.title:SetTextColor(1, 0.62, 0, 1)
+    hudFrame.title:SetPoint("TOPLEFT", 18, -5)
+    hudFrame.title:SetText(title)
+
+    hudFrame:SetLocked(true)
+
+    return hudFrame
+end
