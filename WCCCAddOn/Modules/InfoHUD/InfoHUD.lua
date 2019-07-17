@@ -84,15 +84,16 @@ function InfoHUD:CreateHUD()
         messageFrame:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_TOP)
         messageFrame:Hide()
 
-        local tabButton = CreateFrame("Button", nil, InfoHUD.hudFrame, "UIPanelButtonTemplate")
-        local btnNum = 0
+        local tabButton = CreateFrame("Button", frameName.."_tab", InfoHUD.hudFrame, "OptionsFrameTabButtonTemplate")--"UIPanelButtonTemplate")
+        local tabOffset = 0
         for k,v in pairs(InfoHUD.hudFrame.messageFrames) do
-            btnNum = btnNum + 1
-        end
-        
-        tabButton:SetPoint("TOPLEFT", 10 + (btnNum * 65), -20)
-        tabButton:SetSize(60, 25)
+            tabOffset = tabOffset + v.tabButton:GetWidth() - 10
+        end        
+        tabButton:ClearAllPoints()
+        --tabButton:SetPoint("TOPLEFT", 3 + (btnNum * 80), -20)
+        tabButton:SetPoint("TOPLEFT", 3 + tabOffset, -20)
         tabButton:SetText(tabName)
+        PanelTemplates_TabResize(tabButton, 2, nil, 30, 30, tabButton:GetFontString():GetStringWidth())
         tabButton:SetScript("OnClick", function()
             InfoHUD.hudFrame:SwitchTab(frameName)
         end)
@@ -102,6 +103,7 @@ function InfoHUD:CreateHUD()
             messageFrame = messageFrame,
             tabButton = tabButton
         }
+        
     end
 
     InfoHUD.hudFrame.GetMessageFrame = function(self, frameName)
@@ -121,6 +123,18 @@ function InfoHUD:CreateHUD()
         
     end
 
+    local tabDivider = CreateFrame("Frame", nil, InfoHUD.hudFrame)
+    tabDivider:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
+        tile = false, tileSize = 6, edgeSize = 6, 
+        insets = { left = 1, right = 1, top = 1, bottom = 1 }
+    })
+    tabDivider:SetFrameLevel(99)
+    tabDivider:SetBackdropBorderColor(1, 0.62, 0, 0.8)
+    tabDivider:SetPoint("TOPLEFT", 3, -45)
+    tabDivider:SetHeight(3)
+    tabDivider:SetWidth(InfoHUD.hudFrame:GetWidth() -3)
      
     InfoHUD.hudFrame:CreateMessageFrame("guild", "Guild")
     local guildFrame = InfoHUD.hudFrame:GetMessageFrame("guild")
@@ -139,6 +153,7 @@ function InfoHUD:CreateHUD()
     guildFrame:AddMessage("Guild message")
 
     InfoHUD.hudFrame:CreateMessageFrame("raid", "Raid")
+    InfoHUD.hudFrame:CreateMessageFrame("test", "Test")
     local raidFrame = InfoHUD.hudFrame:GetMessageFrame("raid")
     raidFrame:AddMessage("Raid message")
     
