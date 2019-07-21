@@ -6,8 +6,8 @@
 local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1011
-WCCCAD.versionString = "1.0.11"
+WCCCAD.version = 1012
+WCCCAD.versionString = "1.0.12"
 WCCCAD.newVersionAvailable = false
 
 
