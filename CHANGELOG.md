@@ -1,3 +1,6 @@
+# Alpha v1.0.13
+* Adds close button to HUD panels.
+
 # Alpha v1.0.12
 * Adds Info HUD module.
 * Adds confirmation message when creating the Clubbing Competition macro.

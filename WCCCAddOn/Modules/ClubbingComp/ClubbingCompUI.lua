@@ -636,59 +636,30 @@ function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
 end
 
 function ClubbingComp_UI:CreateHUD() 
-    local hudFrame = CreateFrame("Frame", nil, UIParent)
-    ClubbingComp_UI.hudFrame = hudFrame
-    hudFrame:SetFrameStrata("MEDIUM")
-    hudFrame:SetPoint(
-        ClubbingComp.moduleDB.hudData.framePoint, 
-        nil,
-        ClubbingComp.moduleDB.hudData.framePoint,
-        ClubbingComp.moduleDB.hudData.offsetX, 
-        ClubbingComp.moduleDB.hudData.offsetY)
-    hudFrame:SetWidth(220)
-    hudFrame:SetHeight(90)
-    hudFrame:SetMovable(true)
-    hudFrame:SetResizable(false)
-    hudFrame:SetClampedToScreen(true)
-    hudFrame:SetBackdrop(
-    {
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
-        tile = true, tileSize = 16, edgeSize = 16, 
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    hudFrame:SetBackdropColor(0, 0, 0, 0.2)
+    local hudFrame = ns.utils.CreateHUDPanel(
+        "Clubbing Competition",
 
-    hudFrame:EnableMouse(false)
-    hudFrame:RegisterForDrag("LeftButton")
-    hudFrame:SetScript("OnDragStart", hudFrame.StartMoving)
-    hudFrame:SetScript("OnDragStop", function()
-        hudFrame:StopMovingOrSizing()
+        function() 
+            return ClubbingComp.moduleDB.hudData.framePoint, ClubbingComp.moduleDB.hudData.offsetX, ClubbingComp.moduleDB.hudData.offsetY 
+        end,
 
-        point, relativeTo, relativePoint, offsetX, offsetY = hudFrame:GetPoint()
-        ClubbingComp.moduleDB.hudData.framePoint = point
-        ClubbingComp.moduleDB.hudData.offsetX = offsetX
-        ClubbingComp.moduleDB.hudData.offsetY = offsetY
-    end)
+        function(point, offsetX, offsetY)
+            ClubbingComp.moduleDB.hudData.framePoint = point
+            ClubbingComp.moduleDB.hudData.offsetX = offsetX
+            ClubbingComp.moduleDB.hudData.offsetY = offsetY
+         end,
 
-    hudFrame.SetLocked = function(self, locked)
-        hudFrame.IsLocked = locked
-        hudFrame:EnableMouse(not locked) 
+        function() 
+            ClubbingComp.UI:Show()
+        end,
 
-        local lockTexture = "Interface\\LFGFRAME\\UI-LFG-ICON-LOCK"
-        local backdropAlpha = 0.3
-        local borderAlpha = 0.4
-        if not locked then
-            backdropAlpha = 0.8
-            borderAlpha = 1
-            lockTexture = "Interface\\CURSOR\\UI-Cursor-Move"
+        function()
+            ClubbingComp.UI:SetHUDShown(false)
         end
+    )
+    ClubbingComp_UI.hudFrame = hudFrame   
 
-        hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
-        hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
-
-        hudFrame.lockIcon:SetNormalTexture(lockTexture)
-    end
+    hudFrame:SetSize(220, 90)
 
     hudFrame.SetClubBtnShown = function(self, btnShown)
         local frameHeight = hudFrame:GetHeight()
@@ -703,41 +674,6 @@ function ClubbingComp_UI:CreateHUD()
         hudFrame:SetHeight(frameHeight)
         ClubbingComp.moduleDB.hudData.showClubBtn = btnShown
     end
-
-
-    hudFrame.lockIcon = CreateFrame("Button", nil, hudFrame)
-	hudFrame.lockIcon:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
-	hudFrame.lockIcon:SetPoint("TOPRIGHT", -10, -5)
-	hudFrame.lockIcon:SetWidth(12)
-	hudFrame.lockIcon:SetHeight(14)
-    hudFrame.lockIcon:SetScript("OnClick", function() 
-        hudFrame:SetLocked(not hudFrame.IsLocked) 
-    end)
-
-    local infoBtn = CreateFrame("Button", nil, hudFrame)
-	infoBtn:SetNormalTexture("Interface\\FriendsFrame\\InformationIcon")
-	infoBtn:SetPoint("TOPRIGHT", -25, -5)
-	infoBtn:SetWidth(12)
-	infoBtn:SetHeight(14)
-    infoBtn:SetScript("OnClick", function()
-        ClubbingComp_UI:Show()
-    end)    
-
-    local guildLogo = CreateFrame("Button", nil, hudFrame)
-	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
-	guildLogo:SetPoint("TOPLEFT", 5, -5)
-	guildLogo:SetWidth(12)
-	guildLogo:SetHeight(12)
-    guildLogo:SetScript("OnClick", function()
-        ClubbingComp_UI:Show()
-    end) 
-
-
-    hudFrame.title = hudFrame:CreateFontString()
-    hudFrame.title:SetFontObject(GameFontNormal)
-    hudFrame.title:SetTextColor(1, 0.62, 0, 1)
-    hudFrame.title:SetPoint("TOPLEFT", 18, -5)
-    hudFrame.title:SetText("Clubbing Competition")
 
     hudFrame.scoreDisplay = hudFrame:CreateFontString()
     hudFrame.scoreDisplay:SetFontObject(GameFontNormal)
@@ -758,8 +694,7 @@ function ClubbingComp_UI:CreateHUD()
     hudFrame.clubBtn:SetScript("OnClick", function()
         ClubbingComp:ClubCommand()
     end)  
-
-    hudFrame:SetLocked(true)
+    
     ClubbingComp_UI:UpdateHUD()
 end
 
