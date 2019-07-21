@@ -7,6 +7,14 @@ local name, ns = ...
 ns.consts = {}
 ns.utils = {}
 
+ns.consts.DATA_SYNC_RESULT =
+{
+    LOCAL_NEWER = -1,
+    EQUAL = 0,
+    REMOTE_NEWER = 1,
+    BOTH_NEWER = 2
+}
+
 ns.consts.CHAT_CHANNEL = {
     EMOTE = "EMOTE",
     SAY = "SAY",
@@ -90,14 +98,72 @@ ns.utils.DaysSince = function(timeStamp)
     return ceil(timeDelta / 86400)
 end
 
+--- Format special sequences in a string, such as {skull} and |cblue word |r
+ns.utils.FormatSpecialString = function(inputString)
+    local formatStrings = 
+    {
+        -- Colours
+        {"|cred", "|cffd23636"},
+        {"|cblue", "|cff009bfd"},
+        {"|cgreen", "|cff4df439"},	
+        {"|cyellow", "|cfffdc500"},
+        {"|corange", "|cfffd8e00"},
+
+        -- Marks
+        {"{star}", "{rt1}"},
+        {"{circle}", "{rt2}"},
+        {"{diamond}", "{rt3}"},
+        {"{triangle}", "{rt4}"},
+        {"{moon}", "{rt5}"},
+        {"{square}", "{rt6}"},
+        {"{cross}", "{rt7}"},
+        {"{x}", "{rt7}"},
+        {"{skull}", "{rt8}"},
+        {"{rt([1-8])}", "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_%1:0|t"},
+        {"{bl}", "|TInterface\\Icons\\SPELL_Nature_Bloodlust:0|t"},
+
+        -- Roles
+        {"{tank}", "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:0:19:22:41|t"},
+        {"{healer}", "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:20:39:1:20|t"},
+        {"{dps}", "|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES:0:0:0:0:64:64:20:39:22:41|t"},
+        {"{melee}", "{warrior}"},
+        {"{ranged}", "{hunter}"},
+
+        -- Classes
+        {"{deathknight}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:16:32:32:48|t"},
+        {"{demonhunter}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:64:48:32:48|t"},
+        {"{druid}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:48:64:0:16|t"},
+        {"{hunter}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:0:16:16:32|t"},
+        {"{mage}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:16:32:0:16|t"},
+        {"{monk}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:32:48:32:48|t"},
+        {"{paladin}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:0:16:32:48|t"},
+        {"{priest}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:32:48:16:32|t"},
+        {"{rogue}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:32:48:0:16|t"},
+        {"{shaman}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:16:32:16:32|t"},
+        {"{warlock}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:48:64:16:32|t"},
+        {"{warrior}", "|TInterface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES:0:0:0:0:64:64:0:16:0:16|t"},
+
+    }
+
+    local formattedString = inputString:gsub("||", "|")
+    for k, formatData in pairs(formatStrings) do
+        formattedString = formattedString:gsub(formatData[1], formatData[2])
+    end
+            
+    return formattedString
+end
+
 
 ---
 --- Creates a floating UI panel themed in the WCCC style. Includes lock and dragging.
---- @param framePointGetter - Function that returns the point, offsetX, offsetY for the framem
+--- @param framePointGetter - Function that returns the point, offsetX, offsetY for the frame.
 --- @param framePointSetter - Function that takes the point, offsetX, offsetY for the frame to be saved.
 --- @param infoPressedCallback - Function called when the info button or guild logo is pressed.
+--- @param resizable - [Optional] Whether the frame should be resizable.
+--- @param sizeGetter - [Optional] Function that returns the width, height for the frame.
+--- @param sizeSetter - [Optional] Function that takes the width, height for the frame to be saved.
 ---
-ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback) 
+ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, resizable, sizeGetter, sizeSetter) 
     local hudFrame = CreateFrame("Frame", nil, UIParent)
     hudFrame:SetFrameStrata("MEDIUM")
 
@@ -149,6 +215,14 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
         hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
 
         hudFrame.lockIcon:SetNormalTexture(lockTexture)
+
+        if hudFrame.resizeHandle ~= nil then
+            if locked then 
+                hudFrame.resizeHandle:Hide()
+            else
+                hudFrame.resizeHandle:Show()
+            end                
+        end
     end
 
     --- Lock Icon
@@ -187,6 +261,40 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     hudFrame.title:SetTextColor(1, 0.62, 0, 1)
     hudFrame.title:SetPoint("TOPLEFT", 18, -5)
     hudFrame.title:SetText(title)
+
+    --- Resize handling
+    if resizable then
+        hudFrame:SetResizable(true)
+
+        width, height = sizeGetter()
+        hudFrame:SetSize(width, height)
+        hudFrame:SetMinResize(200, 200)
+
+        hudFrame.resizeHandle = CreateFrame("Button", nil, hudFrame)
+        hudFrame.resizeHandle:SetPoint("BOTTOMRIGHT", 0, 0)
+        hudFrame.resizeHandle:SetSize(16, 16)
+        hudFrame.resizeHandle:EnableMouse(true)
+        hudFrame.resizeHandle:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\resize-handle.tga")
+        hudFrame.resizeHandle:SetFrameLevel(99)
+
+        hudFrame.resizeHandle:SetScript("OnMouseDown", function() 
+            if hudFrame.IsLocked then
+                return
+            end
+
+            hudFrame:StartSizing("BOTTOMRIGHT")
+        end)
+
+        hudFrame:SetScript("OnSizeChanged", function(frame, width, height)
+            sizeSetter(width, height)
+        end)
+
+        hudFrame.resizeHandle:SetScript("OnMouseUp", function() 
+            hudFrame:StopMovingOrSizing()
+
+            sizeSetter(hudFrame:GetWidth(), hudFrame:GetHeight())
+        end)
+    end
 
     hudFrame:SetLocked(true)
 

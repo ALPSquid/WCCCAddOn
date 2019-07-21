@@ -19,4 +19,5 @@ WCCCAddOn.xml
 Modules\ClubbingComp\ClubbingComp.lua
 Modules\ClubbingComp\ClubbingCompUI.lua
 
-#Modules\InfoHUD\InfoHUD.lua
+Modules\InfoHUD\InfoHUD.lua
+Modules\InfoHUD\InfoHUDUI.lua

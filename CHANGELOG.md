@@ -1,3 +1,7 @@
+# Alpha v1.0.12
+* Adds Info HUD module.
+* Adds confirmation message when creating the Clubbing Competition macro.
+
 # Alpha v1.0.11
 * Adds option to toggle club button on the Clubbing Competition HUD.
 

@@ -43,7 +43,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
     --- To request a sync or send updated data, use InitiateSync. 
     --- If a sync is received from a client, a response with data is sent back. Use BroadcastSyncData to send out data without wanting a reply (same functionality, but less traffic).
     ---  GetSyncData()  should return a table of data to send to other clients.
-    ---  CompareSyncData(remoteData)  compare received data with local data. Return 1 if remote is newer, -1 if local is newer and 0 if they're the same.
+    ---  CompareSyncData(remoteData)  compare received data with local data. Return type of ns.consts.DATA_SYNC_RESULT.
     ---  OnSyncDataReceived(data)  will be called when newer data is received from other clients.
 
     --- Send a sync request to the guild. This will send our data to all guild clients and request a reply with updated data.
@@ -58,12 +58,17 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
    
     --- @param targetPlayer  player to send comm to, or guild if null.
     --- @param expectResponse  whether we want a reply if this was a broadcast (no targetPlayer). Defaults to true.
-    wcccModule._SendSyncComm = function(self, targetPlayer, expectResponse)
+    --- @param testData  optional test data to send instead of calling GetSyncData
+    wcccModule._SendSyncComm = function(self, targetPlayer, expectResponse, testData)
         if expectResponse == nil then
             expectResponse = true
         end 
 
-        local data = wcccModule:GetSyncData()
+        if testData ~= nil then
+            testData.isTestData = true
+        end
+
+        local data = testData or wcccModule:GetSyncData()
         data.sendingPlayer = ns.utils.GetPlayerNameRealmString()
         data.targetPlayer = targetPlayer
         data.expectResponse = expectResponse
@@ -78,7 +83,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
     end
 
     wcccModule._OnSyncReceivedComm = function(self, data)
-        if data.sendingPlayer == ns.utils.GetPlayerNameRealmString() then
+        if data.sendingPlayer == ns.utils.GetPlayerNameRealmString() and data.isTestData ~= true then
             return 
         end
         WCCCAD.UI:PrintDebugMessage("Received "..moduleName.." sync data from ", wcccModule.moduleDB.debugMode)
@@ -86,15 +91,19 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         local dataComparisonResult = wcccModule:CompareSyncData(data)
 
         WCCCAD.UI:PrintDebugMessage("Received "..moduleName.." sync data from "..data.sendingPlayer..". Data comparison: "..dataComparisonResult, wcccModule.moduleDB.debugMode)
-        if dataComparisonResult == 1 then
+        if dataComparisonResult == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER or dataComparisonResult == ns.consts.DATA_SYNC_RESULT.BOTH_NEWER then
             wcccModule:OnSyncDataReceived(data)
         end
 
         --- If targetplayer is null, this was a broadcast from a player and needs a reply (assuming we have newer data)
         --- If it's not, the message was sent directly to us.
-        if data.targetPlayer == nil and dataComparisonResult == -1 and data.expectResponse == true then
+        if data.targetPlayer == nil and dataComparisonResult == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER and data.expectResponse == true then
             wcccModule:_SendSyncComm(data.sendingPlayer, false)    
         end
+    end
+
+    wcccModule.SendSelfDebugComm = function(self, testData)
+        wcccModule:_SendSyncComm(ns.utils.GetPlayerNameRealmString(), false, testData)
     end
     
     return wcccModule

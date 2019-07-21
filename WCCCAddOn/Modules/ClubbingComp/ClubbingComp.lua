@@ -548,36 +548,44 @@ end
 
 function ClubbingComp:CompareSyncData(remoteData)
     -- Season
-    local seasonComparison = -1
+    local seasonComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
     if remoteData.seasonData.updateTime > ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp then
-        seasonComparison = 1
+        seasonComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
     elseif remoteData.seasonData.updateTime == ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
         and remoteData.seasonData.seasonRace == ClubbingComp.moduleDB.seasonData.currentSeasonRace 
     then
-        seasonComparison = 0
+        seasonComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
     -- Frenzy
-    local frenzyComparison = -1
+    local frenzyComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
     if remoteData.frenzyData.startTimestamp > ClubbingComp.moduleDB.frenzyData.startTimestamp then
-        frenzyComparison = 1
+        frenzyComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
     elseif remoteData.frenzyData.startTimestamp == ClubbingComp.moduleDB.frenzyData.startTimestamp
         and remoteData.frenzyData.race == ClubbingComp.moduleDB.frenzyData.race
         and remoteData.frenzyData.multiplier == ClubbingComp.moduleDB.frenzyData.multiplier
         and remoteData.frenzyData.duration == ClubbingComp.moduleDB.frenzyData.duration
     then
-        frenzyComparison = 0
+        frenzyComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
     -- Result
-    if seasonComparison == 1 or frenzyComparison == 1 then
-        return 1
-    elseif seasonComparison == -1 or frenzyComparison == -1 then
-        return -1
+    if seasonComparison ~= frenzyComparison 
+        and (seasonComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or seasonComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER) 
+        and (frenzyComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER) 
+    then
+        return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
+
+    elseif seasonComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER then
+        return ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
+    
+    elseif seasonComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER then
+        return ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
+    
     else
-        return 0
+        return ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 end
 

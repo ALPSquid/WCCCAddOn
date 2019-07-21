@@ -1,5 +1,6 @@
 Builds/
 ReleaseMaterial/
+WorkingFiles/
 Notes.txt
 deploy.bat
 *.code-workspace

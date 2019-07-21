@@ -338,6 +338,7 @@ Happy Clubbing!",
                     func = function() 
                         CreateMacro("Worgen Club", 631502, "/run if IsControlKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"club info\") elseif IsAltKeyDown() then hash_SlashCmdList[\"/WCCC\"](\"\") else hash_SlashCmdList[\"/WCCC\"](\"club\") end") 
                         ShowUIPanel(MacroFrame)
+                        WCCCAD.UI:PrintAddOnMessage("Clubbing Competition macro created.")
                     end,
                     order = 1.04,
                 },
@@ -382,7 +383,7 @@ Happy Clubbing!",
                     order = 9.1
                 },
 
-                settingsPanel = 
+                HUDSettingsPanel = 
                 {
                     type = "group",
                     name = "Score HUD",
