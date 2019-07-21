@@ -424,6 +424,10 @@ function InfoHUD_UI:CreateHUD()
         function() 
             InfoHUD.UI:Show()
         end,
+
+        function()
+            InfoHUD.UI:SetHUDShown(false)
+        end,
         
         -- Resizing
         true,

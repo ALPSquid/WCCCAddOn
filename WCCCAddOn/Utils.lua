@@ -163,7 +163,7 @@ end
 --- @param sizeGetter - [Optional] Function that returns the width, height for the frame.
 --- @param sizeSetter - [Optional] Function that takes the width, height for the frame to be saved.
 ---
-ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, resizable, sizeGetter, sizeSetter) 
+ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, closePressedCallback, resizable, sizeGetter, sizeSetter) 
     local hudFrame = CreateFrame("Frame", nil, UIParent)
     hudFrame:SetFrameStrata("MEDIUM")
 
@@ -214,7 +214,7 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
         hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
         hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
 
-        hudFrame.lockIcon:SetNormalTexture(lockTexture)
+        hudFrame.lockBtn:SetNormalTexture(lockTexture)
 
         if hudFrame.resizeHandle ~= nil then
             if locked then 
@@ -225,24 +225,35 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
         end
     end
 
-    --- Lock Icon
-    hudFrame.lockIcon = CreateFrame("Button", nil, hudFrame)
-	hudFrame.lockIcon:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
-	hudFrame.lockIcon:SetPoint("TOPRIGHT", -10, -5)
-	hudFrame.lockIcon:SetWidth(12)
-	hudFrame.lockIcon:SetHeight(14)
-    hudFrame.lockIcon:SetScript("OnClick", function() 
+    --- Lock Button
+    hudFrame.lockBtn = CreateFrame("Button", nil, hudFrame)
+	hudFrame.lockBtn:SetNormalTexture("Interface\\LFGFRAME\\UI-LFG-ICON-LOCK")
+	hudFrame.lockBtn:SetPoint("TOPRIGHT", -10, -5)
+	hudFrame.lockBtn:SetWidth(12)
+	hudFrame.lockBtn:SetHeight(14)
+    hudFrame.lockBtn:SetScript("OnClick", function() 
         hudFrame:SetLocked(not hudFrame.IsLocked) 
     end)
 
     --- Info Button
     local infoBtn = CreateFrame("Button", nil, hudFrame)
 	infoBtn:SetNormalTexture("Interface\\FriendsFrame\\InformationIcon")
-	infoBtn:SetPoint("TOPRIGHT", -25, -5)
+	infoBtn:SetPoint("TOPRIGHT", -45, -5)
 	infoBtn:SetWidth(12)
 	infoBtn:SetHeight(14)
     infoBtn:SetScript("OnClick", function()
         infoPressedCallback()
+    end)
+
+    --- Close Button
+    hudFrame.closeBtn = CreateFrame("Button", nil, hudFrame)
+	hudFrame.closeBtn:SetNormalTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+	hudFrame.closeBtn:SetHighlightTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Down")
+	hudFrame.closeBtn:SetPoint("TOPRIGHT", -27, -5)
+	hudFrame.closeBtn:SetWidth(12)
+	hudFrame.closeBtn:SetHeight(14)
+    hudFrame.closeBtn:SetScript("OnClick", function() 
+        closePressedCallback()
     end)
 
     --- Guild Logo
