@@ -261,7 +261,10 @@ local CLUBBINGCOMP_UI_CONFIG =
                                     return "No Frenzy Active"
                                 end
 
-                                local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60) + 1
+                                local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60)
+                                if timeRemaining < 1 then
+                                    timeRemaining = 1
+                                end
                                 local minString = "min"
                                 if timeRemaining > 1 then minString = "mins" end
                                 return format("%sx %s Frenzy for %s"..minString.."!", 
@@ -708,7 +711,10 @@ function ClubbingComp_UI:UpdateHUD()
     local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
     local frenzyString = format("Frenzy Inactive")
     if frenzyRace ~= nil then
-        local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60) + 1
+        local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60)
+        if timeRemaining < 1 then
+            timeRemaining = 1
+        end
         local minString = "min"
         if timeRemaining > 1 then minString = "mins" end
         frenzyString = format("%sx %s Frenzy for %s"..minString.."!", 

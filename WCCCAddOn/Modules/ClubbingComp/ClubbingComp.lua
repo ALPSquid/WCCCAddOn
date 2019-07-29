@@ -194,6 +194,11 @@ function ClubbingComp:ClubCommand(args)
         return 
     end
 
+    if not WCCCAD.addonActive then
+        WCCCAD.UI:PrintAddonDisabledMessage()
+        return
+    end
+
     -- Standard club command
     local targetRace, targetRaceEn = UnitRace("target")
     local targetFaction, targetFactionEn = UnitFactionGroup("target")
