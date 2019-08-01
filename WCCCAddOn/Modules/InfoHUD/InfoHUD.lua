@@ -99,10 +99,24 @@ function InfoHUD:OC_SetMessage(messageTab, messageContent)
     InfoHUD:UpdateHUDMessages()
 end
 
-function InfoHUD:UpdateHUDMessages() 
+--- 
+--- Update the UI to match the data on disk or new message data if supplied
+---
+function InfoHUD:UpdateHUDMessages(newMessageData) 
     local lastUpdatedFrame = nil
     local lastUpdatedFrameTime = 0
 
+    --- Update local data.
+    if newMessageData ~= nil then 
+        for frameName, messageData in pairs(data.activeMessages) do
+            local localMessageData = InfoHUD.moduleDB.activeMessages[frameName]
+            if localMessageData == nil or messageData.updateTime > localMessageData.updateTime then
+                InfoHUD.moduleDB.activeMessages[frameName] = messageData
+            end
+        end
+    end
+    
+    --- Update UI to show latest messages and switch to the newest tab.
     for frameName, messageData in pairs(InfoHUD.moduleDB.activeMessages) do
         if messageData.content == nil then
             InfoHUD.UI.hudFrame:HideTab(frameName)
@@ -118,8 +132,9 @@ function InfoHUD:UpdateHUDMessages()
 
     if lastUpdatedFrame ~= nil then
         InfoHUD.UI.hudFrame:SwitchTab(lastUpdatedFrame)
-        if lastUpdatedFrame == "guild" and InfoHUD.moduleDB.hudData.autoShow then
+        if newMessageData ~= nil and lastUpdatedFrame == "guild" and InfoHUD.moduleDB.hudData.autoShow then
             InfoHUD.UI:SetHUDShown(true)
+            print("Showing HUD")
         end
     end
 end
@@ -172,12 +187,5 @@ function InfoHUD:CompareSyncData(remoteData)
 end
 
 function InfoHUD:OnSyncDataReceived(data)
-    for frameName, messageData in pairs(data.activeMessages) do
-        local localMessageData = InfoHUD.moduleDB.activeMessages[frameName]
-        if localMessageData == nil or messageData.updateTime > localMessageData.updateTime then
-            InfoHUD.moduleDB.activeMessages[frameName] = messageData
-        end
-    end
-
-    InfoHUD:UpdateHUDMessages()
+    InfoHUD:UpdateHUDMessages(data.activeMessages)
 end
