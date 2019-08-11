@@ -134,9 +134,21 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 reportScorePartyBtn =
                                 {
                                     type = "execute",
-                                    name = "Party",
-                                    desc = "Post your score to party chat.",
-                                    func = function() ClubbingComp.UI:PostScoreTo(ns.consts.CHAT_CHANNEL.PARTY) end,
+                                    name = function() 
+                                        if IsInRaid() then
+                                            return "Raid"
+                                        else
+                                            return "Party"
+                                        end
+                                    end,
+                                    desc = "Post your score to party/raid chat.",
+                                    func = function() 
+                                        local channel = ns.consts.CHAT_CHANNEL.PARTY
+                                        if IsInRaid() then
+                                            channel = ns.consts.CHAT_CHANNEL.RAID
+                                        end
+                                        ClubbingComp.UI:PostScoreTo(channel)
+                                    end,
                                     order = 1.092,
                                 },
                                 reportScoreSayBtn =
@@ -225,7 +237,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 {
                                     type = "execute",
                                     name = function() 
-                                        if isInRaid() then
+                                        if IsInRaid() then
                                             return "Raid"
                                         else
                                             return "Party"
@@ -234,7 +246,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                                     desc = "Post the current season to party/raid chat.",
                                     func = function() 
                                         local channel = ns.consts.CHAT_CHANNEL.PARTY
-                                        if isInRaid() then
+                                        if IsInRaid() then
                                             channel = ns.consts.CHAT_CHANNEL.RAID
                                         end
                                         ClubbingComp.UI:PostSeasonTo(channel) 
@@ -474,7 +486,7 @@ Happy Clubbing!",
                             values = function()
                                 local raceOptions = {}
                                 for k,v in pairs(ClubbingComp:GetRaceScoreDataTable()) do
-                                    if raceOptions[v.type] == nil then
+                                    if raceOptions[v.type] == nil  and v.type ~= "Worgen" then
                                         raceOptions[v.type] = v.name
                                     end
                                 end
@@ -721,7 +733,7 @@ function ClubbingComp_UI:UpdateHUD()
     ClubbingComp_UI.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubbingComp.moduleDB.score))
 
     local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
-    local frenzyString = format("Frenzy Inactive")
+    local frenzyString = "Frenzy Inactive"
     if frenzyRace ~= nil then
         local timeRemaining = math.floor(ClubbingComp:GetFrenzyTimeRemaining() / 60)
         if timeRemaining < 1 then
