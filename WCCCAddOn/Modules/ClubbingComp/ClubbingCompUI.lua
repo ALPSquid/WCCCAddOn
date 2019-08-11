@@ -224,9 +224,21 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 reportSeasonPartyBtn =
                                 {
                                     type = "execute",
-                                    name = "Party",
-                                    desc = "Post the current season to party chat.",
-                                    func = function() ClubbingComp.UI:PostSeasonTo(ns.consts.CHAT_CHANNEL.PARTY) end,
+                                    name = function() 
+                                        if isInRaid() then
+                                            return "Raid"
+                                        else
+                                            return "Party"
+                                        end
+                                    end,
+                                    desc = "Post the current season to party/raid chat.",
+                                    func = function() 
+                                        local channel = ns.consts.CHAT_CHANNEL.PARTY
+                                        if isInRaid() then
+                                            channel = ns.consts.CHAT_CHANNEL.RAID
+                                        end
+                                        ClubbingComp.UI:PostSeasonTo(channel) 
+                                    end,
                                     order = 1.152,
                                     hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                                 },
