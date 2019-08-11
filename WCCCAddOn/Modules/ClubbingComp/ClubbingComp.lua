@@ -485,12 +485,13 @@ end
 function ClubbingComp:GetFrenzyTimeRemaining() 
     return (ClubbingComp.moduleDB.frenzyData.startTimestamp + ClubbingComp.moduleDB.frenzyData.duration) - GetServerTime()
 end
+
 ---
 --- Called internally to update frenzy timers.
 ---
 function ClubbingComp:UpdateActiveFrenzy()
     local frenzyDurationRemaining = ClubbingComp:GetFrenzyTimeRemaining()
-    local frenzyEnded = frenzyDurationRemaining  <= 0
+    local frenzyEnded = frenzyDurationRemaining <= 0
     WCCCAD.UI:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining, tostring(frenzyEnded)), ClubbingComp.moduleDB.debugMode)
 
     if frenzyEnded == true then
@@ -508,21 +509,11 @@ function ClubbingComp:UpdateActiveFrenzy()
         ClubbingComp.moduleDB.frenzyData.duration = 0
     end
 
-    if frenzyEnded == false then        
-        -- Kill active timer if time left != frenzyDurationRemaining 
-        if ClubbingComp.activeFrenzyTimerID ~= nil then
-            local timerDurationRemaining = WCCCAD:TimeLeft(ClubbingComp.activeFrenzyTimerID)
-            if frenzyDurationRemaining ~= timerDurationRemaining then
-                WCCCAD.UI:PrintDebugMessage(format("Cancelling existing frenzy timer, duration: %s actual duration remaining: %s", timerDurationRemaining, frenzyDurationRemaining), ClubbingComp.moduleDB.debugMode)
-                WCCCAD:CancelTimer(ClubbingComp.activeFrenzyTimerID)
-                ClubbingComp.activeFrenzyTimerID = nil
-            end
-        end
-        
-        if frenzyDurationRemaining > 0 and ClubbingComp.activeFrenzyTimerID == nil then
-            ClubbingComp.activeFrenzyTimerID = WCCCAD:ScheduleTimer(function() ClubbingComp:UpdateActiveFrenzy() end, frenzyDurationRemaining)
-            WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", ClubbingComp.moduleDB.debugMode) 
-        end   
+    --- Start timer ticker if it's not running.
+    if frenzyEnded == false and ClubbingComp.activeFrenzyTimerID == nil then
+        local tickIntervalSecs = 5
+        ClubbingComp.activeFrenzyTimerID = WCCCAD:ScheduleRepeatingTimer(function() ClubbingComp:UpdateActiveFrenzy() end, tickIntervalSecs)
+        WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", ClubbingComp.moduleDB.debugMode)    
     end    
     
     ClubbingComp.UI:UpdateHUD()
