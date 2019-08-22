@@ -132,9 +132,12 @@ function InfoHUD:UpdateHUDMessages(newMessageData)
 
     if lastUpdatedFrame ~= nil then
         InfoHUD.UI.hudFrame:SwitchTab(lastUpdatedFrame)
-        if newMessageData ~= nil and lastUpdatedFrame == "guild" and InfoHUD.moduleDB.hudData.autoShow then
-            InfoHUD.UI:SetHUDShown(true)
-            print("Showing HUD")
+        if newMessageData ~= nil and not InfoHUD.UI.hudFrame:IsShown() then
+            if lastUpdatedFrame ~= "guild" or not InfoHUD.moduleDB.hudData.autoShow then
+                WCCCAD.UI:PrintAddOnMessage("Info HUD message updated, use '/wccc infohud' to open.")
+            elseif InfoHUD.moduleDB.hudData.autoShow and lastUpdatedFrame == "guild" then
+                InfoHUD.UI:SetHUDShown(true)
+            end
         end
     end
 end
