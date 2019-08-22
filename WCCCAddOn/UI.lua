@@ -21,7 +21,7 @@ local UI_CHAT_CHANNEL_NAME =
 
 local WCCC_UI_CONFIG = 
 {
-    name = "Worgen Cub Clubbing Club",
+    name = "WCCC Clubbing Companion",
     handler = WCCCAD,
     type = "group",
     args = 
@@ -61,9 +61,9 @@ local WCCC_UI_CONFIG =
 Participate in the Clubbing Competition along with more features to come!\
 \
 Accessing Modules:\
-Click the '+' on the left hand panel next to 'Worgen Cub Clubbing Club' to access module windows such as the Clubbing Competition.\
+Click the '+' on the left hand panel next to 'WCCC Clubbing Companion' to access module windows such as the Clubbing Competition.\
 \
-Use the 'WCCC AddOn' escape menu button or type '/wccc' to open this window.\
+Use the 'WCCC Companion' escape menu button or type '/wccc' to open this window.\
 \
 Happy Clubbing!\n\n",
             order = 3
@@ -98,7 +98,7 @@ Happy Clubbing!\n\n",
 
 
 LibStub("AceConfig-3.0"):RegisterOptionsTable("WCCCAD", WCCC_UI_CONFIG)
-WCCCAD_UI.optionsFrameRoot = AceConfigDialog:AddToBlizOptions("WCCCAD", "Worgen Cub Clubbing Club", nil)
+WCCCAD_UI.optionsFrameRoot = AceConfigDialog:AddToBlizOptions("WCCCAD", "WCCC Clubbing Companion", nil)
 WCCCAD.UI = WCCCAD_UI
 -- Profiles options
 --WCCC_UI_CONFIG.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(WCCCAD.db)
@@ -117,7 +117,7 @@ function WCCCAD_UI:LoadModuleUI(wcccModule, moduleDisplayName, moduleUIConfig)
     wcccModule.UI = {}
 
     LibStub("AceConfig-3.0"):RegisterOptionsTable(wcccModule.moduleName, moduleUIConfig)
-    wcccModule.UI.optionsFrameRoot = AceConfigDialog:AddToBlizOptions(wcccModule.moduleName, moduleDisplayName, "Worgen Cub Clubbing Club")
+    wcccModule.UI.optionsFrameRoot = AceConfigDialog:AddToBlizOptions(wcccModule.moduleName, moduleDisplayName, "WCCC Clubbing Companion")
 
     wcccModule.UI.Show = function() 
         AceConfigDialog:Open(wcccModule.moduleName)

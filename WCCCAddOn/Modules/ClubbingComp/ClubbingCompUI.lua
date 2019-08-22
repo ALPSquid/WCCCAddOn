@@ -342,7 +342,7 @@ Happy Clubbing!",
                 {
                     type = "description",
                     fontSize = "medium",
-                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro or press the 'Create Macro' button below: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC AddOn window.",
+                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro or press the 'Create Macro' button below: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC Clubbing Companion window.",
                     order = 1.02
                 },
 

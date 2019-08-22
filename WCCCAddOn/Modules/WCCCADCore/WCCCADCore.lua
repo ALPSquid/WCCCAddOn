@@ -60,7 +60,7 @@ function WCCCADCore:ShowFTUEWindow()
     welcomeText:SetText("Welcome to the official AddOn of the <Worgen Cub Clubbing Club>.\
 Participate in the Clubbing Competition along with more features to come!\
 \
-Use the 'WCCC AddOn' button on the WoW main menu (press Escape) or type '/wccc' to access the main UI window with instructions on using the AddOn.\
+Use the 'WCCC Companion' button on the WoW main menu (press Escape) or type '/wccc' to access the main UI window with instructions on using the AddOn.\
 \
 Happy Clubbing!")
     ftueFrame:AddChild(welcomeText)
@@ -143,7 +143,7 @@ end
 
 function WCCCADCore:OnSyncDataReceived(data)
     if data.version > WCCCAD.version and WCCCAD.newVersionAvailable == false then
-        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC AddOn is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
+        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC Clubbing Companion is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
         newVersionAvailable = true
     end
 end

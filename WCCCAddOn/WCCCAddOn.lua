@@ -5,7 +5,7 @@
 
 local name, ns = ...
 
-local WCCCAD = LibStub("AceAddon-3.0"):NewAddon("Worgen Cub Clubbing Club", "AceConsole-3.0", "AceEvent-3.0", "AceSerializer-3.0", "AceComm-3.0", "AceTimer-3.0")
+local WCCCAD = LibStub("AceAddon-3.0"):NewAddon("WCCC Clubbing Companion", "AceConsole-3.0", "AceEvent-3.0", "AceSerializer-3.0", "AceComm-3.0", "AceTimer-3.0")
 
 ns.WCCCAD = WCCCAD
 ns.modules = {}
