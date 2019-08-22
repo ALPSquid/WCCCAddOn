@@ -552,20 +552,22 @@ function InfoHUD_UI:CreateHUD()
         -- Resize HUD to largest message
         local msgLines = 0
         for frameName, frameData in pairs(InfoHUD.UI.hudFrame.messageFrames) do
-            if frameData.hidden == false then
-                local lines = frameData.messageFrame:GetNumMessages()
-                frameData.messageFrame:SetMaxLines(lines + 1)
-                frameData.messageFrame:SetHeight(lines * 20)
+            local lines = frameData.messageFrame:GetMaxLines()
+            frameData.messageFrame:SetHeight(lines * 20)
 
-                if lines > msgLines then
-                    msgLines = lines
-                end
+            if lines > msgLines then
+                msgLines = lines
             end
         end
 
         if msgLines > 0 then
             WCCCAD.UI:PrintDebugMessage("InfoHUD Resizing to fit "..msgLines.." lines", InfoHUD.moduleDB.debugMode)
-            InfoHUD.UI.hudFrame:SetHeight(msgLines * 16)
+            local newHeight = msgLines * 16
+            local minWidth, minHeight = InfoHUD.UI.hudFrame:GetMinResize()
+            if newHeight < minHeight then
+                newHeight = minHeight
+            end
+            InfoHUD.UI.hudFrame:SetHeight(newHeight)
         end
     end
 
@@ -596,12 +598,13 @@ function InfoHUD_UI:CreateHUD()
         local parsedMessage = ns.utils.FormatSpecialString(message)
         local lines = { strsplit("\n", parsedMessage) }
         local numLines = #lines
+        frameData.messageFrame:SetMaxLines(numLines + 1)
         for i=1, numLines do
             local line = lines[numLines - i + 1]
             if line == "" then
                 line = " "
             end
-            frameData.messageFrame:AddMessage(line)
+            frameData.messageFrame:AddMessage(line)            
         end
 
         InfoHUD.UI.hudFrame:DoAutoSize()
