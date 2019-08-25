@@ -108,7 +108,7 @@ function InfoHUD:UpdateHUDMessages(newMessageData)
 
     --- Update local data.
     if newMessageData ~= nil then 
-        for frameName, messageData in pairs(data.activeMessages) do
+        for frameName, messageData in pairs(newMessageData.activeMessages) do
             local localMessageData = InfoHUD.moduleDB.activeMessages[frameName]
             if localMessageData == nil or messageData.updateTime > localMessageData.updateTime then
                 InfoHUD.moduleDB.activeMessages[frameName] = messageData
