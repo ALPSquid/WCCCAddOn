@@ -164,8 +164,6 @@ function ClubbingComp:OnEnable()
     ClubbingComp:UpdateActiveFrenzy()
 
     ClubbingComp.UI:ShowHUDIfEnabled()
-
-    ClubbingComp:SendSelfDebugComm(ClubbingComp:GetSyncData())
 end
 
 function ClubbingComp:GetRaceScoreData(race)
