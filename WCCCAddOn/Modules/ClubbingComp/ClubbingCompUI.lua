@@ -31,12 +31,78 @@ local CLUBBINGCOMP_UI_CONFIG =
             type = "group",
             order = 1,
             args = 
-            {               
+            {           
+                topClubbers = 
+                {
+                    type = "group",
+                    name = " ",
+                    inline = true,
+                    order = 0.9,
+                    args = 
+                    {
+                        topClubbersHeader =
+                        {
+                            type = "header",
+                            name = "Last Season's Top Clubbers",
+                            order = 0.91
+                        },
+
+                        noTopClubbers =
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = "After the Clubbing Ceremony at the end of a season, the top 3 clubbers will be listed here for all to celebrate!",
+                            hidden = function() 
+                                return ClubbingComp.UI:GetTopClubberString(1) ~= nil
+                            end,
+                            order = 0.92
+                        },
+
+                        firstClubberEntry =
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = function() 
+                                return "|cffFFB80F" ..(ClubbingComp.UI:GetTopClubberString(1) or "") .. "|r"
+                            end,
+                            hidden = function() 
+                                return ClubbingComp.UI:GetTopClubberString(1) == nil
+                            end,
+                            order = 0.92
+                        },
+
+                        secondClubberEntry =
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = function() 
+                                return "|cffA5CAEA" .. (ClubbingComp.UI:GetTopClubberString(2) or "") .. "|r"
+                            end,
+                            hidden = function() 
+                                return ClubbingComp.UI:GetTopClubberString(2) == nil
+                            end,
+                            order = 0.93
+                        },
+
+                        thirdClubberEntry =
+                        {
+                            type = "description",
+                            fontSize = "medium",
+                            name = function() 
+                                return "|cffA46D27" .. (ClubbingComp.UI:GetTopClubberString(3) or "") .. "|r"
+                            end,
+                            hidden = function() 
+                                return ClubbingComp.UI:GetTopClubberString(3) == nil
+                            end,
+                            order = 0.94
+                        },
+                    }
+                },
 
                 scoreInfo = 
                 {
                     type = "group",
-                    name = "",
+                    name = "Current Score",
                     inline = true,
                     order = 1.0,
                     args =
@@ -191,7 +257,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             order = 1.12,
                             fontSize = "medium",
                             name = function() 
-                                return format("Season started on %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
+                                return format("|cFFE97300Season started on %s (%i days ago).|r", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
                             end,        
                             hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                         },
@@ -508,7 +574,154 @@ Happy Clubbing!",
                             desc = "Reset the season and change to the selected race.",                            
                             func = function() ClubbingComp:OC_SetSeason(ClubbingComp.UI.OC_SelectedSeason) end,        
                             confirm = function() return format( "Start new %s season? This will wipe all player's progress!", ClubbingComp.UI.OC_SelectedSeason) end,
-                        },                        
+                        },      
+                        
+                        seasonOCTopClubbersDesc =
+                        {
+                            type = "description",     
+                            order = 10.14,
+                            fontSize = "medium",
+                            name = "\nTop Clubbers"      
+                        },
+
+                        --#region 1st Clubber
+                        seasonOCTopClubbersEntry1_Title =
+                        {
+                            type = "description",     
+                            order = 10.15,
+                            fontSize = "medium",
+                            name = "|cffFFB80F1.|r"      
+                        },
+                        
+                        seasonOCTopClubbersEntry1_Name = 
+                        {
+                            type = "input",
+                            name = "Name",
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(1).name
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberName(1, val)
+                            end,
+                            order = 10.151
+                        },
+
+                        seasonOCTopClubbersEntry1_Score = 
+                        {
+                            type = "input",
+                            name = "Score",
+                            validate = function(info, val) 
+                                if not tonumber(val) then
+                                    return "Score must be a number."
+                                end
+
+                                return true
+                            end,
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(1).score
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberScore(1, val)
+                            end,
+                            order = 10.151
+                        },
+                        --#endregion
+
+                        --#region 2nd Clubber
+                        seasonOCTopClubbersEntry2_Title =
+                        {
+                            type = "description",     
+                            order = 10.16,
+                            fontSize = "medium",
+                            name = "|cffA5CAEA2.|r"      
+                        },
+
+                        seasonOCTopClubbersEntry2_Name = 
+                        {
+                            type = "input",
+                            name = "Name",
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(2).name
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberName(2, val)
+                            end,
+                            order = 10.161
+                        },
+
+                        seasonOCTopClubbersEntry2_Score = 
+                        {
+                            type = "input",
+                            name = "Score",
+                            validate = function(info, val) 
+                                if not tonumber(val) then
+                                    return "Score must be a number."
+                                end
+
+                                return true
+                            end,
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(2).score
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberScore(2, val)
+                            end,
+                            order = 10.161
+                        },
+                        --#endregion
+
+                        --#region 3rd Clubber
+                        seasonOCTopClubbersEntry3_Title =
+                        {
+                            type = "description",     
+                            order = 10.17,
+                            fontSize = "medium",
+                            name = "|cffA46D273.|r"      
+                        },
+
+                        seasonOCTopClubbersEntry3_Name = 
+                        {
+                            type = "input",
+                            name = "Name",
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(3).name
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberName(3, val)
+                            end,
+                            order = 10.171
+                        },
+
+                        seasonOCTopClubbersEntry3_Score = 
+                        {
+                            type = "input",
+                            name = "Score",
+                            validate = function(info, val) 
+                                if not tonumber(val) then
+                                    return "Score must be a number."
+                                end
+
+                                return true
+                            end,
+                            get = function() 
+                                return ClubbingComp.UI:GetWorkingTopClubberData(3).score
+                            end,
+                            set = function(info, val)
+                                ClubbingComp.UI:OC_SetTopClubberScore(3, val)
+                            end,
+                            order = 10.171
+                        },
+                        --#endregion
+
+                        seasonOCSetTopClubbersBtn =
+                        {
+                            type = "execute",     
+                            order = 10.18,                       
+                            name = "Set Top Clubbers",
+                            desc = "Update the Top Clubbers to the data entered above. Not all 3 need to be set.",                            
+                            func = function() ClubbingComp.UI:OC_SaveTopClubbers() end,        
+                            confirm = function() return "Update Top Clubbers?" end,
+                        },      
                     }
                 },
 
@@ -627,6 +840,11 @@ ClubbingComp_UI.OC_FrenzyDurationOptions =
     [5] = 30,
     [6] = 1
 }
+
+ClubbingComp_UI.OC_TopClubbers =
+{
+    -- [idx] { name, score }
+}
 --
 
 function ClubbingComp_UI:PostSeasonTo(channel)
@@ -661,6 +879,77 @@ function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
 
     return format("%s Clubbed: %i = %ipts (%i each)", raceScoreData.pluralName, hitCount, hitCount * raceScore, raceScore)
 end
+
+--#region Top Clubbers UI Controls
+
+---
+--- Returns active top clubber data formatted as a string for the idx, or nil if no data exists.
+--- Only uses live data.
+---
+function ClubbingComp_UI:GetTopClubberString(clubberIdx)
+    if #ClubbingComp.moduleDB.topClubbers.clubbers < clubberIdx or ClubbingComp.moduleDB.topClubbers.clubbers[clubberIdx].name == nil then
+        return nil
+    end
+
+    local clubber = ClubbingComp.moduleDB.topClubbers.clubbers[clubberIdx]
+
+    return clubberIdx .. ". " .. clubber.name .. " - " .. clubber.score .. " pts"
+end
+
+---
+--- Returns edit mode data if there is any or live data is there is any. Otherwise returns blank clubber data.
+---
+function ClubbingComp_UI:GetWorkingTopClubberData(clubberIdx) 
+    local editModeData = ClubbingComp.UI.OC_TopClubbers[clubberIdx]
+    if editModeData ~= nil then
+        return editModeData
+    end
+
+    local liveData = ClubbingComp.moduleDB.topClubbers.clubbers[clubberIdx]
+    if liveData ~= nil and liveData.name ~= nil then
+        ClubbingComp.UI.OC_TopClubbers[clubberIdx] = liveData
+        return liveData
+    end
+
+    return { name=nil, score=0}
+end
+
+---
+--- Edit Mode data: Sets name of the top clubber at clubberIdx 
+---
+function ClubbingComp_UI:OC_SetTopClubberName(clubberIdx, name) 
+    if ClubbingComp.UI.OC_TopClubbers[clubberIdx] == nil then
+        ClubbingComp.UI.OC_TopClubbers[clubberIdx] = {name=nil, score=0}
+    end
+    
+    if name == "" then
+        name = nil
+    end
+
+    ClubbingComp.UI.OC_TopClubbers[clubberIdx].name = name
+end
+
+---
+--- Edit Mode data: Sets score of the top clubber at clubberIdx 
+---
+function ClubbingComp_UI:OC_SetTopClubberScore(clubberIdx, score) 
+    if ClubbingComp.UI.OC_TopClubbers[clubberIdx] == nil then
+        ClubbingComp.UI.OC_TopClubbers[clubberIdx] = {name=nil, score=0}
+    end
+
+    ClubbingComp.UI.OC_TopClubbers[clubberIdx].score = score
+end
+
+
+---
+--- Applies edit mode data to live.
+---
+function ClubbingComp_UI:OC_SaveTopClubbers()
+    ClubbingComp:OC_SetTopClubbers(ClubbingComp_UI.OC_TopClubbers)
+end
+
+--#endregion
+
 
 function ClubbingComp_UI:CreateHUD() 
     local hudFrame = ns.utils.CreateHUDPanel(

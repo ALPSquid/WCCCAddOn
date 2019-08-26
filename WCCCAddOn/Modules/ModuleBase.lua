@@ -43,7 +43,8 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
     --- To request a sync or send updated data, use InitiateSync. 
     --- If a sync is received from a client, a response with data is sent back. Use BroadcastSyncData to send out data without wanting a reply (same functionality, but less traffic).
     ---  GetSyncData()  should return a table of data to send to other clients.
-    ---  CompareSyncData(remoteData)  compare received data with local data. Return type of ns.consts.DATA_SYNC_RESULT.
+    ---  CompareSyncData(remoteData)  compare received data with local data. Return type of ns.consts.DATA_SYNC_RESULT. 
+    ---                               GetTotalSyncResult can be used to calculate a final value when multiple sync results from data chunks are required.
     ---  OnSyncDataReceived(data)  will be called when newer data is received from other clients.
 
     --- Send a sync request to the guild. This will send our data to all guild clients and request a reply with updated data.
@@ -99,6 +100,40 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         --- If it's not, the message was sent directly to us.
         if data.targetPlayer == nil and dataComparisonResult == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER and data.expectResponse == true then
             wcccModule:_SendSyncComm(data.sendingPlayer, false)    
+        end
+    end
+
+    ---
+    --- Returns a single sync result for multiple sync result inputs. Useful for modules with different data chunks with different sync results.
+    ---
+    wcccModule.GetTotalSyncResult = function(self, ...)
+        local results = {
+            [ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER] = 0,
+            [ns.consts.DATA_SYNC_RESULT.EQUAL] = 0,
+            [ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER] = 0,
+            [ns.consts.DATA_SYNC_RESULT.BOTH_NEWER] = 0,
+        }
+
+        for i, syncResult in ipairs{...} do
+            results[syncResult] = results[syncResult] + 1
+        end    
+
+        -- If local and remote have new data, return both newer.
+        if results[ns.consts.DATA_SYNC_RESULT.BOTH_NEWER] > 0 
+            or (results[ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER] > 0 and results[ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER] > 0) 
+        then
+            return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
+        end
+        
+        -- Otherwise, return whichever newer value we have, or equal otherwise.
+        if results[ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER] > 0 then
+            return ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
+
+        elseif results[ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER] > 0 then
+            return ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER 
+
+        else
+            return ns.consts.DATA_SYNC_RESULT.EQUAL
         end
     end
 

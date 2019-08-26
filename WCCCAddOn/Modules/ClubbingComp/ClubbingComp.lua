@@ -139,6 +139,12 @@ local clubbingCompData =
             race = nil,
             multiplier = 0,
             duration = 0,
+        },
+
+        topClubbers = 
+        {
+            lastUpdateTimestamp = 0,
+            clubbers = {} -- [idx] = {name, score}
         }
     }
 }
@@ -158,6 +164,8 @@ function ClubbingComp:OnEnable()
     ClubbingComp:UpdateActiveFrenzy()
 
     ClubbingComp.UI:ShowHUDIfEnabled()
+
+    ClubbingComp:SendSelfDebugComm(ClubbingComp:GetSyncData())
 end
 
 function ClubbingComp:GetRaceScoreData(race)
@@ -247,6 +255,8 @@ function ClubbingComp:ClubCommand(args)
         end
     end   
 end
+
+--#region Clubbing Hit Funcs
 
 ---
 --- Saves a hit on the specified target to the hit table. 
@@ -343,6 +353,8 @@ function ClubbingComp:IsTargetInRange()
     return false
 end
 
+--#endregion
+
 function ClubbingComp:PlayEmote(emote, chatMsg) 
     SendChatMessage(emote, ns.consts.CHAT_CHANNEL.EMOTE)
 
@@ -385,9 +397,9 @@ function ClubbingComp:OnGuildyClubbedWorgenCommReceieved(data)
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)
 end
 
----
---- Season Controls
----
+
+--#region Seasons
+
 function ClubbingComp:OC_SetSeason(raceKey)
     if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
         return
@@ -396,17 +408,6 @@ function ClubbingComp:OC_SetSeason(raceKey)
     ClubbingComp:StartNewSeason(raceKey, GetServerTime())
     ClubbingComp:BroadcastSyncData()
 end
-
---- @duration  Duration in seconds.
-function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
-    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
-        return
-    end
-
-    ClubbingComp:UpdateFrenzyData(raceKey, multiplier, GetServerTime(), duration)
-    ClubbingComp:BroadcastSyncData()
-end
-
 ---
 --- Sends local season data to the target, or whole guild if target is null.
 ---
@@ -447,6 +448,20 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
 
     ClubbingComp.UI:UpdateHUD()
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
+end
+
+--#endregion
+
+--#region Frenzy
+
+--- @duration  Duration in seconds.
+function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
+    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+        return
+    end
+
+    ClubbingComp:UpdateFrenzyData(raceKey, multiplier, GetServerTime(), duration)
+    ClubbingComp:BroadcastSyncData()
 end
 
 ---
@@ -519,9 +534,32 @@ function ClubbingComp:UpdateActiveFrenzy()
     ClubbingComp.UI:UpdateHUD()
 end
 
----
---- Sync functions
----
+--#endregion
+
+--#region Top Clubbers
+
+function ClubbingComp:OC_SetTopClubbers(clubberEntries)
+    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+        return
+    end
+
+    ClubbingComp:UpdateTopClubbers(clubberEntries, GetServerTime())
+    ClubbingComp:BroadcastSyncData()
+end
+
+function ClubbingComp:UpdateTopClubbers(clubberEntries, updateTime)
+    if ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp > updateTime then
+        return
+    end
+
+    ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp = updateTime
+    ClubbingComp.moduleDB.topClubbers.clubbers = clubberEntries
+end
+
+--#endregion
+
+--#region Sync functions
+
 function ClubbingComp:GetSyncData() 
     local syncData =
     {
@@ -530,12 +568,19 @@ function ClubbingComp:GetSyncData()
             seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace,
             updateTime = ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp
         },
+
         frenzyData = 
         {
             startTimestamp = ClubbingComp.moduleDB.frenzyData.startTimestamp,
             race = ClubbingComp.moduleDB.frenzyData.race,
             multiplier = ClubbingComp.moduleDB.frenzyData.multiplier,
             duration = ClubbingComp.moduleDB.frenzyData.duration
+        },
+
+        topClubbers =
+        {
+            lastUpdateTimestamp = ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp,
+            clubbers = ClubbingComp.moduleDB.topClubbers.clubbers
         }
     }
 
@@ -567,25 +612,22 @@ function ClubbingComp:CompareSyncData(remoteData)
         frenzyComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
-    -- Result
-    if seasonComparison ~= frenzyComparison 
-        and (seasonComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or seasonComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER) 
-        and (frenzyComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER) 
-    then
-        return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
+    -- Top Clubbers
+    local topClubbersComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
+    if remoteData.topClubbers.lastUpdateTimestamp > ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp then
+        topClubbersComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
-    elseif seasonComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER then
-        return ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
-    
-    elseif seasonComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or frenzyComparison == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER then
-        return ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
-    
-    else
-        return ns.consts.DATA_SYNC_RESULT.EQUAL
+    elseif remoteData.topClubbers.lastUpdateTimestamp == ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp then
+        topClubbersComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
+
+    -- Result
+    return ClubbingComp:GetTotalSyncResult(seasonComparison, frenzyComparison, topClubbersComparison)
 end
 
 function ClubbingComp:OnSyncDataReceived(data)
     ClubbingComp:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
     ClubbingComp:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
 end
+
+--#endregion
