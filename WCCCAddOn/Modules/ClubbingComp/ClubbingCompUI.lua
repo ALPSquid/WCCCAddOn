@@ -391,16 +391,17 @@ local CLUBBINGCOMP_UI_CONFIG =
                     fontSize = "medium",
                     name = "Welcome to the Clubbing Competition, a spectacle of excitement and social clubbing!\
 \
-Using your club (commands):\
+|cFFE97300Using your club:|r\
+You can use the club button on the Clubbing HUD and/or use the commands or macro below.\
 '/wccc club' - Use your club on the target.\
 '/wccc club info' - Open the Clubbing Competition Window.\
 Below is a handy macro script to paste into a new macro which makes using your club much easier!\
 \
-Seasons:\
+|cFFE97300Seasons:|r\
 Each month, a new season will start focussing on a different race, allowing you to club Worgen and the season race.\
 At the end of each season, we'll hold a Clubbing Ceremony to share scores and award prize to the top 3 clubbers! These clubbers will be shown in the Clubbing Competition window for all to see.\
 \
-Happy Clubbing!",
+|cFFE97300Happy Clubbing!|r",
                     order = 1.01
                 },
 
@@ -408,7 +409,7 @@ Happy Clubbing!",
                 {
                     type = "description",
                     fontSize = "medium",
-                    name = "\nMacro:\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro or press the 'Create Macro' button below: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC Clubbing Companion window.",
+                    name = "\n|cFFE97300Macro:|r\nA useful macro for using the addon and the commands you can use. Simply copy and paste into a new macro or press the 'Create Macro' button below: \n Left click: Use club.\n Ctrl+click: Open Clubbing Competition window.\n Alt+click: Open WCCC Clubbing Companion window.",
                     order = 1.02
                 },
 

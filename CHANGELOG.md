@@ -1,6 +1,7 @@
 # Alpha v1.0.15
 * Adds Last Season's Top Clubbers display in the Clubbing Competition HUD
 * Fixes a sync error with Info HUD
+* Improves formatting of clubbing competition help tab.
 
 # Alpha v1.0.14
 * Gave the AddOn a swanky new name, the WCCC Clubbing Companion!
