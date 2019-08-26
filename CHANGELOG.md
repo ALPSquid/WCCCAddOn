@@ -1,3 +1,7 @@
+# Alpha v1.0.15
+* Adds Last Season's Top Clubbers display in the Clubbing Competition HUD
+* Fixes a sync error with Info HUD
+
 # Alpha v1.0.14
 * Gave the AddOn a swanky new name, the WCCC Clubbing Companion!
 * Adds chat notification when an Info HUD message is updated whilst the HUD is hidden and auto show is off, or it's not a guild message so won't auto show.
