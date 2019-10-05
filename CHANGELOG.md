@@ -1,3 +1,6 @@
+# Alpha v1.0.16
+* Fixes a sync error with Info HUD
+
 # Alpha v1.0.15
 * Adds Last Season's Top Clubbers display in the Clubbing Competition HUD
 * Fixes a sync error with Info HUD
