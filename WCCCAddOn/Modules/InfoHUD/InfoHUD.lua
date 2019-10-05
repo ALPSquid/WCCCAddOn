@@ -190,5 +190,5 @@ function InfoHUD:CompareSyncData(remoteData)
 end
 
 function InfoHUD:OnSyncDataReceived(data)
-    InfoHUD:UpdateHUDMessages(data.activeMessages)
+    InfoHUD:UpdateHUDMessages(data)
 end
