@@ -21,3 +21,5 @@ Modules\ClubbingComp\ClubbingCompUI.lua
 
 Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua
+
+Modules\MythicPlus\MythicPlus.lua

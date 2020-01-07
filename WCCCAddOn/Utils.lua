@@ -98,6 +98,28 @@ ns.utils.DaysSince = function(timeStamp)
     return ceil(timeDelta / 86400)
 end
 
+ns.utils.GetLastServerResetTimestamp = function()
+    local currentTimestamp = GetServerTime()
+    local currentDate = date("!*t", currentTimestamp)
+
+    local minutesPastResetMinute = currentDate.min
+    local hoursPastResetHour = currentDate.hour - 7
+
+    local daysPastResetDay = currentDate.wday - 4
+    if daysPastResetDay < 0 then
+        daysPastResetDay = 7 + daysPastResetDay
+    end
+
+    local secondsPastReset = currentDate.sec + (minutesPastResetMinute * 60) + (hoursPastResetHour * 60 * 60) + (daysPastResetDay * 24 * 60 * 60)
+
+    -- TODO: Might not be necessary? Test in other timezones.
+    local serverOffset = currentTimestamp - time(currentDate)
+    print("Server is " .. tostring(serverOffset * 60) .. " mins ahead")
+    secondsPastReset = secondsPastReset +  serverOffset
+
+    return currentTimestamp - secondsPastReset
+end
+
 --- Format special sequences in a string, such as {skull} and |cblue word |r
 ns.utils.FormatSpecialString = function(inputString)
     local formatStrings = 
