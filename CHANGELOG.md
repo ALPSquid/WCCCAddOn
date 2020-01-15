@@ -1,3 +1,7 @@
+# Beta v1.0.17
+* First Beta release
+* Updates to WoW Patch 8.3
+
 # Alpha v1.0.16
 * Fixes a sync error with Info HUD
 
