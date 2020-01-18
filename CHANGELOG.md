@@ -1,3 +1,6 @@
+# Beta v1.0.18
+* Adds indicator on players in the guild roster that are also using the AddOn.
+
 # Beta v1.0.17
 * First Beta release
 * Updates to WoW Patch 8.3

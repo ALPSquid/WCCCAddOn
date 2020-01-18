@@ -6,8 +6,8 @@
 local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1017
-WCCCAD.versionString = "1.0.17"
+WCCCAD.version = 1018
+WCCCAD.versionString = "1.0.18"
 WCCCAD.newVersionAvailable = false
 
 
@@ -23,6 +23,13 @@ local wcccCoreData =
 
 local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
 
+-- Array of player names
+WCCCADCore.knownAddonUsers = 
+{
+    [ns.utils.GetGuildMemberInfo("player").memberId] = ns.utils.GetGuildMemberInfo("player")
+    -- [playername] = {}
+}
+
 
 function WCCCADCore:InitializeModule()
     WCCCADCore:RegisterModuleSlashCommand("ver", WCCCADCore.VersionCommand)
@@ -35,6 +42,55 @@ function WCCCADCore:OnEnable()
 
     if WCCCADCore.moduleDB.firstTimeUser == true then
         WCCCADCore:ShowFTUEWindow()
+    end
+
+    -- TODO: Possibly bake this pattern into the ModuleBase?
+    LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
+    LibStub("AceHook-3.0"):Embed(WCCCADCore) 
+    
+    WCCCADCore:RegisterEvent("ADDON_LOADED", function(event, addonName)
+        if addonName == "Blizzard_Communities" then
+            WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
+                WCCCADCore:UpdateGuildRosterAddonIndicators()
+            end)
+            WCCCADCore:UpdateGuildRosterAddonIndicators()
+        end
+
+    end)    
+end
+
+function WCCCADCore:OnDisable()
+    WCCCADCore:UnhookAll()
+end
+
+function WCCCADCore:UpdateGuildRosterAddonIndicators() 
+    if CommunitiesFrame == nil then
+        return
+    end
+
+    numButtons = #CommunitiesFrame.MemberList.ListScrollFrame.buttons
+    for i=1, numButtons do
+        local guildieButton = CommunitiesFrame.MemberList.ListScrollFrame.buttons[i]
+        local memberInfo = guildieButton.memberInfo
+
+        if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.memberId] == nil then
+            if guildieButton.addonIndicator ~= nil then
+                guildieButton.addonIndicator:Hide()
+            end
+            
+            return
+        end
+
+        if guildieButton.addonIndicator ~= nil then
+            guildieButton.addonIndicator:Show()
+        else
+            guildieButton.addonIndicator = CreateFrame("Button", nil, guildieButton)
+            guildieButton.addonIndicator:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+            guildieButton.addonIndicator:SetPoint("RIGHT", -10, 0)
+            guildieButton.addonIndicator:SetWidth(12)
+            guildieButton.addonIndicator:SetHeight(12)
+            guildieButton.addonIndicator:Show()
+        end
     end
 end
 
@@ -125,7 +181,8 @@ function WCCCADCore:GetSyncData()
     local syncData =
     {
         version = WCCCAD.version,
-        versionString = WCCCAD.versionString
+        versionString = WCCCAD.versionString,
+        guildMemberId = ns.utils.GetGuildMemberInfo("player").memberId
     }
 
     return syncData
@@ -146,4 +203,7 @@ function WCCCADCore:OnSyncDataReceived(data)
         WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC Clubbing Companion is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
         newVersionAvailable = true
     end
+
+    WCCCADCore.knownAddonUsers[data.guildMemberId] = ns.utils.GetGuildMemberInfo(data.guildMemberId)
+    WCCCADCore:UpdateGuildRosterAddonIndicators()
 end

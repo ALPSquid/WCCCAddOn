@@ -54,6 +54,17 @@ ns.utils.GetPlayerNameRealmString = function()
     return name.."-"..realm
 end
 
+---
+--- @param memberId - Target memberId. Can provide "player" for the local player.
+---
+ns.utils.GetGuildMemberInfo = function(memberId)
+    if memberId == "player" then
+        return C_Club.GetMemberInfoForSelf(C_Club.GetGuildClubId())
+    end
+
+    return C_Club.GetMemberInfo(C_Club.GetGuildClubId(), memberId)
+end
+
 ns.utils.Pronoun = function(tense, upper)
     local pronouns = 
     {
