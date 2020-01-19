@@ -26,10 +26,10 @@ local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
 LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
 LibStub("AceHook-3.0"):Embed(WCCCADCore) 
 
--- Array of player names
+-- Array of player GUIDs
 WCCCADCore.knownAddonUsers = 
 {
-    -- [playername] = {memberInfo}
+    -- [guid] = guid
 }
 
 
@@ -49,23 +49,13 @@ function WCCCADCore:OnEnable()
         WCCCADCore:UpdateGuildRosterAddonIndicators()
     end)
 
-    if C_Club.GetGuildClubId() ~= nil then
-        local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
-        WCCCADCore.knownAddonUsers[playerGuildMemberInfo.memberId] = playerGuildMemberInfo
-        WCCCADCore:InitiateSync()
-    else
-        WCCCADCore:RegisterEvent("INITIAL_CLUBS_LOADED", function(event, ...)
-            local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
-            WCCCADCore.knownAddonUsers[playerGuildMemberInfo.memberId] = playerGuildMemberInfo
-            WCCCADCore:UnregisterEvent("INITIAL_CLUBS_LOADED")
-            WCCCADCore:InitiateSync()
-        end)    
-    end
+    local playerGUID = UnitGUID("player")
+    WCCCADCore.knownAddonUsers[playerGUID] = playerGUID
+    WCCCADCore:InitiateSync()
 end
 
 function WCCCADCore:OnDisable()
     WCCCADCore:UnhookAll()
-    WCCCADCore:UnregisterEvent("INITIAL_CLUBS_LOADED")
 end
 
 function WCCCADCore:UpdateGuildRosterAddonIndicators() 
@@ -74,8 +64,9 @@ function WCCCADCore:UpdateGuildRosterAddonIndicators()
     end
     
     for i, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
-        local memberInfo = guildieButton:GetMemberInfo()
-        if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.memberId] == nil then
+        local memberInfo = guildieButton:GetMemberInfo()     
+
+        if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.guid] == nil then
             if guildieButton.addonIndicator ~= nil then
                 guildieButton.addonIndicator:Hide()
             end
@@ -177,27 +168,21 @@ end
 ---
 --- Sync functions
 ---
-function WCCCADCore:GetSyncData() 
-    local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
-
+function WCCCADCore:GetSyncData()
+    -- TODO: Consider adding GUID to base sync data (ModuleBase), same as player name.
     local syncData =
     {
         version = WCCCAD.version,
         versionString = WCCCAD.versionString,
-        guildMemberId = playerGuildMemberInfo and playerGuildMemberInfo.memberId or nil
+        playerGuid = UnitGUID("player")
     }
 
     return syncData
 end
 
 function WCCCADCore:CompareSyncData(remoteData)
-    if remoteData.version > WCCCAD.version then
-        return 1
-    elseif remoteData.version == WCCCAD.version then
-        return 0
-    else 
-        return -1
-    end
+    -- We want to force the initial sync between users so player GUIDs are up-to-date.
+    return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
 end
 
 function WCCCADCore:OnSyncDataReceived(data)
@@ -206,13 +191,6 @@ function WCCCADCore:OnSyncDataReceived(data)
         newVersionAvailable = true
     end
 
-    -- Possible if their club data hasn't loaded yet.
-    if data.guildMemberId == nil then
-        return
-    end
-
-    local senderMemberInfo = ns.utils.GetGuildMemberInfo(data.guildMemberId)
-    WCCCAD.UI:PrintDebugMessage("Received sync data from member: "..data.memberId.. " - "..senderMemberInfo.name, WCCCAD.db.profile.debugMode)
-    WCCCADCore.knownAddonUsers[data.guildMemberId] = senderMemberInfo
+    WCCCADCore.knownAddonUsers[data.playerGuid] = data.playerGuid
     WCCCADCore:UpdateGuildRosterAddonIndicators()
 end

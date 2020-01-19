@@ -85,7 +85,10 @@ Happy Clubbing!\n\n",
                     type = "toggle",
                     name = "Debug Mode",
                     desc = "Enable verbose debug logging.",
-                    set = function(info, val) WCCCAD.db.profile.debugMode = val end,
+                    set = function(info, val) 
+                        WCCCAD.db.profile.debugMode = val
+                        WCCCAD:GetModule("WCCC_Core").moduleDB.debugMode = val
+                    end,
                     get = function() return WCCCAD.db.profile.debugMode end,
                     disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
                     hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
