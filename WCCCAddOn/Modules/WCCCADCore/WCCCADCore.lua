@@ -22,12 +22,14 @@ local wcccCoreData =
 }
 
 local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
+-- TODO: Possibly bake this pattern into the ModuleBase?
+LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
+LibStub("AceHook-3.0"):Embed(WCCCADCore) 
 
 -- Array of player names
 WCCCADCore.knownAddonUsers = 
 {
-    [ns.utils.GetGuildMemberInfo("player").memberId] = ns.utils.GetGuildMemberInfo("player")
-    -- [playername] = {}
+    -- [playername] = {memberInfo}
 }
 
 
@@ -37,59 +39,57 @@ function WCCCADCore:InitializeModule()
     WCCCADCore:RegisterModuleComm(COMM_KEY_SHARE_VERSION, WCCCADCore.OnShareVersionCommReceieved)
 end
 
-function WCCCADCore:OnEnable()
-    WCCCADCore:InitiateSync()
-
+function WCCCADCore:OnEnable()  
     if WCCCADCore.moduleDB.firstTimeUser == true then
         WCCCADCore:ShowFTUEWindow()
     end
 
-    -- TODO: Possibly bake this pattern into the ModuleBase?
-    LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
-    LibStub("AceHook-3.0"):Embed(WCCCADCore) 
-    
-    WCCCADCore:RegisterEvent("ADDON_LOADED", function(event, addonName)
-        if addonName == "Blizzard_Communities" then
-            WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
-                WCCCADCore:UpdateGuildRosterAddonIndicators()
-            end)
-            WCCCADCore:UpdateGuildRosterAddonIndicators()
-        end
+    -- Setup hook to the community roster refresh event for updating AddOn user icons.
+    WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
+        WCCCADCore:UpdateGuildRosterAddonIndicators()
+    end)
 
-    end)    
+    if C_Club.GetGuildClubId() ~= nil then
+        local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
+        WCCCADCore.knownAddonUsers[playerGuildMemberInfo.memberId] = playerGuildMemberInfo
+        WCCCADCore:InitiateSync()
+    else
+        WCCCADCore:RegisterEvent("INITIAL_CLUBS_LOADED", function(event, ...)
+            local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
+            WCCCADCore.knownAddonUsers[playerGuildMemberInfo.memberId] = playerGuildMemberInfo
+            WCCCADCore:UnregisterEvent("INITIAL_CLUBS_LOADED")
+            WCCCADCore:InitiateSync()
+        end)    
+    end
 end
 
 function WCCCADCore:OnDisable()
     WCCCADCore:UnhookAll()
+    WCCCADCore:UnregisterEvent("INITIAL_CLUBS_LOADED")
 end
 
 function WCCCADCore:UpdateGuildRosterAddonIndicators() 
     if CommunitiesFrame == nil then
         return
     end
-
-    numButtons = #CommunitiesFrame.MemberList.ListScrollFrame.buttons
-    for i=1, numButtons do
-        local guildieButton = CommunitiesFrame.MemberList.ListScrollFrame.buttons[i]
-        local memberInfo = guildieButton.memberInfo
-
+    
+    for i, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
+        local memberInfo = guildieButton:GetMemberInfo()
         if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.memberId] == nil then
             if guildieButton.addonIndicator ~= nil then
                 guildieButton.addonIndicator:Hide()
             end
-            
-            return
-        end
-
-        if guildieButton.addonIndicator ~= nil then
-            guildieButton.addonIndicator:Show()
         else
-            guildieButton.addonIndicator = CreateFrame("Button", nil, guildieButton)
-            guildieButton.addonIndicator:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
-            guildieButton.addonIndicator:SetPoint("RIGHT", -10, 0)
-            guildieButton.addonIndicator:SetWidth(12)
-            guildieButton.addonIndicator:SetHeight(12)
-            guildieButton.addonIndicator:Show()
+            if guildieButton.addonIndicator ~= nil then
+                guildieButton.addonIndicator:Show()
+            else
+                guildieButton.addonIndicator = CreateFrame("Button", nil, guildieButton)
+                guildieButton.addonIndicator:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+                guildieButton.addonIndicator:SetPoint("RIGHT", -10, 0)
+                guildieButton.addonIndicator:SetWidth(12)
+                guildieButton.addonIndicator:SetHeight(12)
+                guildieButton.addonIndicator:Show()
+            end
         end
     end
 end
@@ -178,11 +178,13 @@ end
 --- Sync functions
 ---
 function WCCCADCore:GetSyncData() 
+    local playerGuildMemberInfo = ns.utils.GetGuildMemberInfo("player")
+
     local syncData =
     {
         version = WCCCAD.version,
         versionString = WCCCAD.versionString,
-        guildMemberId = ns.utils.GetGuildMemberInfo("player").memberId
+        guildMemberId = playerGuildMemberInfo and playerGuildMemberInfo.memberId or nil
     }
 
     return syncData
@@ -204,6 +206,13 @@ function WCCCADCore:OnSyncDataReceived(data)
         newVersionAvailable = true
     end
 
-    WCCCADCore.knownAddonUsers[data.guildMemberId] = ns.utils.GetGuildMemberInfo(data.guildMemberId)
+    -- Possible if their club data hasn't loaded yet.
+    if data.guildMemberId == nil then
+        return
+    end
+
+    local senderMemberInfo = ns.utils.GetGuildMemberInfo(data.guildMemberId)
+    WCCCAD.UI:PrintDebugMessage("Received sync data from member: "..data.memberId.. " - "..senderMemberInfo.name, WCCCAD.db.profile.debugMode)
+    WCCCADCore.knownAddonUsers[data.guildMemberId] = senderMemberInfo
     WCCCADCore:UpdateGuildRosterAddonIndicators()
 end

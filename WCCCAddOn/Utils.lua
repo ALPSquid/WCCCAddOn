@@ -55,14 +55,21 @@ ns.utils.GetPlayerNameRealmString = function()
 end
 
 ---
+--- Returns member info, or nil if not found or club data has not yet loaded.
 --- @param memberId - Target memberId. Can provide "player" for the local player.
 ---
 ns.utils.GetGuildMemberInfo = function(memberId)
-    if memberId == "player" then
-        return C_Club.GetMemberInfoForSelf(C_Club.GetGuildClubId())
+    local guildClubId = C_Club.GetGuildClubId()
+    -- Case when club data hasn't loaded yet.
+    if guildClubId == nil then
+        return nil
     end
 
-    return C_Club.GetMemberInfo(C_Club.GetGuildClubId(), memberId)
+    if memberId == "player" then
+        return C_Club.GetMemberInfoForSelf(guildClubId)
+    end
+
+    return C_Club.GetMemberInfo(guildClubId, memberId)
 end
 
 ns.utils.Pronoun = function(tense, upper)
