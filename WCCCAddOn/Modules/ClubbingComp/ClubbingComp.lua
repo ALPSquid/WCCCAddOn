@@ -626,6 +626,7 @@ end
 function ClubbingComp:OnSyncDataReceived(data)
     ClubbingComp:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
     ClubbingComp:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
+    ClubbingComp:UpdateTopClubbers(data.topClubbers.clubbers, data.topClubbers.lastUpdateTimestamp)
 end
 
 --#endregion
