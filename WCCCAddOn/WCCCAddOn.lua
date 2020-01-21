@@ -62,9 +62,9 @@ function WCCCAD:WCCCCommand(input)
     if args == nil or next(args) == nil then
         WCCCAD.UI:Show()
 
-        WCCCAD:CheckAddonActive()
+        WCCCAD:CheckAddonActive(true)
     else 
-        if WCCCAD:CheckAddonActive() == false then
+        if WCCCAD:CheckAddonActive(true) == false then
             return
         end
 
@@ -87,7 +87,7 @@ function WCCCAD:CheckAddonActive(printMsg)
     local guildName = IsInGuild() and GetGuildInfo("player") or nil
     WCCCAD.addonActive = guildName == "Worgen Cub Clubbing Club";
 
-    if printMsg then
+    if printMsg and not WCCCAD.addonActive then
         WCCCAD.UI:PrintAddonDisabledMessage() 
     end
 
