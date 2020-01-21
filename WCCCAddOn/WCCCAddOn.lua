@@ -28,21 +28,17 @@ function WCCCAD:OnInitialize()
         -- Load database
         WCCCAD.db = LibStub("AceDB-3.0"):New("WCCCDB", dataDefaults, true)
 
-        WCCCAD:RegisterComm("WCCCAD")        
+        WCCCAD:RegisterComm("WCCCAD")    
+        
+        WCCCAD.UI:PrintAddOnMessage("AddOn Loaded. Type /wccc for options.")
 end
 
 function WCCCAD:OnEnable()
     WCCCAD:RegisterChatCommand("wccc", "WCCCCommand")
-
-    WCCCAD:RegisterEvent("GUILD_ROSTER_UPDATE", "OnGuildRosterUpdate")
-    WCCCAD:RegisterEvent("PLAYER_ENTERING_WORLD", "OnPlayerEnteredWorld")
 end
 
 function WCCCAD:OnDisable()
     WCCCAD:UnregisterChatCommand("wccc")
-
-    WCCCAD:UnregisterEvent("GUILD_ROSTER_UPDATE")
-    WCCCAD:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 ---
@@ -81,47 +77,29 @@ function WCCCAD:WCCCCommand(input)
     end
 end
 
-function WCCCAD:OnGuildRosterUpdate()
-    WCCCAD:CheckGuild()
-end
-
-function WCCCAD:OnPlayerEnteredWorld()
-    WCCCAD:CheckGuild()
-end
-
----
---- Checks the player's current guild, disabling the addon if they are not in the WCCC.
---- 
-function WCCCAD:CheckGuild()
-    local guildName = GetGuildInfo("player")
-    if guildName == nil or guildName ~= "Worgen Cub Clubbing Club" and WCCCAD.addonActive == true then
-        WCCCAD.UI:PrintAddonDisabledMessage()
-        WCCCAD.addonActive = false;
-    elseif guildName == "Worgen Cub Clubbing Club" and WCCCAD.addonActive == false then
-        WCCCAD.UI:PrintAddOnMessage("AddOn Loaded. Type /wccc for options.")
-        WCCCAD.addonActive = true;
-    end
-end
-
 ---
 --- Returns whether the addon is active (enabled for the current character).
 --- If printMsg is true and the addon is disabled, the disabled message will be shown.
 --- This is used to prevent commands if we're "disabled".
 --- @param printMsg - Whether to print the addon disabled message.
 --- 
-function WCCCAD:CheckAddonActive(printMsg) 
+function WCCCAD:CheckAddonActive(printMsg)
+    local guildName = IsInGuild() and GetGuildInfo("player") or nil
+    WCCCAD.addonActive = guildName == "Worgen Cub Clubbing Club";
+
     if printMsg then
         WCCCAD.UI:PrintAddonDisabledMessage() 
     end
+
     return WCCCAD.addonActive
 end
 
 function WCCCAD:IsPlayerOfficer()
-    local guildName, rankName, rankIdx = GetGuildInfo("player")
-    if guildName == nil then
+    if not WCCCAD:CheckAddonActive() then
         return false
     end
 
+    local guildName, rankName, rankIdx = GetGuildInfo("player")
     return rankIdx <= 2
 end
 
