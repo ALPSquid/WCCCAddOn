@@ -1,3 +1,6 @@
+#v1.0.21
+* Adds missing AceHook library.
+
 # v1.0.20
 * Fixes an issue where "AddOn Loaded" and "Character not in the WCCC" messages would show incorrectly (usually during loading screens).
 
