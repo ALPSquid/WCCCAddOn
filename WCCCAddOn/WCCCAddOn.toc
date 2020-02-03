@@ -22,3 +22,5 @@ Modules\ClubbingComp\ClubbingCompUI.lua
 
 Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua
+
+Modules\ApplicantUtils\ApplicantUtils.lua

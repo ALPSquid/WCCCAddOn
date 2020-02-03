@@ -48,7 +48,7 @@ function WCCCADCore:OnEnable()
     WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
         WCCCADCore:UpdateGuildRosterAddonIndicators()
     end)
-
+    
     local playerGUID = UnitGUID("player")
     WCCCADCore.knownAddonUsers[playerGUID] = playerGUID
     WCCCADCore:InitiateSync()
@@ -64,7 +64,7 @@ function WCCCADCore:UpdateGuildRosterAddonIndicators()
     end
     
     for i, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
-        local memberInfo = guildieButton:GetMemberInfo()     
+        local memberInfo = guildieButton:GetMemberInfo()
 
         if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.guid] == nil then
             if guildieButton.addonIndicator ~= nil then
