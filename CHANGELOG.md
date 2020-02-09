@@ -1,3 +1,19 @@
+#v1.0.21
+* Adds missing AceHook library.
+
+# v1.0.20
+* Fixes an issue where "AddOn Loaded" and "Character not in the WCCC" messages would show incorrectly (usually during loading screens).
+
+# v1.0.19
+* First release version!
+
+# Beta v1.0.18
+* Adds indicator on players in the guild roster that are also using the AddOn.
+
+# Beta v1.0.17
+* First Beta release
+* Updates to WoW Patch 8.3
+
 # Alpha v1.0.16
 * Fixes a sync error with Info HUD
 

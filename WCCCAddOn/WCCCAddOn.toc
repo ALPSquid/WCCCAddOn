@@ -1,9 +1,10 @@
-## Interface: 80205
+## Interface: 80300
 ## Title: WCCC Clubbing Companion
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
-## Version: 1.0.16
+## Version: 1.0.21
 ## SavedVariables: WCCCDB
+## Dependencies: Blizzard_Communities
 
 embeds.xml
 

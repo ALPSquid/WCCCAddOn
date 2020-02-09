@@ -98,7 +98,10 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
         --- If targetplayer is null, this was a broadcast from a player and needs a reply (assuming we have newer data)
         --- If it's not, the message was sent directly to us.
-        if data.targetPlayer == nil and dataComparisonResult == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER and data.expectResponse == true then
+        if data.targetPlayer == nil 
+            and data.expectResponse == true 
+            and (dataComparisonResult == ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER or dataComparisonResult == ns.consts.DATA_SYNC_RESULT.BOTH_NEWER) 
+        then
             wcccModule:_SendSyncComm(data.sendingPlayer, false)    
         end
     end

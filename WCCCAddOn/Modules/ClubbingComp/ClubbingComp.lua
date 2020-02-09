@@ -200,8 +200,7 @@ function ClubbingComp:ClubCommand(args)
         return 
     end
 
-    if not WCCCAD.addonActive then
-        WCCCAD.UI:PrintAddonDisabledMessage()
+    if not WCCCAD:CheckAddonActive(true) then
         return
     end
 
@@ -399,7 +398,7 @@ end
 --#region Seasons
 
 function ClubbingComp:OC_SetSeason(raceKey)
-    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+    if not WCCCAD:IsPlayerOfficer() then
         return
     end
 
@@ -454,7 +453,7 @@ end
 
 --- @duration  Duration in seconds.
 function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
-    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+    if not WCCCAD:IsPlayerOfficer() then
         return
     end
 
@@ -537,7 +536,7 @@ end
 --#region Top Clubbers
 
 function ClubbingComp:OC_SetTopClubbers(clubberEntries)
-    if WCCCAD.addonActive == false or WCCCAD:IsPlayerOfficer() == false then
+    if not WCCCAD:IsPlayerOfficer() then
         return
     end
 
@@ -626,6 +625,7 @@ end
 function ClubbingComp:OnSyncDataReceived(data)
     ClubbingComp:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
     ClubbingComp:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
+    ClubbingComp:UpdateTopClubbers(data.topClubbers.clubbers, data.topClubbers.lastUpdateTimestamp)
 end
 
 --#endregion

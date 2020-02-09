@@ -85,7 +85,10 @@ Happy Clubbing!\n\n",
                     type = "toggle",
                     name = "Debug Mode",
                     desc = "Enable verbose debug logging.",
-                    set = function(info, val) WCCCAD.db.profile.debugMode = val end,
+                    set = function(info, val) 
+                        WCCCAD.db.profile.debugMode = val
+                        WCCCAD:GetModule("WCCC_Core").moduleDB.debugMode = val
+                    end,
                     get = function() return WCCCAD.db.profile.debugMode end,
                     disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
                     hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
@@ -155,11 +158,7 @@ end
 
 ---
 --- Prints a notification saying the addon has been disabled.
---- If addonActive is true, this does nothing.
 ---
-function WCCCAD_UI:PrintAddonDisabledMessage()    
-    if WCCCAD.addonActive == true then
-        return
-    end
+function WCCCAD_UI:PrintAddonDisabledMessage()
     WCCCAD_UI:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
 end

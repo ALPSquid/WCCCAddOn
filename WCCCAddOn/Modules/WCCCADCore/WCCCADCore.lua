@@ -6,8 +6,8 @@
 local name, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1016
-WCCCAD.versionString = "1.0.16"
+WCCCAD.version = 1021
+WCCCAD.versionString = "1.0.21"
 WCCCAD.newVersionAvailable = false
 
 
@@ -22,6 +22,15 @@ local wcccCoreData =
 }
 
 local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
+-- TODO: Possibly bake this pattern into the ModuleBase?
+LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
+LibStub("AceHook-3.0"):Embed(WCCCADCore) 
+
+-- Array of player GUIDs
+WCCCADCore.knownAddonUsers = 
+{
+    -- [guid] = guid
+}
 
 
 function WCCCADCore:InitializeModule()
@@ -30,11 +39,49 @@ function WCCCADCore:InitializeModule()
     WCCCADCore:RegisterModuleComm(COMM_KEY_SHARE_VERSION, WCCCADCore.OnShareVersionCommReceieved)
 end
 
-function WCCCADCore:OnEnable()
-    WCCCADCore:InitiateSync()
-
+function WCCCADCore:OnEnable()  
     if WCCCADCore.moduleDB.firstTimeUser == true then
         WCCCADCore:ShowFTUEWindow()
+    end
+
+    -- Setup hook to the community roster refresh event for updating AddOn user icons.
+    WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
+        WCCCADCore:UpdateGuildRosterAddonIndicators()
+    end)
+
+    local playerGUID = UnitGUID("player")
+    WCCCADCore.knownAddonUsers[playerGUID] = playerGUID
+    WCCCADCore:InitiateSync()
+end
+
+function WCCCADCore:OnDisable()
+    WCCCADCore:UnhookAll()
+end
+
+function WCCCADCore:UpdateGuildRosterAddonIndicators() 
+    if CommunitiesFrame == nil then
+        return
+    end
+    
+    for i, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
+        local memberInfo = guildieButton:GetMemberInfo()     
+
+        if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.guid] == nil then
+            if guildieButton.addonIndicator ~= nil then
+                guildieButton.addonIndicator:Hide()
+            end
+        else
+            if guildieButton.addonIndicator ~= nil then
+                guildieButton.addonIndicator:Show()
+            else
+                guildieButton.addonIndicator = CreateFrame("Button", nil, guildieButton)
+                guildieButton.addonIndicator:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+                guildieButton.addonIndicator:SetPoint("RIGHT", -10, 0)
+                guildieButton.addonIndicator:SetWidth(12)
+                guildieButton.addonIndicator:SetHeight(12)
+                guildieButton.addonIndicator:Show()
+            end
+        end
     end
 end
 
@@ -121,24 +168,21 @@ end
 ---
 --- Sync functions
 ---
-function WCCCADCore:GetSyncData() 
+function WCCCADCore:GetSyncData()
+    -- TODO: Consider adding GUID to base sync data (ModuleBase), same as player name.
     local syncData =
     {
         version = WCCCAD.version,
-        versionString = WCCCAD.versionString
+        versionString = WCCCAD.versionString,
+        playerGuid = UnitGUID("player")
     }
 
     return syncData
 end
 
 function WCCCADCore:CompareSyncData(remoteData)
-    if remoteData.version > WCCCAD.version then
-        return 1
-    elseif remoteData.version == WCCCAD.version then
-        return 0
-    else 
-        return -1
-    end
+    -- We want to force the initial sync between users so player GUIDs are up-to-date.
+    return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
 end
 
 function WCCCADCore:OnSyncDataReceived(data)
@@ -146,4 +190,7 @@ function WCCCADCore:OnSyncDataReceived(data)
         WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC Clubbing Companion is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
         newVersionAvailable = true
     end
+
+    WCCCADCore.knownAddonUsers[data.playerGuid] = data.playerGuid
+    WCCCADCore:UpdateGuildRosterAddonIndicators()
 end
