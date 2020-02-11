@@ -98,6 +98,41 @@ ns.utils.DaysSince = function(timeStamp)
     return ceil(timeDelta / 86400)
 end
 
+ns.utils.HoursSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 3600)
+end
+
+ns.utils.MinutesSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 60)
+end
+
+--- Creates a string displaying the time since the specified timestamp. e.g. "10 hours ago", "5 minutes ago"
+ns.utils.GetTimeSinceString = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+    local formattedTime = 0
+    local unitString = ""
+
+    if timeDelta >= 86400 then
+        formattedTime = ns.utils.DaysSince(timeStamp)
+        unitString = formattedTime == 1 and "day" or "days"
+
+    elseif timeDelta >= 3600 then
+        formattedTime = ns.utils.HoursSince(timeStamp)
+        unitString = formattedTime == 1 and "hour" or "hours"
+
+    else
+        formattedTime = ns.utils.MinutesSince(timeStamp)
+        unitString = formattedTime == 1 and "min" or "mins"
+    end
+
+    return format("%i %s ago", formattedTime, unitString)
+
+end
+
 ns.utils.GetLastServerResetTimestamp = function()
     local currentTimestamp = GetServerTime()
     local currentDate = date("!*t", currentTimestamp)
@@ -114,7 +149,6 @@ ns.utils.GetLastServerResetTimestamp = function()
 
     -- TODO: Might not be necessary? Test in other timezones.
     local serverOffset = currentTimestamp - time(currentDate)
-    print("Server is " .. tostring(serverOffset * 60) .. " mins ahead")
     secondsPastReset = secondsPastReset +  serverOffset
 
     return currentTimestamp - secondsPastReset
