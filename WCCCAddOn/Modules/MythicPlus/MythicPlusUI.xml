@@ -55,7 +55,7 @@
 
 <!-- Main Frame -->
     <Frame name="WCCC_MythicPlus_Frame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate" mixin="WCCC_MythicPlusFrameMixin">
-        <Size x="560" y="500" />
+        <Size x="560" y="505" />
         <Anchors>
             <Anchor point="TOPLEFT" x="300" y="-300" relativeTo="UIParent" />
         </Anchors>
@@ -81,7 +81,7 @@
             <Frame parentKey="InsetFrame" inherits="InsetFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="4" y="-78"/>
-                    <Anchor point="BOTTOMRIGHT" x="-6" y="26"/>
+                    <Anchor point="BOTTOMRIGHT" x="-6" y="30"/>
                 </Anchors>
             </Frame>
             <Frame parentKey="ColumnDisplay" useParentLevel="true" inherits="ColumnDisplayTemplate">
@@ -96,7 +96,7 @@
             <ScrollFrame parentKey="ListScrollFrame" inherits="HybridScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="4" y="-80"/>
-                    <Anchor point="BOTTOMRIGHT" x="-10" y="26"/>
+                    <Anchor point="BOTTOMRIGHT" x="-10" y="30"/>
                 </Anchors>
                 <Frames>
                     <Slider parentKey="scrollBar" inherits="HybridScrollBarTemplate">
@@ -112,6 +112,14 @@
                     </Slider>
                 </Frames>
             </ScrollFrame>
+            <Button parentKey="SettingsButton" inherits="UIPanelDynamicResizeButtonTemplate" text="Settings">
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+                </Anchors>
+                <Scripts>
+                    <OnClick>self:GetParent():OpenSettings()</OnClick>
+                </Scripts>
+            </Button>
         </Frames>
 
         <Scripts>

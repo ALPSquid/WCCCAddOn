@@ -225,6 +225,9 @@ function WCCC_MythicPlusFrameMixin:OnShow()
     self:RefreshLayout()
 end
 
+function WCCC_MythicPlusFrameMixin:OpenSettings()
+    MythicPlus_UI:Show()
+end
 ---
 --- Update frame with the MythicPlus guildKeys and leaderboardData tables.
 ---
