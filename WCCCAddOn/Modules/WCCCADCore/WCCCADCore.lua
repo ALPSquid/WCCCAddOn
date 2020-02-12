@@ -8,6 +8,7 @@ local WCCCAD = ns.WCCCAD
 
 WCCCAD.version = 1021
 WCCCAD.versionString = "1.0.21"
+WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 WCCCAD.newVersionAvailable = false
 
 
@@ -135,7 +136,7 @@ function WCCCADCore:SenRequestVersionComm()
     }
 
     WCCCAD.UI:PrintDebugMessage("Sending version request", WCCCAD.db.profile.debugMode)
-    WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s", WCCCAD.versionString))
+    WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s - %s", WCCCAD.versionString, WCCCAD.versionType.name))
     WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
@@ -147,14 +148,21 @@ function WCCCADCore:OnShareVersionCommReceieved(data)
         {
             respondingPlayer = ns.utils.GetPlayerNameRealmString(),
             version = WCCCAD.version,
-            versionString = WCCCAD.versionString
+            versionString = WCCCAD.versionString,
+            versionType = WCCCAD.versionType
         }
         WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, responseData, ns.consts.CHAT_CHANNEL.WHISPER, data.requestingPlayer)
     
     elseif data.respondingPlayer ~= nil then
+        --#region compatibility <= v1.0.21
+        if not data.versionType then
+            data.versionType = ns.consts.VERSION_TYPE.RELEASE
+        end
+        --#endregion
+
         -- It's a response to a request we made.
         WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, WCCCAD.db.profile.debugMode)
-        local versionOutput = "v"..data.versionString
+        local versionOutput = "v"..data.versionString.." - "..data.versionType.name
         if data.version < WCCCAD.version then
             versionOutput =  "|cFFE91100"..versionOutput.."|r (out of date)"
         elseif data.version > WCCCAD.version then
@@ -174,6 +182,7 @@ function WCCCADCore:GetSyncData()
     {
         version = WCCCAD.version,
         versionString = WCCCAD.versionString,
+        versionType = WCCCAD.versionType,
         playerGuid = UnitGUID("player")
     }
 
@@ -186,9 +195,18 @@ function WCCCADCore:CompareSyncData(remoteData)
 end
 
 function WCCCADCore:OnSyncDataReceived(data)
-    if data.version > WCCCAD.version and WCCCAD.newVersionAvailable == false then
-        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC Clubbing Companion is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
-        newVersionAvailable = true
+    --#region compatibility <= v1.0.21
+    if not data.versionType then
+        data.versionType = ns.consts.VERSION_TYPE.RELEASE
+    end
+    --#endregion
+
+    if ((data.version > WCCCAD.version and data.versionType.value >= WCCCAD.versionType.value)
+            or (data.version == WCCCAD.version and data.versionType.value > WCCCAD.versionType.value))
+        and WCCCAD.newVersionAvailable == false 
+    then
+        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s - %s) of the WCCC Clubbing Companion is available, please update.", data.versionString, data.versionType.name), ns.consts.MSG_TYPE.WARN)
+        WCCCAD.newVersionAvailable = true
     end
 
     WCCCADCore.knownAddonUsers[data.playerGuid] = data.playerGuid

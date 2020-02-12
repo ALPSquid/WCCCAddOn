@@ -7,6 +7,27 @@ local name, ns = ...
 ns.consts = {}
 ns.utils = {}
 
+ns.consts.VERSION_TYPE =
+{
+    ALPHA = 
+    {
+        value = 1,
+        name = "alpha"
+    },
+
+    BETA = 
+    {
+        value = 2,
+        name = "beta"
+    },
+
+    RELEASE = 
+    {
+        value = 3,
+        name = "release"
+    }
+}
+
 ns.consts.DATA_SYNC_RESULT =
 {
     LOCAL_NEWER = -1,
@@ -15,7 +36,8 @@ ns.consts.DATA_SYNC_RESULT =
     BOTH_NEWER = 2
 }
 
-ns.consts.CHAT_CHANNEL = {
+ns.consts.CHAT_CHANNEL = 
+{
     EMOTE = "EMOTE",
     SAY = "SAY",
     YELL = "YELL",
