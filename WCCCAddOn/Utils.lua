@@ -141,7 +141,7 @@ ns.utils.GetLastServerResetTimestamp = function()
     local hoursPastResetHour = currentDate.hour - 7
 
     local daysPastResetDay = currentDate.wday - 4
-    if daysPastResetDay < 0 then
+    if daysPastResetDay < 0 or (daysPastResetDay == 0 and hoursPastResetHour < 0) then
         daysPastResetDay = 7 + daysPastResetDay
     end
 
@@ -150,6 +150,11 @@ ns.utils.GetLastServerResetTimestamp = function()
     -- TODO: Might not be necessary? Test in other timezones.
     local serverOffset = currentTimestamp - time(currentDate)
     secondsPastReset = secondsPastReset +  serverOffset
+
+    print(daysPastResetDay)
+    print(hoursPastResetHour)
+    print(minutesPastResetMinute)
+    print(secondsPastReset)
 
     return currentTimestamp - secondsPastReset
 end

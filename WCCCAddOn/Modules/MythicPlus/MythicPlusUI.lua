@@ -220,7 +220,9 @@ function WCCC_MythicPlusFrameMixin:OnLoad()
 end
 
 function WCCC_MythicPlusFrameMixin:OnShow()
+    C_GuildInfo.GuildRoster()
     self:ResetColumnSort()
+    self:RefreshLayout()
 end
 
 ---
@@ -232,9 +234,10 @@ function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     local idx = 1
     for name, entryData in pairs(guildKeys) do        
         if entryData then
-            local leaderboardEntry = leaderboardData[entryData.playerName]
+            local leaderboardEntry = leaderboardData[entryData.GUID]
             self.orderedGuildKeys[idx] =
             {
+                GUID = entryData.GUID,
                 playerName = entryData.playerName,
                 classID = entryData.classID,
                 mapID = entryData.mapID,
@@ -353,7 +356,7 @@ end
 --#region Mythic Plus Entry Mixin
 WCCC_MythicPlusEntryMixin = {}
 
-WCCC_MythicPlusEntryMixin.Data = nil -- { playerName, classID, mapID, level, bestLevel, updateTimestamp}
+WCCC_MythicPlusEntryMixin.Data = nil -- { GUID, playerName, classID, mapID, level, bestLevel, updateTimestamp}
 
 
 function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(level)
@@ -382,7 +385,7 @@ function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(le
 end
 
 function WCCC_MythicPlusEntryMixin:OnMouseDown(button)
-    if button == "RightButton" then
+    if button == "RightButton" and self.Data.isOnline then
         local cursorPos = GetCursorPosition()
 		ToggleDropDownMenu(1, nil, self.RightClickDropdown, self, 100, 0)
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
@@ -393,16 +396,34 @@ function WCCC_MythicPlusEntryMixin:GetPlayerName()
     return self.Data.playerName
 end
 
+function WCCC_MythicPlusEntryMixin:IsOnline()
+    return self.Data.isOnline
+end
+
 function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
     self.Data = keyData
     if not self.Data then
         return
     end
 
+    self.Data.isOnline = false
+    local _, numMembersOnline = GetNumGuildMembers()
+    for i=1, numMembersOnline do
+        local memberName, _, _, _, _, _, _, _, isOnline, _, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
+        if memberGUID == self.Data.GUID then
+            self.Data.isOnline = isOnline
+            break;
+        end
+    end
+
     local className, classTag = GetClassInfo(self.Data.classID)
     local classColour = CreateColor(GetClassColor(classTag))
     self.NameLabel:SetText(self.Data.playerName)
-    self.NameLabel:SetTextColor(classColour.r, classColour.g, classColour.b)
+    if self.Data.isOnline then
+        self.NameLabel:SetTextColor(classColour.r, classColour.g, classColour.b)
+    else 
+        self.NameLabel:SetTextColor(0.4, 0.4, 0.4)        
+    end
 
     local dungeonName = C_ChallengeMode.GetMapUIInfo(self.Data.mapID)
     self.DungeonLabel:SetText(dungeonName)

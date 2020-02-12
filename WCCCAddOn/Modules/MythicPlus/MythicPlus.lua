@@ -23,12 +23,12 @@ local mythicPlusData =
 
         leaderboardData = 
         {
-            -- [playerName] = {playerName, classID, mapID, level, lastUpdateTimestamp}
+            -- [GUID] = {GUID, playerName, classID, mapID, level, lastUpdateTimestamp}
         },
 
         guildKeys =
         {
-             -- [playerName] = {playerName, classID, mapID, level, lastUpdateTimestamp}
+             -- [GUID] = {GUID, playerName, classID, mapID, level, lastUpdateTimestamp}
         }
     }
 }
@@ -77,18 +77,19 @@ function MythicPlus:OnNewWeeklyRecord(recordData)
     local mapID = recordData.mapChallengeModeID
     local keystoneLevel = recordData.level
 
-    local playerName = UnitName("player")
+    local GUID = UnitGUID("player")
     local className, classTag, classID = UnitClass("player")
-    MythicPlus.moduleDB.leaderboardData[playerName] = 
+    MythicPlus.moduleDB.leaderboardData[GUID] = 
     {
-        playerName = playerName,
+        GUID = GUID,
+        playerName = UnitName("player"),
         classID = classID,
         mapID = mapID,
         level = keystoneLevel,
         lastUpdateTimestamp = GetServerTime()
     }
 
-    MythicPlus:SendGuildyNewRecordComm(MythicPlus.moduleDB.leaderboardData[playerName])
+    MythicPlus:SendGuildyNewRecordComm(MythicPlus.moduleDB.leaderboardData[GUID])
     MythicPlus:InitiateSync()
     MythicPlus.UI:OnDataUpdated()
 
@@ -110,7 +111,7 @@ function MythicPlus:OnChallengeModeMapsUpdate()
             return
         end
 
-        MythicPlus:SendGuildyReceivedKeystoneComm(MythicPlus.moduleDB.guildKeys[UnitName("player")])
+        MythicPlus:SendGuildyReceivedKeystoneComm(MythicPlus.moduleDB.guildKeys[UnitGUID("player")])
         MythicPlus:InitiateSync()
         MythicPlus.UI:OnDataUpdated()
     end 
@@ -127,12 +128,13 @@ function MythicPlus:UpdateOwnKeystone()
 
     local mapID = C_MythicPlus.GetOwnedKeystoneChallengeMapID()
 
-    local playerName = UnitName("player")
+    local GUID = UnitGUID("player")
     local className, classTag, classID = UnitClass("player")
-    local prevKeystoneData = MythicPlus.moduleDB.guildKeys[playerName]
-    MythicPlus.moduleDB.guildKeys[playerName] = 
+    local prevKeystoneData = MythicPlus.moduleDB.guildKeys[GUID]
+    MythicPlus.moduleDB.guildKeys[GUID] = 
     {
-        playerName = playerName,
+        GUID = GUID,
+        playerName = UnitName("player"),
         classID = classID,
         mapID = mapID,
         level = keystoneLevel,
@@ -170,9 +172,11 @@ function MythicPlus:UpdateOwnWeeklyBest()
 		end
     end
 
+    local GUID = UnitGUID("player")
     local className, classTag, classID = UnitClass("player")
-    MythicPlus.moduleDB.leaderboardData[playerName] = 
+    MythicPlus.moduleDB.leaderboardData[GUID] = 
     {
+        GUID = GUID,
         playerName = playerName,
         classID = classID,
         mapID = highestMapID,
@@ -198,7 +202,7 @@ function MythicPlus:OnGuildyReceivedKeystoneCommReceieved(data)
         return
     end
 
-    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)[1]
+    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)
 
     local message = "{playerName} received a Mythic Keystone: {dungeonName} +{level}."
     message = message:gsub("{playerName}", data.playerName)
@@ -221,7 +225,7 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
         return
     end
 
-    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)[1]
+    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)
 
     local message = "{playerName} has completed {dungeonName} +{level}."
     message = message:gsub("{playerName}", data.playerName)
