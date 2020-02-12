@@ -40,7 +40,7 @@ local WCCC_UI_CONFIG =
         {
             type = "description",
             fontSize = "small",
-            name = function() return "Version " .. WCCCAD.versionString end,
+            name = function() return "Version " .. WCCCAD.versionString .. " - " .. WCCCAD.versionType.name end,
             order = 1
         },
 
