@@ -162,3 +162,74 @@ end
 function WCCCAD_UI:PrintAddonDisabledMessage()
     WCCCAD_UI:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
 end
+
+
+--#region Guild Controls Panel
+function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction) 
+    if WCCCAD_UI.GuildControlFrame == nil then
+        WCCCAD_UI:CreateGuildControlFrame()
+    end
+
+    local buttonsArray = WCCCAD_UI.GuildControlFrame.buttons
+    local prevButton = buttonsArray and buttonsArray[#buttonsArray] or nil
+    local buttonWidth = 150
+    local leftMargin = 30
+    local buttonPadding = 5
+
+    local controlButton = CreateFrame("Button", nil, WCCCAD_UI.GuildControlFrame, "UIPanelButtonTemplate");
+    controlButton:SetText(text)
+    controlButton.tooltipText = tooltipText
+    controlButton:SetSize(buttonWidth, 20)
+
+    if prevButton then
+        controlButton:SetPoint("LEFT", prevButton, "RIGHT", buttonPadding, 0)
+    else
+        controlButton:SetPoint("LEFT", WCCCAD_UI.GuildControlFrame, "LEFT", leftMargin, 0)
+    end
+
+    controlButton:RegisterForClicks("AnyUp")
+    controlButton:SetScript("OnClick", onClickAction)
+
+    tinsert(buttonsArray, controlButton)
+
+    -- Adjust panel size.
+    local totalButtonWidth = leftMargin
+    for i=1, #buttonsArray do
+        totalButtonWidth = totalButtonWidth + buttonsArray[i]:GetWidth() + buttonPadding
+    end
+    WCCCAD_UI.GuildControlFrame:SetWidth(totalButtonWidth)
+
+    WCCCAD_UI.GuildControlFrame.buttons = buttonsArray
+end
+
+function WCCCAD_UI:CreateGuildControlFrame()
+    local rootFrame = CreateFrame("Frame", nil, CommunitiesFrame)
+    WCCCAD_UI.GuildControlFrame = rootFrame
+    WCCCAD_UI.GuildControlFrame.buttons = {}
+
+    rootFrame:SetPoint("TOPRIGHT", CommunitiesFrame, "BOTTOMRIGHT", 0, 0)
+    rootFrame:SetWidth(300)
+    rootFrame:SetHeight(35)
+    rootFrame:SetMovable(false)
+    rootFrame:SetResizable(false)
+    rootFrame:SetBackdrop(
+    {
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
+        tile = true, tileSize = 16, edgeSize = 16, 
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    rootFrame:SetBackdropColor(0, 0, 0, 0.7)
+    rootFrame:SetBackdropBorderColor(1, 0.62, 0, 0.8)
+
+    --- Guild Logo
+    local guildLogo = CreateFrame("Button", nil, rootFrame)
+	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+	guildLogo:SetPoint("TOPLEFT", 5, -5)
+	guildLogo:SetWidth(24)
+	guildLogo:SetHeight(24)
+    guildLogo:SetScript("OnClick", function()
+        WCCCAD_UI:Show() 
+    end) 
+end
+--#endregion

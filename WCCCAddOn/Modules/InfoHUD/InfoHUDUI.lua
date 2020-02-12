@@ -286,6 +286,7 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
 }
 
 local InfoHUD_UI = WCCCAD.UI:LoadModuleUI(InfoHUD, "Info HUD", INFOHUD_UI_CONFIG)
+WCCCAD.UI:AddGuildControlButton("Info HUD Settings", "View Info HUD settings, toggle the HUD and more", InfoHUD_UI.Show) 
 
 -- Officer controls
 InfoHUD_UI.OC_SelectedMessageData = {}

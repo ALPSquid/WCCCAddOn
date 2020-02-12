@@ -37,7 +37,7 @@ local MYTHICPLUS_UI_CONFIG =
                     type = "description",
                     fontSize = "medium",
                     name = "The Guild Mythic Plus Window shows what keystones each Guildy has and their current weekly best. \
-The window can be opened from the guild roster, the Mythic Keystone window and the button below.",
+The window can be opened from the guild roster and the button below.",
                     order = 1.01
                 },
 
@@ -201,6 +201,9 @@ end
 function MythicPlus_UI:OnDataUpdated() 
     WCCC_MythicPlus_Frame:UpdateData(MythicPlus.moduleDB.guildKeys, MythicPlus.moduleDB.leaderboardData)
 end
+
+WCCCAD.UI:AddGuildControlButton("Guild Keystones", "View Guild Mythic+ Keystones", MythicPlus_UI.ShowWindow) 
+
 
 --#region Mythic Plus Frame Mixin
 WCCC_MythicPlusFrameMixin = {}

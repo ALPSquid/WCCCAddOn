@@ -819,6 +819,8 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
 }
 
 local ClubbingComp_UI = WCCCAD.UI:LoadModuleUI(ClubbingComp, "Clubbing Competition", CLUBBINGCOMP_UI_CONFIG)
+WCCCAD.UI:AddGuildControlButton("Clubbing Competition", "View your score, current season, toggle the HUD and more", ClubbingComp_UI.Show) 
+
 
 -- Officer control vars
 ClubbingComp_UI.OC_SelectedSeason = "Worgen"
