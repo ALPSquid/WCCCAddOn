@@ -98,6 +98,62 @@ ns.utils.DaysSince = function(timeStamp)
     return ceil(timeDelta / 86400)
 end
 
+ns.utils.HoursSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 3600)
+end
+
+ns.utils.MinutesSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 60)
+end
+
+--- Creates a string displaying the time since the specified timestamp. e.g. "10 hours ago", "5 minutes ago"
+ns.utils.GetTimeSinceString = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+    local formattedTime = 0
+    local unitString = ""
+
+    if timeDelta >= 86400 then
+        formattedTime = ns.utils.DaysSince(timeStamp)
+        unitString = formattedTime == 1 and "day" or "days"
+
+    elseif timeDelta >= 3600 then
+        formattedTime = ns.utils.HoursSince(timeStamp)
+        unitString = formattedTime == 1 and "hour" or "hours"
+
+    else
+        formattedTime = ns.utils.MinutesSince(timeStamp)
+        unitString = formattedTime == 1 and "min" or "mins"
+    end
+
+    return format("%i %s ago", formattedTime, unitString)
+
+end
+
+ns.utils.GetLastServerResetTimestamp = function()
+    local currentTimestamp = GetServerTime()
+    local currentDate = date("!*t", currentTimestamp)
+
+    local minutesPastResetMinute = currentDate.min
+    local hoursPastResetHour = currentDate.hour - 7
+
+    local daysPastResetDay = currentDate.wday - 4
+    if daysPastResetDay < 0 or (daysPastResetDay == 0 and hoursPastResetHour < 0) then
+        daysPastResetDay = 7 + daysPastResetDay
+    end
+
+    local secondsPastReset = currentDate.sec + (minutesPastResetMinute * 60) + (hoursPastResetHour * 60 * 60) + (daysPastResetDay * 24 * 60 * 60)
+
+    -- TODO: Might not be necessary? Test in other timezones.
+    local serverOffset = currentTimestamp - time(currentDate)
+    secondsPastReset = secondsPastReset +  serverOffset
+
+    return currentTimestamp - secondsPastReset
+end
+
 --- Format special sequences in a string, such as {skull} and |cblue word |r
 ns.utils.FormatSpecialString = function(inputString)
     local formatStrings = 

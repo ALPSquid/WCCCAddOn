@@ -1,6 +1,17 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 	
 	<Button name="GameMenuButtonWCCC" parent="GameMenuFrame" inherits="GameMenuButtonTemplate" text="WCCC Companion">
+		<Layers>
+            <Layer level="MEDIUM" textureSubLevel="-1">
+                <Texture name="$parentIcon" file="Interface\AddOns\WCCCAddOn\assets\wccc-logo.tga">
+                <Size x="16" y="16"/>
+                <Anchors>
+                    <Anchor point="LEFT" x="-2" y="0"/>
+                </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+
 		<Scripts>
 			<OnLoad>
 				if GameMenuFrame_UpdateVisibleButtons then
