@@ -112,14 +112,26 @@
                     </Slider>
                 </Frames>
             </ScrollFrame>
-            <Button parentKey="SettingsButton" inherits="UIPanelDynamicResizeButtonTemplate" text="Settings">
+
+            <Button parentKey="CloseButton" inherits="UIPanelButtonTemplate" text="Close">
+                <Size x="100" y="20" />
                 <Anchors>
-                    <Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+                    <Anchor point="BOTTOMRIGHT" x="-25" y="7"/>
+                </Anchors>
+                <Scripts>
+                    <OnClick>self:GetParent():Hide()</OnClick>
+                </Scripts>
+            </Button>
+
+            <Button parentKey="SettingsButton" inherits="UIPanelButtonTemplate" text="Settings">
+                <Size x="100" y="20" />
+                <Anchors>
+                    <Anchor point="RIGHT" relativePoint="LEFT" relativeKey="$parent.CloseButton" x="-5" y="0"/>
                 </Anchors>
                 <Scripts>
                     <OnClick>self:GetParent():OpenSettings()</OnClick>
                 </Scripts>
-            </Button>
+            </Button>            
         </Frames>
 
         <Scripts>
