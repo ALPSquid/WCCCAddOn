@@ -416,22 +416,29 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
         end
     end
 
+    local textColour = self.Data.isOnline and CreateColor(1, 1, 1) or CreateColor(0.4, 0.4, 0.4)
+
     local className, classTag = GetClassInfo(self.Data.classID)
     local classColour = CreateColor(GetClassColor(classTag))
     self.NameLabel:SetText(self.Data.playerName)
     if self.Data.isOnline then
         self.NameLabel:SetTextColor(classColour.r, classColour.g, classColour.b)
     else 
-        self.NameLabel:SetTextColor(0.4, 0.4, 0.4)        
+        self.NameLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
     end
 
     local dungeonName = C_ChallengeMode.GetMapUIInfo(self.Data.mapID)
     self.DungeonLabel:SetText(dungeonName)
+    self.DungeonLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
 
     self.LevelLabel:SetText("+"..self.Data.level)
+    self.LevelLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
+
     self.BestLevelLabel:SetText("+"..self.Data.bestLevel)
+    self.BestLevelLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
 
     self.UpdatedLabel:SetText(ns.utils.GetTimeSinceString(self.Data.updateTimestamp))
+    self.UpdatedLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
 
     UIDropDownMenu_Initialize(self.RightClickDropdown, self.PlayerEntryRightClickOptionsMenuInitialise, "MENU")
 end

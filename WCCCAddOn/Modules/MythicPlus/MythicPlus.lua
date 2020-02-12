@@ -9,7 +9,8 @@ local WCCCAD = ns.WCCCAD
 local COMM_KEY_GUILDY_RECEIVED_KEYSTONE = "guildyReceivedKeystone"
 local COMM_KEY_GUILDY_COMPLETED_KEYSTONE = "guildyCompletedKeystone"
 
-local PRUNE_TICK_INTERVAl = 60 * 60
+local PRUNE_TICK_INTERVAl = 60 * 30 -- 30 mins
+local KEYSTONE_UPDATE_DELAY = 5
 
 local mythicPlusData = 
 {
@@ -50,15 +51,22 @@ function MythicPlus:OnEnable()
     MythicPlus.initialSyncComplete = false
     MythicPlus:PruneOldEntries()    
 
+    MythicPlus:RegisterEvent("BAG_UPDATE", MythicPlus.ScheduleOwnKeystoneUpdate)
     MythicPlus:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", MythicPlus.OnNewWeeklyRecord)
-    MythicPlus:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", MythicPlus.OnChallengeModeMapsUpdate)
+    MythicPlus:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", MythicPlus.ScheduleOwnKeystoneUpdate)
+    MythicPlus:RegisterEvent("CHALLENGE_MODE_RESET", MythicPlus.ScheduleOwnKeystoneUpdate)
+    MythicPlus:RegisterEvent("CHALLENGE_MODE_COMPLETED", MythicPlus.ScheduleOwnKeystoneUpdate)
 
+    -- Bit of a heavy handed catch for reset. Ideally we should calculate the time until reset and start a timer on that.
     WCCCAD:ScheduleRepeatingTimer(MythicPlus.PruneOldEntries, PRUNE_TICK_INTERVAl)
 end
 
 function MythicPlus:OnDisable()
+    MythicPlus:UnregisterEvent("BAG_UPDATE")
     MythicPlus:UnregisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD")
     MythicPlus:UnregisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
+    MythicPlus:UnregisterEvent("CHALLENGE_MODE_RESET")
+    MythicPlus:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
 end
 
 
@@ -96,25 +104,33 @@ function MythicPlus:OnNewWeeklyRecord(recordData)
     WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, MythicPlus.moduleDB.debugMode)
 end
 
-function MythicPlus:OnChallengeModeMapsUpdate()
-    WCCCAD.UI:PrintDebugMessage("Challenge Mode Maps Update.", MythicPlus.moduleDB.debugMode)
+function MythicPlus:ScheduleOwnKeystoneUpdate()
+    if not MythicPlus.updateKeystoneTimer then
+        WCCCAD.UI:PrintDebugMessage("Scheduling keystone update.", MythicPlus.moduleDB.debugMode)
 
-    if not MythicPlus.initialSyncComplete then
-        MythicPlus.initialSyncComplete = true
-        MythicPlus:UpdateOwnKeystone()
-        MythicPlus:UpdateOwnWeeklyBest()
-        MythicPlus.UI:OnDataUpdated()
-        MythicPlus:InitiateSync()
-    else
-        local isNewKeystone = MythicPlus:UpdateOwnKeystone()
-        if not isNewKeystone then
-            return
-        end
-
-        MythicPlus:SendGuildyReceivedKeystoneComm(MythicPlus.moduleDB.guildKeys[UnitGUID("player")])
-        MythicPlus:InitiateSync()
-        MythicPlus.UI:OnDataUpdated()
-    end 
+        MythicPlus.updateKeystoneTimer = WCCCAD:ScheduleTimer(
+            function() 
+                WCCCAD.UI:PrintDebugMessage("Triggering keystone update.", MythicPlus.moduleDB.debugMode)
+                MythicPlus.updateKeystoneTimer = nil
+                if not MythicPlus.initialSyncComplete then
+                    MythicPlus.initialSyncComplete = true
+                    MythicPlus:UpdateOwnKeystone()
+                    MythicPlus:UpdateOwnWeeklyBest()
+                    MythicPlus.UI:OnDataUpdated()
+                    MythicPlus:InitiateSync()
+                else
+                    local isNewKeystone = MythicPlus:UpdateOwnKeystone()
+                    if not isNewKeystone then
+                        return
+                    end
+            
+                    MythicPlus:SendGuildyReceivedKeystoneComm(MythicPlus.moduleDB.guildKeys[UnitGUID("player")])
+                    MythicPlus:InitiateSync()
+                    MythicPlus.UI:OnDataUpdated()
+                end 
+            end, 
+        KEYSTONE_UPDATE_DELAY)
+    end
 end
 
 ---
@@ -123,7 +139,15 @@ end
 function MythicPlus:UpdateOwnKeystone()
     local keystoneLevel = C_MythicPlus.GetOwnedKeystoneLevel()
     if keystoneLevel == nil then
-        return
+        return false
+    end
+
+    -- Don't update if we're currently in a run since the key will show as downgraded already 
+    -- and we don't want to update other users until the run is finished.
+    local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
+    if activeKeystoneLevel > 0 then
+        WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", MythicPlus.moduleDB.debugMode)
+        return false
     end
 
     local mapID = C_MythicPlus.GetOwnedKeystoneChallengeMapID()
@@ -202,7 +226,7 @@ function MythicPlus:OnGuildyReceivedKeystoneCommReceieved(data)
         return
     end
 
-    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)
+    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.mapID)
 
     local message = "{playerName} received a Mythic Keystone: {dungeonName} +{level}."
     message = message:gsub("{playerName}", data.playerName)
@@ -225,7 +249,7 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
         return
     end
 
-    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.MapID)
+    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.mapID)
 
     local message = "{playerName} has completed {dungeonName} +{level}."
     message = message:gsub("{playerName}", data.playerName)
