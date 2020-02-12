@@ -222,6 +222,12 @@ function WCCCAD_UI:CreateGuildControlFrame()
     rootFrame:SetBackdropColor(0, 0, 0, 0.7)
     rootFrame:SetBackdropBorderColor(1, 0.62, 0, 0.8)
 
+    rootFrame:SetScript("OnShow", function(self)
+        if not WCCCAD:CheckAddonActive(false) then
+            self:Hide()
+        end
+    end)
+
     --- Guild Logo
     local guildLogo = CreateFrame("Button", nil, rootFrame)
 	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")

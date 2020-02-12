@@ -49,7 +49,7 @@ end
 
 function MythicPlus:OnEnable()
     MythicPlus.initialSyncComplete = false
-    MythicPlus:PruneOldEntries()    
+    MythicPlus:PruneOldEntries()
 
     MythicPlus:RegisterEvent("BAG_UPDATE", MythicPlus.ScheduleOwnKeystoneUpdate)
     MythicPlus:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", MythicPlus.OnNewWeeklyRecord)
@@ -82,6 +82,10 @@ function MythicPlus:MythicPlusCommand(args)
 end
 
 function MythicPlus:OnNewWeeklyRecord(recordData)
+    if not WCCCAD:CheckAddonActive(false) then
+        return
+    end
+
     local mapID = recordData.mapChallengeModeID
     local keystoneLevel = recordData.level
 
@@ -110,6 +114,10 @@ function MythicPlus:ScheduleOwnKeystoneUpdate()
 
         MythicPlus.updateKeystoneTimer = WCCCAD:ScheduleTimer(
             function() 
+                if not WCCCAD:CheckAddonActive(false) then
+                    return
+                end
+                
                 WCCCAD.UI:PrintDebugMessage("Triggering keystone update.", MythicPlus.moduleDB.debugMode)
                 MythicPlus.updateKeystoneTimer = nil
                 if not MythicPlus.initialSyncComplete then
@@ -137,6 +145,10 @@ end
 --- Returns true if the new keystone is different to the previous one.
 ---
 function MythicPlus:UpdateOwnKeystone()
+    if not WCCCAD:CheckAddonActive(false) then
+        return
+    end
+
     local keystoneLevel = C_MythicPlus.GetOwnedKeystoneLevel()
     if keystoneLevel == nil then
         return false
@@ -176,6 +188,10 @@ end
 --- This is mainly intended to be used if the addon is installed after having run a key as MYTHIC_PLUS_NEW_WEEKLY_RECORD will handle future events.
 ---
 function MythicPlus:UpdateOwnWeeklyBest()
+    if not WCCCAD:CheckAddonActive(false) then
+        return
+    end
+
     local maps = C_ChallengeMode.GetMapTable()
     local highestLevel = 0
     local highestMapID = nil
