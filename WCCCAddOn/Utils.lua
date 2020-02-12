@@ -151,11 +151,6 @@ ns.utils.GetLastServerResetTimestamp = function()
     local serverOffset = currentTimestamp - time(currentDate)
     secondsPastReset = secondsPastReset +  serverOffset
 
-    print(daysPastResetDay)
-    print(hoursPastResetHour)
-    print(minutesPastResetMinute)
-    print(secondsPastReset)
-
     return currentTimestamp - secondsPastReset
 end
 
