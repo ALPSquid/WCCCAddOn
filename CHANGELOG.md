@@ -1,10 +1,10 @@
-#v1.0.22
+# v1.0.22
 * Adds Mythic Keystones module 
     * See what keystones each guild member has and what their weekly best is!
 * Adds WCCC Menu to the guild window
     * Easily access WCCC AddOn features from the guild panel!
 
-#v1.0.21
+# v1.0.21
 * Adds missing AceHook library.
 
 # v1.0.20
