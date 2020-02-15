@@ -81,13 +81,13 @@ function MythicPlus:MythicPlusCommand(args)
     self.UI:ShowWindow()
 end
 
-function MythicPlus:OnNewWeeklyRecord(recordData)
+function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds, level)
     if not WCCCAD:CheckAddonActive(false) then
         return
     end
 
-    local mapID = recordData.mapChallengeModeID
-    local keystoneLevel = recordData.level
+    local mapID = mapChallengeModeID
+    local keystoneLevel = level
 
     local GUID = UnitGUID("player")
     local className, classTag, classID = UnitClass("player")
