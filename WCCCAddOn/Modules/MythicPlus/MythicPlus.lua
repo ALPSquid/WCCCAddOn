@@ -51,14 +51,14 @@ function MythicPlus:OnEnable()
     self.initialSyncComplete = false
     self:PruneOldEntries()
 
-    self:RegisterEvent("BAG_UPDATE", self.ScheduleOwnKeystoneUpdate)
-    self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", self.OnNewWeeklyRecord)
-    self:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", self.ScheduleOwnKeystoneUpdate)
-    self:RegisterEvent("CHALLENGE_MODE_RESET", self.ScheduleOwnKeystoneUpdate)
-    self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.ScheduleOwnKeystoneUpdate)
+    self:RegisterEvent("BAG_UPDATE", function() self:ScheduleOwnKeystoneUpdate() end)
+    self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", function() self:OnNewWeeklyRecord() end)
+    self:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", function() self:ScheduleOwnKeystoneUpdate() end)
+    self:RegisterEvent("CHALLENGE_MODE_RESET", function() self:ScheduleOwnKeystoneUpdate() end)
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED", function() self:ScheduleOwnKeystoneUpdate() end)
 
     -- Bit of a heavy handed catch for reset. Ideally we should calculate the time until reset and start a timer on that.
-    WCCCAD:ScheduleRepeatingTimer(self.PruneOldEntries, PRUNE_TICK_INTERVAl)
+    WCCCAD:ScheduleRepeatingTimer(function() self:PruneOldEntries() end, PRUNE_TICK_INTERVAl)
 end
 
 function MythicPlus:OnDisable()
@@ -364,7 +364,7 @@ function MythicPlus:OnSyncDataReceived(data)
     self:UpdateLeaderboard(data.leaderboardData)
     self:UpdateGuildKeys(data.guildKeys)
 
-    self.PruneOldEntries()
+    self:PruneOldEntries()
 end
 
 --#endregion
