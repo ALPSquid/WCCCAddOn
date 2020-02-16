@@ -2,7 +2,7 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 
@@ -12,7 +12,7 @@ local COMM_KEY_GUILDY_COMPLETED_KEYSTONE = "guildyCompletedKeystone"
 local PRUNE_TICK_INTERVAl = 60 * 30 -- 30 mins
 local KEYSTONE_UPDATE_DELAY = 5
 
-local mythicPlusData = 
+local mythicPlusData =
 {
     profile =
     {
@@ -38,35 +38,35 @@ local MythicPlus = WCCCAD:CreateModule("WCCC_MythicPlus", mythicPlusData)
 LibStub("AceEvent-3.0"):Embed(MythicPlus) 
 
 function MythicPlus:InitializeModule()
-    MythicPlus:RegisterModuleSlashCommand("mythics", MythicPlus.MythicPlusCommand)
-    MythicPlus:RegisterModuleSlashCommand("mythicplus", MythicPlus.MythicPlusCommand)
-    MythicPlus:RegisterModuleSlashCommand("mp", MythicPlus.MythicPlusCommand)
+    self:RegisterModuleSlashCommand("mythics", self.MythicPlusCommand)
+    self:RegisterModuleSlashCommand("mythicplus", self.MythicPlusCommand)
+    self:RegisterModuleSlashCommand("mp", self.MythicPlusCommand)
     WCCCAD.UI:PrintAddOnMessage("Mythic Plus module loaded.")
 
-    MythicPlus:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, MythicPlus.OnGuildyReceivedKeystoneCommReceieved)
-    MythicPlus:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, MythicPlus.OnGuildyNewRecordCommReceived)
+    self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, self.OnGuildyNewRecordCommReceived)
 end
 
 function MythicPlus:OnEnable()
-    MythicPlus.initialSyncComplete = false
-    MythicPlus:PruneOldEntries()
+    self.initialSyncComplete = false
+    self:PruneOldEntries()
 
-    MythicPlus:RegisterEvent("BAG_UPDATE", MythicPlus.ScheduleOwnKeystoneUpdate)
-    MythicPlus:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", MythicPlus.OnNewWeeklyRecord)
-    MythicPlus:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", MythicPlus.ScheduleOwnKeystoneUpdate)
-    MythicPlus:RegisterEvent("CHALLENGE_MODE_RESET", MythicPlus.ScheduleOwnKeystoneUpdate)
-    MythicPlus:RegisterEvent("CHALLENGE_MODE_COMPLETED", MythicPlus.ScheduleOwnKeystoneUpdate)
+    self:RegisterEvent("BAG_UPDATE", self.ScheduleOwnKeystoneUpdate)
+    self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", self.OnNewWeeklyRecord)
+    self:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", self.ScheduleOwnKeystoneUpdate)
+    self:RegisterEvent("CHALLENGE_MODE_RESET", self.ScheduleOwnKeystoneUpdate)
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.ScheduleOwnKeystoneUpdate)
 
     -- Bit of a heavy handed catch for reset. Ideally we should calculate the time until reset and start a timer on that.
-    WCCCAD:ScheduleRepeatingTimer(MythicPlus.PruneOldEntries, PRUNE_TICK_INTERVAl)
+    WCCCAD:ScheduleRepeatingTimer(self.PruneOldEntries, PRUNE_TICK_INTERVAl)
 end
 
 function MythicPlus:OnDisable()
-    MythicPlus:UnregisterEvent("BAG_UPDATE")
-    MythicPlus:UnregisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD")
-    MythicPlus:UnregisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
-    MythicPlus:UnregisterEvent("CHALLENGE_MODE_RESET")
-    MythicPlus:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
+    self:UnregisterEvent("BAG_UPDATE")
+    self:UnregisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD")
+    self:UnregisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
+    self:UnregisterEvent("CHALLENGE_MODE_RESET")
+    self:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
 end
 
 
@@ -77,7 +77,7 @@ function MythicPlus:MythicPlusCommand(args)
         end
         return 
     end
-    
+
     self.UI:ShowWindow()
 end
 
@@ -90,8 +90,8 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
     local keystoneLevel = level
 
     local GUID = UnitGUID("player")
-    local className, classTag, classID = UnitClass("player")
-    MythicPlus.moduleDB.leaderboardData[GUID] = 
+    local _, _, classID = UnitClass("player")
+    self.moduleDB.leaderboardData[GUID] = 
     {
         GUID = GUID,
         playerName = UnitName("player"),
@@ -101,40 +101,42 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         lastUpdateTimestamp = GetServerTime()
     }
 
-    MythicPlus:SendGuildyNewRecordComm(MythicPlus.moduleDB.leaderboardData[GUID])
-    MythicPlus:InitiateSync()
-    MythicPlus.UI:OnDataUpdated()
+    self:SendGuildyNewRecordComm(self.moduleDB.leaderboardData[GUID])
+    self:InitiateSync()
+    self.UI:OnDataUpdated()
 
-    WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, MythicPlus.moduleDB.debugMode)
+    WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, self.moduleDB.debugMode)
 end
 
-function MythicPlus:ScheduleOwnKeystoneUpdate()
-    if not MythicPlus.updateKeystoneTimer then
-        WCCCAD.UI:PrintDebugMessage("Scheduling keystone update.", MythicPlus.moduleDB.debugMode)
+-- TODO: On Challenge Mode Completed - Cancel current scheduled update, update immediately, ignoring active keystone info.
 
-        MythicPlus.updateKeystoneTimer = WCCCAD:ScheduleTimer(
+function MythicPlus:ScheduleOwnKeystoneUpdate()
+    if not self.updateKeystoneTimer then
+        WCCCAD.UI:PrintDebugMessage("Scheduling keystone update.", self.moduleDB.debugMode)
+
+        self.updateKeystoneTimer = WCCCAD:ScheduleTimer(
             function() 
                 if not WCCCAD:CheckAddonActive(false) then
                     return
                 end
-                
-                WCCCAD.UI:PrintDebugMessage("Triggering keystone update.", MythicPlus.moduleDB.debugMode)
-                MythicPlus.updateKeystoneTimer = nil
-                if not MythicPlus.initialSyncComplete then
-                    MythicPlus.initialSyncComplete = true
-                    MythicPlus:UpdateOwnKeystone()
-                    MythicPlus:UpdateOwnWeeklyBest()
-                    MythicPlus.UI:OnDataUpdated()
-                    MythicPlus:InitiateSync()
+
+                WCCCAD.UI:PrintDebugMessage("Triggering keystone update.", self.moduleDB.debugMode)
+                self.updateKeystoneTimer = nil
+                if not self.initialSyncComplete then
+                    self.initialSyncComplete = true
+                    self:UpdateOwnKeystone()
+                    self:UpdateOwnWeeklyBest()
+                    self.UI:OnDataUpdated()
+                    self:InitiateSync()
                 else
-                    local isNewKeystone = MythicPlus:UpdateOwnKeystone()
+                    local isNewKeystone = self:UpdateOwnKeystone()
                     if not isNewKeystone then
                         return
                     end
-            
-                    MythicPlus:SendGuildyReceivedKeystoneComm(MythicPlus.moduleDB.guildKeys[UnitGUID("player")])
-                    MythicPlus:InitiateSync()
-                    MythicPlus.UI:OnDataUpdated()
+
+                    self:SendGuildyReceivedKeystoneComm(self.moduleDB.guildKeys[UnitGUID("player")])
+                    self:InitiateSync()
+                    self.UI:OnDataUpdated()
                 end 
             end, 
         KEYSTONE_UPDATE_DELAY)
@@ -158,16 +160,16 @@ function MythicPlus:UpdateOwnKeystone()
     -- and we don't want to update other users until the run is finished.
     local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
     if activeKeystoneLevel > 0 then
-        WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", MythicPlus.moduleDB.debugMode)
+        WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", self.moduleDB.debugMode)
         return false
     end
 
     local mapID = C_MythicPlus.GetOwnedKeystoneChallengeMapID()
 
     local GUID = UnitGUID("player")
-    local className, classTag, classID = UnitClass("player")
-    local prevKeystoneData = MythicPlus.moduleDB.guildKeys[GUID]
-    MythicPlus.moduleDB.guildKeys[GUID] = 
+    local _, _, classID = UnitClass("player")
+    local prevKeystoneData = self.moduleDB.guildKeys[GUID]
+    self.moduleDB.guildKeys[GUID] = 
     {
         GUID = GUID,
         playerName = UnitName("player"),
@@ -178,7 +180,7 @@ function MythicPlus:UpdateOwnKeystone()
     }
 
     local isNewKey = prevKeystoneData == nil or (prevKeystoneData.mapID ~= mapID or prevKeystoneData.level ~= keystoneLevel)
-    WCCCAD.UI:PrintDebugMessage("Updating own key: "..mapID.. " +"..keystoneLevel .. " is new: " .. tostring(isNewKey), MythicPlus.moduleDB.debugMode)
+    WCCCAD.UI:PrintDebugMessage("Updating own key: "..mapID.. " +"..keystoneLevel .. " is new: " .. tostring(isNewKey), self.moduleDB.debugMode)
 
     return isNewKey
 end
@@ -198,7 +200,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
     local playerName = UnitName("player")
 
     for _, mapID in pairs(maps) do
-        local durationSec, level, completionDate, affixIDs, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
+        local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
         if members then
 			for _, member in pairs(members) do
 				if member.name == playerName then
@@ -213,8 +215,8 @@ function MythicPlus:UpdateOwnWeeklyBest()
     end
 
     local GUID = UnitGUID("player")
-    local className, classTag, classID = UnitClass("player")
-    MythicPlus.moduleDB.leaderboardData[GUID] = 
+    local _, _, classID = UnitClass("player")
+    self.moduleDB.leaderboardData[GUID] = 
     {
         GUID = GUID,
         playerName = playerName,
@@ -230,15 +232,15 @@ end
 --- Guildy keystone notification
 ---
 function MythicPlus:SendGuildyReceivedKeystoneComm(keystoneData)
-    if not MythicPlus.moduleDB.sendGuildReceivedKeystoneNotification then
+    if not self.moduleDB.sendGuildReceivedKeystoneNotification then
         return
     end
 
-    MythicPlus:SendModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, keystoneData, ns.consts.CHAT_CHANNEL.GUILD)
+    self:SendModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, keystoneData, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
 function MythicPlus:OnGuildyReceivedKeystoneCommReceieved(data)
-    if not MythicPlus.moduleDB.showGuildMemberReceivedKeystoneNotification then
+    if not self.moduleDB.showGuildMemberReceivedKeystoneNotification then
         return
     end
 
@@ -253,15 +255,15 @@ function MythicPlus:OnGuildyReceivedKeystoneCommReceieved(data)
 end
 
 function MythicPlus:SendGuildyNewRecordComm(keystoneData)
-    if not MythicPlus.moduleDB.sendGuildNewRecordNotification then
+    if not self.moduleDB.sendGuildNewRecordNotification then
         return
     end
 
-    MythicPlus:SendModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, keystoneData, ns.consts.CHAT_CHANNEL.GUILD)
+    self:SendModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, keystoneData, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
 function MythicPlus:OnGuildyNewRecordCommReceived(data)
-    if not MythicPlus.moduleDB.showGuildmemberNewRecordNotification then
+    if not self.moduleDB.showGuildmemberNewRecordNotification then
         return
     end
 
@@ -277,27 +279,27 @@ end
 
 
 --#region Player Entry Tools
-function MythicPlus:PruneOldEntries(playerKeyTable)
+function MythicPlus:PruneOldEntries()
     local dataChanged = false
     local lastResetTimestamp = ns.utils.GetLastServerResetTimestamp()
 
-    for key, entryData in pairs(MythicPlus.moduleDB.leaderboardData) do
+    for key, entryData in pairs(self.moduleDB.leaderboardData) do
         if entryData.lastUpdateTimestamp < lastResetTimestamp then
-            MythicPlus.moduleDB.leaderboardData[key] = nil
+            self.moduleDB.leaderboardData[key] = nil
             dataChanged = true
         end
     end
 
-    for key, entryData in pairs(MythicPlus.moduleDB.guildKeys) do
+    for key, entryData in pairs(self.moduleDB.guildKeys) do
         if entryData.lastUpdateTimestamp < lastResetTimestamp then
-            MythicPlus.moduleDB.guildKeys[key] = nil
+            self.moduleDB.guildKeys[key] = nil
             dataChanged = true
         end
     end
 
     if dataChanged then
-        WCCCAD.UI:PrintDebugMessage("Pruned last season's M+ entries.", MythicPlus.moduleDB.debugMode)
-        MythicPlus.UI:OnDataUpdated()
+        WCCCAD.UI:PrintDebugMessage("Pruned last season's M+ entries.", self.moduleDB.debugMode)
+        self.UI:OnDataUpdated()
     end
 end
 --#endregion
@@ -309,12 +311,12 @@ end
 function MythicPlus:UpdateLeaderboard(leaderboardData)
     local dataChanged = false
     for key, entryData in pairs(leaderboardData) do
-        if MythicPlus.moduleDB.leaderboardData[key] == nil or MythicPlus.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
-            MythicPlus.moduleDB.leaderboardData[key] = entryData
+        if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+            self.moduleDB.leaderboardData[key] = entryData
             dataChanged = true
         end
     end
-    
+
     if dataChanged then
         MythicPlus.UI:OnDataUpdated()
     end
@@ -326,14 +328,14 @@ end
 function MythicPlus:UpdateGuildKeys(guildKeys)
     local dataChanged = false
     for key, entryData in pairs(guildKeys) do
-        if MythicPlus.moduleDB.guildKeys[key] == nil or MythicPlus.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
-            MythicPlus.moduleDB.guildKeys[key] = entryData
+        if self.moduleDB.guildKeys[key] == nil or self.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+            self.moduleDB.guildKeys[key] = entryData
             dataChanged = true
         end
     end
 
     if dataChanged then
-        MythicPlus.UI:OnDataUpdated()
+        self.UI:OnDataUpdated()
     end
 end
 
@@ -343,12 +345,12 @@ end
 
 function MythicPlus:GetSyncData() 
     -- Refresh updated timestamp.
-    MythicPlus:UpdateOwnKeystone()
+    self:UpdateOwnKeystone()
 
     local syncData =
     {
-        leaderboardData = MythicPlus.moduleDB.leaderboardData,
-        guildKeys = MythicPlus.moduleDB.guildKeys
+        leaderboardData = self.moduleDB.leaderboardData,
+        guildKeys = self.moduleDB.guildKeys
     }
 
     return syncData
@@ -359,10 +361,10 @@ function MythicPlus:CompareSyncData(remoteData)
 end
 
 function MythicPlus:OnSyncDataReceived(data)    
-    MythicPlus:UpdateLeaderboard(data.leaderboardData)
-    MythicPlus:UpdateGuildKeys(data.guildKeys)
+    self:UpdateLeaderboard(data.leaderboardData)
+    self:UpdateGuildKeys(data.guildKeys)
 
-    MythicPlus.PruneOldEntries()
+    self.PruneOldEntries()
 end
 
 --#endregion

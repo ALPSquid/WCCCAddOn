@@ -3,7 +3,7 @@
 -- Author: Aerthok - Defias Brotherhood EU
 --
 
-local name, ns = ...
+local _, ns = ...
 
 local WCCCAD = LibStub("AceAddon-3.0"):NewAddon("WCCC Clubbing Companion", "AceConsole-3.0", "AceEvent-3.0", "AceSerializer-3.0", "AceComm-3.0", "AceTimer-3.0")
 
@@ -20,25 +20,25 @@ local dataDefaults =
 
 function WCCCAD:OnInitialize()
         -- Addon is deactivated if the player is not in the WCCC.
-        WCCCAD.addonActive = true;
+        self.addonActive = true;
 
         -- Custom root commands set by modules. Any args parsed to /wccc command are checked against this table.
-        WCCCAD.moduleCommands = {}
+        self.moduleCommands = {}
 
         -- Load database
-        WCCCAD.db = LibStub("AceDB-3.0"):New("WCCCDB", dataDefaults, true)
+        self.db = LibStub("AceDB-3.0"):New("WCCCDB", dataDefaults, true)
 
-        WCCCAD:RegisterComm("WCCCAD")    
-        
-        WCCCAD.UI:PrintAddOnMessage("AddOn Loaded. Type /wccc for options.")
+        self:RegisterComm("WCCCAD")    
+
+        self.UI:PrintAddOnMessage("AddOn Loaded. Type /wccc for options.")
 end
 
 function WCCCAD:OnEnable()
-    WCCCAD:RegisterChatCommand("wccc", "WCCCCommand")
+    self:RegisterChatCommand("wccc", "WCCCCommand")
 end
 
 function WCCCAD:OnDisable()
-    WCCCAD:UnregisterChatCommand("wccc")
+    self:UnregisterChatCommand("wccc")
 end
 
 ---
@@ -46,7 +46,7 @@ end
 --- Use ModuleBase.RegisterModuleSlashCommand for convenience.
 ---
 function WCCCAD:RegisterModuleSlashCommand(moduleObj, command, func) 
-    WCCCAD.moduleCommands[command] = function(args) func(moduleObj, args) end
+    self.moduleCommands[command] = function(args) func(moduleObj, args) end
 end
 
 ---
@@ -60,16 +60,16 @@ function WCCCAD:WCCCCommand(input)
 
     -- Open UI if no args were passed.
     if args == nil or next(args) == nil then
-        WCCCAD.UI:Show()
+        self.UI:Show()
 
-        WCCCAD:CheckAddonActive(true)
+        self:CheckAddonActive(true)
     else 
-        if WCCCAD:CheckAddonActive(true) == false then
+        if self:CheckAddonActive(true) == false then
             return
         end
 
         local moduleCmd = args[1]
-        local cmdFunc = WCCCAD.moduleCommands[moduleCmd]
+        local cmdFunc = self.moduleCommands[moduleCmd]
         if cmdFunc ~= nil then
             table.remove(args, 1)
             cmdFunc(args)
@@ -82,24 +82,24 @@ end
 --- If printMsg is true and the addon is disabled, the disabled message will be shown.
 --- This is used to prevent commands if we're "disabled".
 --- @param printMsg - Whether to print the addon disabled message.
---- 
+---
 function WCCCAD:CheckAddonActive(printMsg)
     local guildName = IsInGuild() and GetGuildInfo("player") or nil
-    WCCCAD.addonActive = guildName == "Worgen Cub Clubbing Club";
+    self.addonActive = guildName == "Worgen Cub Clubbing Club";
 
-    if printMsg and not WCCCAD.addonActive then
-        WCCCAD.UI:PrintAddonDisabledMessage() 
+    if printMsg and not self.addonActive then
+        self.UI:PrintAddonDisabledMessage() 
     end
 
-    return WCCCAD.addonActive
+    return self.addonActive
 end
 
 function WCCCAD:IsPlayerOfficer()
-    if not WCCCAD:CheckAddonActive() then
+    if not self:CheckAddonActive() then
         return false
     end
 
-    local guildName, rankName, rankIdx = GetGuildInfo("player")
+    local _, _, rankIdx = GetGuildInfo("player")
     return rankIdx <= 2
 end
 
@@ -117,17 +117,17 @@ WCCCAD.moduleCommBindings =
 --- Bind module function for a specific message key. Callback will be passed the message deserialized data.
 ---
 function WCCCAD:RegisterModuleComm(moduleObj, moduleName, messageKey, func)
-    if WCCCAD.moduleCommBindings[moduleName] == nil then
-        WCCCAD.moduleCommBindings[moduleName] = {}
+    if self.moduleCommBindings[moduleName] == nil then
+        self.moduleCommBindings[moduleName] = {}
     end
-    
+
     -- TODO: Error about table being passed to format??
-    if WCCCAD.moduleCommBindings[moduleName][messageKey] ~= nil then
-        WCCCAD.UI:PrintAddOnMessage(format("Multiple comms registered for %s.%s, this should not happen! Please let Aerthok know.", moduleName, messageKey), ns.consts.MSG_TYPE.ERROR)
+    if self.moduleCommBindings[moduleName][messageKey] ~= nil then
+        self.UI:PrintAddOnMessage(format("Multiple comms registered for %s.%s, this should not happen! Please let Aerthok know.", moduleName, messageKey), ns.consts.MSG_TYPE.ERROR)
         return
     end
 
-    WCCCAD.moduleCommBindings[moduleName][messageKey] = function(data) func(moduleObj, data) end
+    self.moduleCommBindings[moduleName][messageKey] = function(data) func(moduleObj, data) end
 end
 
 ---
@@ -137,11 +137,11 @@ end
 ---
 function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlayer)
     local modulePrefix = format("%s[WCCCMOD]%s[WCCCKEY]", moduleName, messageKey)
-    
-    local serialisedData = WCCCAD:Serialize(data)
+
+    local serialisedData = self:Serialize(data)
     serialisedData = modulePrefix..serialisedData
 
-    WCCCAD:SendCommMessage("WCCCAD", serialisedData, channel, targetPlayer)
+    self:SendCommMessage("WCCCAD", serialisedData, channel, targetPlayer)
 end
 
 function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
@@ -156,10 +156,10 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
         messageData = message
     end    
 
-    if WCCCAD.moduleCommBindings[moduleName] == nil or WCCCAD.moduleCommBindings[moduleName][messageKey] == nil then
+    if self.moduleCommBindings[moduleName] == nil or self.moduleCommBindings[moduleName][messageKey] == nil then
         return
     end
 
-    local success, deserialisedData = WCCCAD:Deserialize(messageData)
-    WCCCAD.moduleCommBindings[moduleName][messageKey](deserialisedData)    
+    local success, deserialisedData = self:Deserialize(messageData)
+    self.moduleCommBindings[moduleName][messageKey](deserialisedData)    
 end

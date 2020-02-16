@@ -2,7 +2,7 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local ClubbingComp = WCCCAD:GetModule("WCCC_ClubbingCompetition")
@@ -172,7 +172,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Pandaren" end,
                             order = 1.08
                         },    
-                        
+
                         hitCountDescription =
                         {
                             type = "description",
@@ -180,7 +180,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             name = "Hit counts show the current season races and don't show frenzy multipliers or non-season frenzy races (these still count to your total score).",
                             order = 1.09
                         }, 
-                        
+
                         reportSeasonButtons = 
                         {
                             type = "group",
@@ -200,7 +200,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 reportScorePartyBtn =
                                 {
                                     type = "execute",
-                                    name = function() 
+                                    name = function()
                                         if IsInRaid() then
                                             return "Raid"
                                         else
@@ -333,7 +333,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                         },    
                     },
                 },         
-                
+
                 frenzyInfo = 
                 {
                     type = "group",
@@ -508,7 +508,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                 },                
             }
         },
-        
+
         officerControlsPanel = 
         {
             type = "group",
@@ -576,7 +576,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             func = function() ClubbingComp:OC_SetSeason(ClubbingComp.UI.OC_SelectedSeason) end,        
                             confirm = function() return format( "Start new %s season? This will wipe all player's progress!", ClubbingComp.UI.OC_SelectedSeason) end,
                         },      
-                        
+
                         seasonOCTopClubbersDesc =
                         {
                             type = "description",     
@@ -593,7 +593,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             fontSize = "medium",
                             name = "|cffFFB80F1.|r"      
                         },
-                        
+
                         seasonOCTopClubbersEntry1_Name = 
                         {
                             type = "input",
@@ -803,11 +803,11 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             type = "execute",     
                             order = 10.24,
                             name = "Start Frenzy",
-                            desc = "Start a new frenzy for the selected race, multiplier and duration.",                            
+                            desc = "Start a new frenzy for the selected race, multiplier and duration.",
                             func = function() ClubbingComp:OC_StartFrenzy(
                                 ClubbingComp.UI.OC_FrenzySelectedRace, 
-                                ClubbingComp.UI.OC_FrenzyMultiplierOptions[ClubbingComp.UI.OC_FrenzySelectedMultiplier], 
-                                ClubbingComp.UI.OC_FrenzyDurationOptions[ClubbingComp.UI.OC_FrenzySelectedDuration] * 60) 
+                                ClubbingComp.UI.OC_FrenzyMultiplierOptions[ClubbingComp.UI.OC_FrenzySelectedMultiplier],
+                                ClubbingComp.UI.OC_FrenzyDurationOptions[ClubbingComp.UI.OC_FrenzySelectedDuration] * 60)
                             end,        
                             confirm = function() return format( "Start new %s frenzy?", ClubbingComp.UI.OC_FrenzySelectedRace) end,
                         },
@@ -924,7 +924,7 @@ function ClubbingComp_UI:OC_SetTopClubberName(clubberIdx, name)
     if ClubbingComp.UI.OC_TopClubbers[clubberIdx] == nil then
         ClubbingComp.UI.OC_TopClubbers[clubberIdx] = {name=nil, score=0}
     end
-    
+
     if name == "" then
         name = nil
     end
@@ -948,13 +948,17 @@ end
 --- Applies edit mode data to live.
 ---
 function ClubbingComp_UI:OC_SaveTopClubbers()
-    ClubbingComp:OC_SetTopClubbers(ClubbingComp_UI.OC_TopClubbers)
+    ClubbingComp:OC_SetTopClubbers(self.OC_TopClubbers)
 end
 
 --#endregion
 
 
-function ClubbingComp_UI:CreateHUD() 
+function ClubbingComp_UI:CreateHUD()
+    if self.hudFrame ~= nil then
+        return
+    end
+
     local hudFrame = ns.utils.CreateHUDPanel(
         "Clubbing Competition",
 
@@ -976,21 +980,21 @@ function ClubbingComp_UI:CreateHUD()
             ClubbingComp.UI:SetHUDShown(false)
         end
     )
-    ClubbingComp_UI.hudFrame = hudFrame   
+    self.hudFrame = hudFrame   
 
     hudFrame:SetSize(220, 90)
 
-    hudFrame.SetClubBtnShown = function(self, btnShown)
-        local frameHeight = hudFrame:GetHeight()
-        if btnShown and hudFrame.clubBtn:IsShown() == false then
-            hudFrame.clubBtn:Show()
-            frameHeight = frameHeight + hudFrame.clubBtn:GetHeight()
-        elseif btnShown == false and hudFrame.clubBtn:IsShown() then
-            hudFrame.clubBtn:Hide()
-            frameHeight = frameHeight - hudFrame.clubBtn:GetHeight()
+    function hudFrame.SetClubBtnShown(hudFrameSelf, btnShown)
+        local frameHeight = hudFrameSelf:GetHeight()
+        if btnShown and hudFrameSelf.clubBtn:IsShown() == false then
+            hudFrameSelf.clubBtn:Show()
+            frameHeight = frameHeight + hudFrameSelf.clubBtn:GetHeight()
+        elseif btnShown == false and hudFrameSelf.clubBtn:IsShown() then
+            hudFrameSelf.clubBtn:Hide()
+            frameHeight = frameHeight - hudFrameSelf.clubBtn:GetHeight()
         end
 
-        hudFrame:SetHeight(frameHeight)
+        hudFrameSelf:SetHeight(frameHeight)
         ClubbingComp.moduleDB.hudData.showClubBtn = btnShown
     end
 
@@ -1013,16 +1017,16 @@ function ClubbingComp_UI:CreateHUD()
     hudFrame.clubBtn:SetScript("OnClick", function()
         ClubbingComp:ClubCommand()
     end)  
-    
-    ClubbingComp_UI:UpdateHUD()
+
+    self:UpdateHUD()
 end
 
 function ClubbingComp_UI:UpdateHUD() 
-    if ClubbingComp_UI.hudFrame == nil then
+    if self.hudFrame == nil then
         return
     end
 
-    ClubbingComp_UI.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubbingComp.moduleDB.score))
+    self.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubbingComp.moduleDB.score))
 
     local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
     local frenzyString = "Frenzy Inactive"
@@ -1039,9 +1043,9 @@ function ClubbingComp_UI:UpdateHUD()
             timeRemaining)
     end
 
-    ClubbingComp_UI.hudFrame.frenzyDisplay:SetText(frenzyString)
+    self.hudFrame.frenzyDisplay:SetText(frenzyString)
 
-    ClubbingComp_UI.hudFrame:SetClubBtnShown(ClubbingComp.moduleDB.hudData.showClubBtn)
+    self.hudFrame:SetClubBtnShown(ClubbingComp.moduleDB.hudData.showClubBtn)
 end
 
 
@@ -1049,9 +1053,9 @@ function ClubbingComp_UI:SetHUDShown(shown)
     ClubbingComp.moduleDB.hudData.showHUD = shown
 
     if shown then
-        ClubbingComp_UI:ShowHUDIfEnabled()
-    elseif ClubbingComp_UI.hudFrame ~= nil then
-        ClubbingComp_UI.hudFrame:Hide()
+        self:ShowHUDIfEnabled()
+    elseif self.hudFrame ~= nil then
+        self.hudFrame:Hide()
     end
 end
 
@@ -1060,9 +1064,9 @@ function ClubbingComp_UI:ShowHUDIfEnabled()
         return
     end
 
-    if ClubbingComp_UI.hudFrame == nil then
-        ClubbingComp_UI:CreateHUD()
+    if self.hudFrame == nil then
+        self:CreateHUD()
     end
 
-    ClubbingComp_UI.hudFrame:Show()    
+    self.hudFrame:Show()    
 end

@@ -2,7 +2,7 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 
 ns.consts = {}
 ns.utils = {}
@@ -70,6 +70,42 @@ ns.consts.EVENTS =
 ---
 --- UTILS
 ---
+
+function ns.utils.CreateClass(baseClass, initMethod)
+    local classTable = {}
+    local classMetaTable = {}
+
+    if type(baseClass) == "function" and not initMethod then
+        initMethod = baseClass
+        baseClass = nil
+    -- Copy base functions to get correct access to base metafunctions such as __tostring
+    elseif type(baseClass) == "table" then
+        for k, v in pairs(baseClass) do
+            classTable[k] = v
+        end
+    end
+
+    classMetaTable.__index = baseClass
+    classTable.__index = classTable
+    classTable.initMethod = initMethod
+    setmetatable(classTable, classMetaTable)
+
+    classMetaTable.__call = function(class, ...)
+        local newInstance = {}
+        setmetatable(newInstance, classTable)
+
+        if initMethod then
+            initMethod(newInstance, ...)
+        elseif baseClass and baseClass.initMethod then
+            baseClass.initMethod(newInstance, ...)
+        end
+
+        return newInstance
+    end
+
+    return classTable
+end
+
 
 ns.utils.GetPlayerNameRealmString = function()
     local name, realm = UnitFullName("player")
@@ -224,10 +260,10 @@ ns.utils.FormatSpecialString = function(inputString)
     }
 
     local formattedString = inputString:gsub("||", "|")
-    for k, formatData in pairs(formatStrings) do
+    for _, formatData in pairs(formatStrings) do
         formattedString = formattedString:gsub(formatData[1], formatData[2])
     end
-            
+
     return formattedString
 end
 
@@ -245,7 +281,7 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     local hudFrame = CreateFrame("Frame", nil, UIParent)
     hudFrame:SetFrameStrata("MEDIUM")
 
-    point, offsetX, offsetY = framePointGetter()
+    local point, offsetX, offsetY = framePointGetter()
     hudFrame:SetPoint(
         point, 
         nil,
@@ -272,13 +308,13 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     hudFrame:SetScript("OnDragStop", function()
         hudFrame:StopMovingOrSizing()
 
-        point, relativeTo, relativePoint, offsetX, offsetY = hudFrame:GetPoint()
-        framePointSetter(point, offsetX, offsetY)
+        local newPoint, _, _, newOffsetX, newOffsetY = hudFrame:GetPoint()
+        framePointSetter(newPoint, newOffsetX, newOffsetY)
     end)
 
-    hudFrame.SetLocked = function(self, locked)
-        hudFrame.IsLocked = locked
-        hudFrame:EnableMouse(not locked) 
+    function hudFrame.SetLocked(hudFrameSelf, locked)
+        hudFrameSelf.IsLocked = locked
+        hudFrameSelf:EnableMouse(not locked) 
 
         local lockTexture = "Interface\\LFGFRAME\\UI-LFG-ICON-LOCK"
         local backdropAlpha = 0.3
@@ -289,16 +325,16 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
             lockTexture = "Interface\\CURSOR\\UI-Cursor-Move"
         end
 
-        hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
-        hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
+        hudFrameSelf:SetBackdropColor(0, 0, 0, backdropAlpha)
+        hudFrameSelf:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
 
-        hudFrame.lockBtn:SetNormalTexture(lockTexture)
+        hudFrameSelf.lockBtn:SetNormalTexture(lockTexture)
 
-        if hudFrame.resizeHandle ~= nil then
+        if hudFrameSelf.resizeHandle ~= nil then
             if locked then 
-                hudFrame.resizeHandle:Hide()
+                hudFrameSelf.resizeHandle:Hide()
             else
-                hudFrame.resizeHandle:Show()
+                hudFrameSelf.resizeHandle:Show()
             end                
         end
     end
@@ -355,7 +391,7 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     if resizable then
         hudFrame:SetResizable(true)
 
-        width, height = sizeGetter()
+        local width, height = sizeGetter()
         hudFrame:SetSize(width, height)
         hudFrame:SetMinResize(200, 200)
 
@@ -374,8 +410,8 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
             hudFrame:StartSizing("BOTTOMRIGHT")
         end)
 
-        hudFrame:SetScript("OnSizeChanged", function(frame, width, height)
-            sizeSetter(width, height)
+        hudFrame:SetScript("OnSizeChanged", function(hudFrameSelf, newWidth, newHeight)
+            sizeSetter(newWidth, newHeight)
         end)
 
         hudFrame.resizeHandle:SetScript("OnMouseUp", function() 
