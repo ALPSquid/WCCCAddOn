@@ -5,9 +5,9 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-local HIT_COOLDOWN = 15 * 60; -- 15 mins between hitting the same target.
---local SEASON_MULTIPLIER = 1.5;
-local SEASON_MULTIPLIER = 1;
+local HIT_COOLDOWN = 15 * 60 -- 15 mins between hitting the same target.
+--local SEASON_MULTIPLIER = 1.5
+local SEASON_MULTIPLIER = 1
 
 local RACES =
 {
@@ -66,12 +66,12 @@ local RACES =
         pluralName = "Worgen",
 		score = 3,
 	},
-};
-RACES["LightforgedDraenei"] = RACES["Draenei"];
-RACES["VoidElf"] = RACES["NightElf"];
-RACES["KulTiran"] = RACES["Human"];
-RACES["DarkIronDwarf"] = RACES["Dwarf"];
-RACES["Mechagnome"] = RACES["Gnome"];
+}
+RACES["LightforgedDraenei"] = RACES["Draenei"]
+RACES["VoidElf"] = RACES["NightElf"]
+RACES["KulTiran"] = RACES["Human"]
+RACES["DarkIronDwarf"] = RACES["Dwarf"]
+RACES["Mechagnome"] = RACES["Gnome"]
 
 local HIT_SOUNDS =
 {
@@ -80,8 +80,8 @@ local HIT_SOUNDS =
     [3] = 567738, -- "Sound\Item\Weapons\Mace1H\1hMaceHitFlesh1c.ogg",
     [4] = 567724, -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg"
 }
-local SWING_SOUND = 567935 -- "Sound\Item\Weapons\WeaponSwings\mWooshMedium2.ogg";
-local SUCCESS_HIT_SOUND = 567724 -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg";
+local SWING_SOUND = 567935 -- "Sound\Item\Weapons\WeaponSwings\mWooshMedium2.ogg"
+local SUCCESS_HIT_SOUND = 567724 -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg"
 
 local SUCCESS_HIT_MESSAGES =
 {
@@ -250,7 +250,7 @@ function ClubbingComp:ClubCommand(args)
             else
                 self:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.")
             end
-            PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)]);
+            PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)])
         end
     end
 end
@@ -314,16 +314,16 @@ function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
 
     local targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
     if targetHitData == nil or targetHitData.hits == nil or #targetHitData.hits == 0 then
-        return false;
+        return false
     end
 
     local lastHitTime = targetHitData.hits[#targetHitData.hits]
 	-- Check current time and time the target was last hit.
 	if GetServerTime() > lastHitTime + HIT_COOLDOWN then
-		return false;
+		return false
 	end
 
-    return true;
+    return true
 end
 
 function ClubbingComp:IsRaceClubbable(targetRaceEn)

@@ -71,42 +71,6 @@ ns.consts.EVENTS =
 --- UTILS
 ---
 
-function ns.utils.CreateClass(baseClass, initMethod)
-    local classTable = {}
-    local classMetaTable = {}
-
-    if type(baseClass) == "function" and not initMethod then
-        initMethod = baseClass
-        baseClass = nil
-    -- Copy base functions to get correct access to base metafunctions such as __tostring
-    elseif type(baseClass) == "table" then
-        for k, v in pairs(baseClass) do
-            classTable[k] = v
-        end
-    end
-
-    classMetaTable.__index = baseClass
-    classTable.__index = classTable
-    classTable.initMethod = initMethod
-    setmetatable(classTable, classMetaTable)
-
-    classMetaTable.__call = function(class, ...)
-        local newInstance = {}
-        setmetatable(newInstance, classTable)
-
-        if initMethod then
-            initMethod(newInstance, ...)
-        elseif baseClass and baseClass.initMethod then
-            baseClass.initMethod(newInstance, ...)
-        end
-
-        return newInstance
-    end
-
-    return classTable
-end
-
-
 ns.utils.GetPlayerNameRealmString = function()
     local name, realm = UnitFullName("player")
     return name.."-"..realm

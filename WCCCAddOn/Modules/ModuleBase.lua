@@ -5,10 +5,10 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
+
 ---
 --- Create a new module with some helper methods and a module database pre-configured (.moduleDB) which also contains a debugMode flag.
 ---
--- TODO: Can we turn this into a class?
 function WCCCAD:CreateModule(moduleName, dbDefaults)
     local wcccModule = WCCCAD:NewModule(moduleName) 
 
