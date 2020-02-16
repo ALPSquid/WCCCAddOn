@@ -108,7 +108,13 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
     WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, self.moduleDB.debugMode)
 end
 
--- TODO: On Challenge Mode Completed - Cancel current scheduled update, update immediately, ignoring active keystone info.
+function MythicPlus:OnChallengeModeComplete()
+    --- Force an update ignoring the active keystone when an MP is completed.
+    if self.updateKeystoneTimer ~= nil then
+        WCCCAD:CancelTimer(self.updateKeystoneTimer)
+        self:UpdateOwnKeystone(false)
+    end
+end
 
 function MythicPlus:ScheduleOwnKeystoneUpdate()
     if not self.updateKeystoneTimer then
@@ -129,14 +135,7 @@ function MythicPlus:ScheduleOwnKeystoneUpdate()
                     self.UI:OnDataUpdated()
                     self:InitiateSync()
                 else
-                    local isNewKeystone = self:UpdateOwnKeystone()
-                    if not isNewKeystone then
-                        return
-                    end
-
-                    self:SendGuildyReceivedKeystoneComm(self.moduleDB.guildKeys[UnitGUID("player")])
-                    self:InitiateSync()
-                    self.UI:OnDataUpdated()
+                    self:UpdateOwnKeystone()
                 end 
             end, 
         KEYSTONE_UPDATE_DELAY)
@@ -144,9 +143,14 @@ function MythicPlus:ScheduleOwnKeystoneUpdate()
 end
 
 ---
---- Returns true if the new keystone is different to the previous one.
+--- Update the player's keystone, triggering events if it's new.
+--- @param skipIfMythicInProgress - [default=true] If true, the update will be skipped if a Mythic+ is in progress
 ---
-function MythicPlus:UpdateOwnKeystone()
+function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
+    if skipIfMythicInProgress == nil then
+        skipIfMythicInProgress = true
+    end
+
     if not WCCCAD:CheckAddonActive(false) then
         return
     end
@@ -159,7 +163,7 @@ function MythicPlus:UpdateOwnKeystone()
     -- Don't update if we're currently in a run since the key will show as downgraded already 
     -- and we don't want to update other users until the run is finished.
     local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
-    if activeKeystoneLevel > 0 then
+    if activeKeystoneLevel > 0 and skipIfMythicInProgress then
         WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", self.moduleDB.debugMode)
         return false
     end
@@ -182,7 +186,11 @@ function MythicPlus:UpdateOwnKeystone()
     local isNewKey = prevKeystoneData == nil or (prevKeystoneData.mapID ~= mapID or prevKeystoneData.level ~= keystoneLevel)
     WCCCAD.UI:PrintDebugMessage("Updating own key: "..mapID.. " +"..keystoneLevel .. " is new: " .. tostring(isNewKey), self.moduleDB.debugMode)
 
-    return isNewKey
+    if isNewKey then
+        self:SendGuildyReceivedKeystoneComm(self.moduleDB.guildKeys[UnitGUID("player")])
+        self:InitiateSync()
+        self.UI:OnDataUpdated()
+    end
 end
 
 ---
@@ -323,7 +331,7 @@ function MythicPlus:UpdateLeaderboard(leaderboardData)
 end
 --#endregion
 
---#region Guild Keystones 
+--#region Guild Keystones
 
 function MythicPlus:UpdateGuildKeys(guildKeys)
     local dataChanged = false
