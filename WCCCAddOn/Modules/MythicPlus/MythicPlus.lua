@@ -203,6 +203,9 @@ function MythicPlus:UpdateOwnWeeklyBest()
         return
     end
 
+    WCCCAD.UI:PrintDebugMessage("Updating weekly best (scan).", self.moduleDB.debugMode)
+
+
     local maps = C_ChallengeMode.GetMapTable()
     local highestLevel = 0
     local highestMapID = nil
