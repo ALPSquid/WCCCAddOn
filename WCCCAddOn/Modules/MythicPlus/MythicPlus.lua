@@ -109,11 +109,12 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
 end
 
 function MythicPlus:OnChallengeModeComplete()
-    --- Force an update ignoring the active keystone when an MP is completed.
+    --- Force an update ignoring the active keystone when an M+ is completed.
+    WCCCAD.UI:PrintDebugMessage("Forcing keystone update.", self.moduleDB.debugMode)
     if self.updateKeystoneTimer ~= nil then
         WCCCAD:CancelTimer(self.updateKeystoneTimer)
-        self:UpdateOwnKeystone(false)
     end
+    self:UpdateOwnKeystone(false)
 end
 
 function MythicPlus:ScheduleOwnKeystoneUpdate()
