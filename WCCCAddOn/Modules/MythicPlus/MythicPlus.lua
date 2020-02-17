@@ -86,7 +86,8 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         return
     end
 
-    -- TODO: use level is nil? Is this only when the level == current weekly best on another map?
+    -- TODO: level is nil? Is this only when the level == current weekly best on another map?
+    -- TODO: If this is the case, we can skip this event as it's not a new level record, just map record.
     local mapID = mapChallengeModeID
     local keystoneLevel = level or 0
 
