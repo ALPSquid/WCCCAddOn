@@ -86,8 +86,9 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         return
     end
 
+    -- TODO: use level is nil? Is this only when the level == current weekly best on another map?
     local mapID = mapChallengeModeID
-    local keystoneLevel = level
+    local keystoneLevel = level or 0
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
@@ -205,26 +206,36 @@ function MythicPlus:UpdateOwnWeeklyBest()
 
     WCCCAD.UI:PrintDebugMessage("Updating weekly best (scan).", self.moduleDB.debugMode)
 
-
-    local maps = C_ChallengeMode.GetMapTable()
-    local highestLevel = 0
+    local weekBestLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
+    local highestLevel = weekBestLevel or 0
     local highestMapID = nil
     local playerName = UnitName("player")
 
-    for _, mapID in pairs(maps) do
-        local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
-        if members then
-			for _, member in pairs(members) do
-				if member.name == playerName then
-					if level and level > highestLevel then
-                        highestLevel = level
-                        highestMapID = mapID
-					end
-					break
-				end
-			end
-		end
-    end
+    -- TODO: It seems that if a weekly best is also a season best, it only appears in the GetSeasonBestForMap data.
+    -- TODO: To parse that, we'd need to figure out if the date returns for that season best is within the current week.
+    -- TODO: For now, this code will stay commented as we're not using the MapID.
+    -- local maps = C_ChallengeMode.GetMapTable()
+    -- local highestLevel = 0
+    -- local highestMapID = nil
+    -- local playerName = UnitName("player")
+
+    -- for _, mapID in pairs(maps) do
+    --     print(mapID)
+    --     local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
+    --     print(level)
+    --     if members then
+    --         for _, member in pairs(members) do
+    --             if member.name == playerName then
+    --                 print(level)
+	-- 				if level and level > highestLevel then
+    --                     highestLevel = level
+    --                     highestMapID = mapID
+	-- 				    break
+	-- 				end
+	-- 			end
+	-- 		end
+	-- 	end
+    -- end
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
