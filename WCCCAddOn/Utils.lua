@@ -135,8 +135,8 @@ end
 --- Creates a string displaying the time since the specified timestamp. e.g. "10 hours ago", "5 minutes ago"
 ns.utils.GetTimeSinceString = function(timeStamp)
     local timeDelta = GetServerTime() - timeStamp
-    local formattedTime = 0
-    local unitString = ""
+    local formattedTime
+    local unitString
 
     if timeDelta >= 86400 then
         formattedTime = ns.utils.DaysSince(timeStamp)
@@ -234,12 +234,12 @@ end
 
 ---
 --- Creates a floating UI panel themed in the WCCC style. Includes lock and dragging.
---- @param framePointGetter - Function that returns the point, offsetX, offsetY for the frame.
---- @param framePointSetter - Function that takes the point, offsetX, offsetY for the frame to be saved.
---- @param infoPressedCallback - Function called when the info button or guild logo is pressed.
---- @param resizable - [Optional] Whether the frame should be resizable.
---- @param sizeGetter - [Optional] Function that returns the width, height for the frame.
---- @param sizeSetter - [Optional] Function that takes the width, height for the frame to be saved.
+--- @param framePointGetter fun():number, number, number @Function that returns the point, offsetX, offsetY for the frame.
+--- @param framePointSetter fun(point:number, offsetX:number, offsetY:number) @Function that takes the point, offsetX, offsetY for the frame to be saved.
+--- @param infoPressedCallback fun() @Function called when the info button or guild logo is pressed.
+--- @param resizable boolean @[Optional] Whether the frame should be resizable.
+--- @param sizeGetter fun():number, number @[Optional] Function that returns the width, height for the frame.
+--- @param sizeSetter fun(width:number, height:number) @[Optional] Function that takes the width, height for the frame to be saved.
 ---
 ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, closePressedCallback, resizable, sizeGetter, sizeSetter) 
     local hudFrame = CreateFrame("Frame", nil, UIParent)

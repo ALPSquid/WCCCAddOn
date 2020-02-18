@@ -41,10 +41,10 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
 
     --- Sync functionality.
-    --- To request a sync or send updated data, use InitiateSync. 
+    --- To request a sync or send updated data, use InitiateSync.
     --- If a sync is received from a client, a response with data is sent back. Use BroadcastSyncData to send out data without wanting a reply (same functionality, but less traffic).
     ---  GetSyncData()  should return a table of data to send to other clients.
-    ---  CompareSyncData(remoteData)  compare received data with local data. Return type of ns.consts.DATA_SYNC_RESULT. 
+    ---  CompareSyncData(remoteData)  compare received data with local data. Return type of ns.consts.DATA_SYNC_RESULT.
     ---                               GetTotalSyncResult can be used to calculate a final value when multiple sync results from data chunks are required.
     ---  OnSyncDataReceived(data)  will be called when newer data is received from other clients.
 
@@ -58,9 +58,9 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         moduleSelf:_SendSyncComm(nil, false)
     end
 
-    --- @param targetPlayer  player to send comm to, or guild if null.
-    --- @param expectResponse  whether we want a reply if this was a broadcast (no targetPlayer). Defaults to true.
-    --- @param testData  optional test data to send instead of calling GetSyncData
+    --- @param targetPlayer string @Player to send comm to, or guild if null.
+    --- @param expectResponse boolean @Whether we want a reply if this was a broadcast (no targetPlayer). Defaults to true.
+    --- @param testData table @Optional test data to send instead of calling GetSyncData
     function wcccModule._SendSyncComm(moduleSelf, targetPlayer, expectResponse, testData)
         if expectResponse == nil then
             expectResponse = true

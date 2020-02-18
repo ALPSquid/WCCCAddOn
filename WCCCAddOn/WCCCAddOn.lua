@@ -81,7 +81,7 @@ end
 --- Returns whether the addon is active (enabled for the current character).
 --- If printMsg is true and the addon is disabled, the disabled message will be shown.
 --- This is used to prevent commands if we're "disabled".
---- @param printMsg - Whether to print the addon disabled message.
+--- @param printMsg boolean @Whether to print the addon disabled message.
 ---
 function WCCCAD:CheckAddonActive(printMsg)
     local guildName = IsInGuild() and GetGuildInfo("player") or nil
@@ -160,6 +160,6 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
         return
     end
 
-    local success, deserialisedData = self:Deserialize(messageData)
+    local _, deserialisedData = self:Deserialize(messageData)
     self.moduleCommBindings[moduleName][messageKey](deserialisedData)    
 end

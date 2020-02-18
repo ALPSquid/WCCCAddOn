@@ -6,9 +6,15 @@ local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local HIT_COOLDOWN = 15 * 60 -- 15 mins between hitting the same target.
---local SEASON_MULTIPLIER = 1.5
 local SEASON_MULTIPLIER = 1
 
+---@class RaceData
+---@field type string @Race type to register hits under
+---@field name string @Front-facing singular name
+---@field pluralName string @Front-facing plural name
+---@field score number @Number of points to award when clubbed
+
+---@type table<string, RaceData> @Table of in-game race IDs to RaceData.
 local RACES =
 {
 	["Human"] =
@@ -73,6 +79,7 @@ RACES["KulTiran"] = RACES["Human"]
 RACES["DarkIronDwarf"] = RACES["Dwarf"]
 RACES["Mechagnome"] = RACES["Gnome"]
 
+---@type number[]
 local HIT_SOUNDS =
 {
     [1] = 567750, --"Sound\Item\Weapons\Mace1H\1hMaceHitFlesh1a.ogg",
@@ -83,6 +90,7 @@ local HIT_SOUNDS =
 local SWING_SOUND = 567935 -- "Sound\Item\Weapons\WeaponSwings\mWooshMedium2.ogg"
 local SUCCESS_HIT_SOUND = 567724 -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg"
 
+---@type string[]
 local SUCCESS_HIT_MESSAGES =
 {
     [1] = "What a hit! I hope someone saw that!",
@@ -95,6 +103,7 @@ local SUCCESS_HIT_MESSAGES =
     [8] = "Bonk!"
 }
 
+---@type string[]
 local GUILDY_CLUBBED_MESSAGES =
 {
     [1] = "{playerName} just clubbed {worgenName} the Worgen in {playerLoc}!",
@@ -128,6 +137,11 @@ local clubbingCompData =
             currentSeasonRace = nil
         },
 
+        ---@class TargetHitData
+        ---@field actualRace string @In-game race ID
+        ---@field hits number[] @Array of hit timestamps
+
+        ---@type table<string, table<string, TargetHitData>>
         hitTable =
         {
             -- [raceScoreType] = { [name] = { actualRace, hits = {time} }
@@ -459,7 +473,7 @@ end
 
 --#region Frenzy
 
---- @duration  Duration in seconds.
+--- @param duration number @Duration in seconds.
 function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
     if not WCCCAD:IsPlayerOfficer() then
         return

@@ -238,7 +238,7 @@ function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     self.orderedGuildKeys = {}
 
     local idx = 1
-    for name, entryData in pairs(guildKeys) do        
+    for _, entryData in pairs(guildKeys) do        
         if entryData then
             local leaderboardEntry = leaderboardData[entryData.GUID]
             self.orderedGuildKeys[idx] =
@@ -310,7 +310,7 @@ end
 
 ---
 --- Sorts local data by the specified sort method.
---- @param reverseOnSameSort - Whether to reverse the sort if the specified method is the same as the active sort.
+--- @param reverseOnSameSort boolean @Whether to reverse the sort if the specified method is the same as the active sort.
 ---
 function WCCC_MythicPlusFrameMixin:SortDataByColumn(sortMethod, reverseOnSameSort)
     if sortMethod == nil or not self.orderedGuildKeys then
