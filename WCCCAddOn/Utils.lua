@@ -231,15 +231,14 @@ ns.utils.FormatSpecialString = function(inputString)
     return formattedString
 end
 
-
 ---
 --- Creates a floating UI panel themed in the WCCC style. Includes lock and dragging.
 --- @param framePointGetter fun():number, number, number @Function that returns the point, offsetX, offsetY for the frame.
 --- @param framePointSetter fun(point:number, offsetX:number, offsetY:number) @Function that takes the point, offsetX, offsetY for the frame to be saved.
 --- @param infoPressedCallback fun() @Function called when the info button or guild logo is pressed.
---- @param resizable boolean @[Optional] Whether the frame should be resizable.
---- @param sizeGetter fun():number, number @[Optional] Function that returns the width, height for the frame.
---- @param sizeSetter fun(width:number, height:number) @[Optional] Function that takes the width, height for the frame to be saved.
+--- @param resizable boolean optional @Whether the frame should be resizable.
+--- @param sizeGetter fun():number, number optional @Function that returns the width, height for the frame.
+--- @param sizeSetter fun(width:number, height:number) optional @Function that takes the width, height for the frame to be saved.
 ---
 ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, closePressedCallback, resizable, sizeGetter, sizeSetter) 
     local hudFrame = CreateFrame("Frame", nil, UIParent)

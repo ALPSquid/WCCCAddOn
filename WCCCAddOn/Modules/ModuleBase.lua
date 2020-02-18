@@ -60,7 +60,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
     --- @param targetPlayer string @Player to send comm to, or guild if null.
     --- @param expectResponse boolean @Whether we want a reply if this was a broadcast (no targetPlayer). Defaults to true.
-    --- @param testData table @Optional test data to send instead of calling GetSyncData
+    --- @param testData table optional @test data to send instead of calling GetSyncData
     function wcccModule._SendSyncComm(moduleSelf, targetPlayer, expectResponse, testData)
         if expectResponse == nil then
             expectResponse = true
