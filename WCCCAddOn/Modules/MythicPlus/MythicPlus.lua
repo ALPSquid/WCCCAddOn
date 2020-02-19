@@ -14,7 +14,6 @@ local KEYSTONE_UPDATE_DELAY = 5
 
 local mythicPlusData =
 {
-    ---@alias moduleDB table
     profile =
     {
         showGuildMemberReceivedKeystoneNotification = true,
@@ -23,7 +22,7 @@ local mythicPlusData =
         sendGuildReceivedKeystoneNotification = true,
         sendGuildNewRecordNotification = true,
 
-        ---@class leaderboardData
+        ---@class LeaderboardDataEntry
         ---@field GUID string
         ---@field playerName string
         ---@field classID number
@@ -31,12 +30,21 @@ local mythicPlusData =
         ---@field level number
         ---@field lastUpdateTimestamp number
 
-        ---@type table<string, leaderboardData>
+        ---@type table<string, LeaderboardDataEntry>
         leaderboardData = 
         {
             -- [GUID] = {GUID, playerName, classID, mapID, level, lastUpdateTimestamp}
         },
 
+        ---@class GuildKeyDataEntry
+        ---@field GUID string
+        ---@field playerName string
+        ---@field classID number
+        ---@field mapID number
+        ---@field level number
+        ---@field lastUpdateTimestamp number
+
+        ---@type table<string, GuildKeyDataEntry>
         guildKeys =
         {
              -- [GUID] = {GUID, playerName, classID, mapID, level, lastUpdateTimestamp}
@@ -60,6 +68,8 @@ end
 function MythicPlus:OnEnable()
     self.initialSyncComplete = false
     self:PruneOldEntries()
+    C_MythicPlus.RequestMapInfo()
+    C_MythicPlus.RequestRewards()
 
     self:RegisterEvent("BAG_UPDATE", function() self:ScheduleOwnKeystoneUpdate() end)
     self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", function() self:OnNewWeeklyRecord() end)
@@ -96,10 +106,18 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         return
     end
 
-    -- TODO: level is nil? Is this only when the level == current weekly best on another map?
-    -- TODO: If this is the case, we can skip this event as it's not a new level record, just map record.
     local mapID = mapChallengeModeID
-    local keystoneLevel = level or 0
+    local keystoneLevel = level
+
+    -- Fallback in-case level is nil. (Has happened: Completed an Underrot +5, level was nil, GetWeeklyBestForMap had no record of it)
+    local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
+    if keystoneLevel == nil or keystoneLevel == 0 then
+        if activeKeystoneLevel ~= nil and activeKeystoneLevel ~= 0 then
+            keystoneLevel = activeKeystoneLevel
+        else
+            keystoneLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
+        end
+    end
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
@@ -224,36 +242,28 @@ function MythicPlus:UpdateOwnWeeklyBest()
 
     WCCCAD.UI:PrintDebugMessage("Updating weekly best (scan).", self.moduleDB.debugMode)
 
+    -- Using the level from the reward as, for whatever reason, the weekly best data can get corrupted(?) and won't contain the correct reward level or map.
     local weekBestLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
-    local highestLevel = weekBestLevel or 0
     local highestMapID = nil
     local playerName = UnitName("player")
 
-    -- TODO: It seems that if a weekly best is also a season best, it only appears in the GetSeasonBestForMap data.
-    -- TODO: To parse that, we'd need to figure out if the date returns for that season best is within the current week.
-    -- TODO: For now, this code will stay commented as we're not using the MapID.
-    -- local maps = C_ChallengeMode.GetMapTable()
-    -- local highestLevel = 0
-    -- local highestMapID = nil
-    -- local playerName = UnitName("player")
+    WCCCAD.UI:PrintDebugMessage("Weekly Chest Level: " .. weekBestLevel, self.moduleDB.debugMode)
 
-    -- for _, mapID in pairs(maps) do
-    --     print(mapID)
-    --     local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
-    --     print(level)
-    --     if members then
-    --         for _, member in pairs(members) do
-    --             if member.name == playerName then
-    --                 print(level)
-	-- 				if level and level > highestLevel then
-    --                     highestLevel = level
-    --                     highestMapID = mapID
-	-- 				    break
-	-- 				end
-	-- 			end
-	-- 		end
-	-- 	end
-    -- end
+    local maps = C_ChallengeMode.GetMapTable()
+    for _, mapID in pairs(maps) do
+        local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
+        if members then
+            for _, member in pairs(members) do
+                if member.name == playerName then
+                    WCCCAD.UI:PrintDebugMessage("Found weekly best for " .. mapID .. " +" .. level, self.moduleDB.debugMode)
+                    if highestMapID == nil or (level and level > weekBestLevel) then
+                        highestMapID = mapID
+                        break
+                    end
+                end
+            end
+        end
+    end
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
@@ -263,7 +273,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
         playerName = playerName,
         classID = classID,
         mapID = highestMapID,
-        level = highestLevel,
+        level = weekBestLevel,
         lastUpdateTimestamp = GetServerTime()
     }
 

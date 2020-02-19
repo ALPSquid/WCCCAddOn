@@ -232,7 +232,9 @@ function WCCC_MythicPlusFrameMixin:OpenSettings()
     MythicPlus_UI:Show()
 end
 ---
---- Update frame with the MythicPlus guildKeys and leaderboardData tables.
+--- Update frame with the MythicPlus guildKeys and leaderboardData tables
+--- @param guildKeys table<string, GuildKeyDataEntry>
+--- @param leaderboardData table<string, LeaderboardDataEntry>
 ---
 function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     self.orderedGuildKeys = {}
