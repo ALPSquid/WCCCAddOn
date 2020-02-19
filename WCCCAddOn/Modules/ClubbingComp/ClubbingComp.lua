@@ -2,77 +2,84 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-local HIT_COOLDOWN = 15 * 60; -- 15 mins between hitting the same target.
---local SEASON_MULTIPLIER = 1.5;
-local SEASON_MULTIPLIER = 1;
+local HIT_COOLDOWN = 15 * 60 -- 15 mins between hitting the same target.
+local SEASON_MULTIPLIER = 1
 
-local RACES = 
+---@class RaceData
+---@field type string @Race type to register hits under
+---@field name string @Front-facing singular name
+---@field pluralName string @Front-facing plural name
+---@field score number @Number of points to award when clubbed
+
+---@type table<string, RaceData> @Table of in-game race IDs to RaceData.
+local RACES =
 {
-	["Human"] = 
+	["Human"] =
 	{
         type = "Human",
         name = "Human",
         pluralName = "Humans",
 		score = 1
 	},
-	
-	["Draenei"] = 
+
+	["Draenei"] =
 	{
         type = "Draenei",
         name = "Draenei",
         pluralName = "Draenei",
 		score = 1
 	},
-	
-	["Dwarf"] = 
+
+	["Dwarf"] =
 	{
         type = "Dwarf",
         name = "Dwarf",
         pluralName = "Dwarves",
 		score = 1
 	},
-	
-	["NightElf"] = 
+
+	["NightElf"] =
 	{
         type = "NightElf",
-        name = "Elf",        
-        pluralName = "Elves",        
+        name = "Elf",
+        pluralName = "Elves",
 		score = 1
 	},
-	
-	["Gnome"] = 
+
+	["Gnome"] =
 	{
         type = "Gnome",
-        name = "Gnome",   
-        pluralName = "Gnomes",   
+        name = "Gnome",
+        pluralName = "Gnomes",
 		score = 2
 	},
-	
-	["Pandaren"] = 
+
+	["Pandaren"] =
 	{
         type = "Pandaren",
-        name = "Pandaren", 
-        pluralName = "Pandaren", 
+        name = "Pandaren",
+        pluralName = "Pandaren",
 		score = 2
 	},
-	
-	["Worgen"] = 
+
+	["Worgen"] =
 	{
         type = "Worgen",
-        name = "Worgen", 
-        pluralName = "Worgen", 
+        name = "Worgen",
+        pluralName = "Worgen",
 		score = 3,
 	},
-};
-RACES["LightforgedDraenei"] = RACES["Draenei"];
-RACES["VoidElf"] = RACES["NightElf"];
-RACES["KulTiran"] = RACES["Human"];
-RACES["DarkIronDwarf"] = RACES["Dwarf"];
-RACES["Mechagnome"] = RACES["Gnome"];
+}
+RACES["LightforgedDraenei"] = RACES["Draenei"]
+RACES["VoidElf"] = RACES["NightElf"]
+RACES["KulTiran"] = RACES["Human"]
+RACES["DarkIronDwarf"] = RACES["Dwarf"]
+RACES["Mechagnome"] = RACES["Gnome"]
 
+---@type number[]
 local HIT_SOUNDS =
 {
     [1] = 567750, --"Sound\Item\Weapons\Mace1H\1hMaceHitFlesh1a.ogg",
@@ -80,9 +87,10 @@ local HIT_SOUNDS =
     [3] = 567738, -- "Sound\Item\Weapons\Mace1H\1hMaceHitFlesh1c.ogg",
     [4] = 567724, -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg"
 }
-local SWING_SOUND = 567935 -- "Sound\Item\Weapons\WeaponSwings\mWooshMedium2.ogg";
-local SUCCESS_HIT_SOUND = 567724 -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg";
+local SWING_SOUND = 567935 -- "Sound\Item\Weapons\WeaponSwings\mWooshMedium2.ogg"
+local SUCCESS_HIT_SOUND = 567724 -- "Sound\Item\Weapons\Mace1H\1hMaceHitFleshCrit.ogg"
 
+---@type string[]
 local SUCCESS_HIT_MESSAGES =
 {
     [1] = "What a hit! I hope someone saw that!",
@@ -95,7 +103,8 @@ local SUCCESS_HIT_MESSAGES =
     [8] = "Bonk!"
 }
 
-local GUILDY_CLUBBED_MESSAGES = 
+---@type string[]
+local GUILDY_CLUBBED_MESSAGES =
 {
     [1] = "{playerName} just clubbed {worgenName} the Worgen in {playerLoc}!",
     [2] = "{worgenName} the Worgen has been driven from {playerLoc} by {playerName}!",
@@ -105,7 +114,7 @@ local GUILDY_CLUBBED_MESSAGES =
 
 local COMM_KEY_GUILDY_CLUBBED_WORGEN = "guildyClubbedWorgen"
 
-local clubbingCompData = 
+local clubbingCompData =
 {
     profile =
     {
@@ -113,7 +122,7 @@ local clubbingCompData =
         sayEmotesEnabled = true,
         score = 0,
 
-        hudData = 
+        hudData =
         {
             framePoint = "CENTER",
             offsetX = 0,
@@ -122,12 +131,17 @@ local clubbingCompData =
             showClubBtn = true,
         },
 
-        seasonData = 
+        seasonData =
         {
             lastUpdateTimestamp = 0,
             currentSeasonRace = nil
         },
 
+        ---@class TargetHitData
+        ---@field actualRace string @In-game race ID
+        ---@field hits number[] @Array of hit timestamps
+
+        ---@type table<string, table<string, TargetHitData>>
         hitTable =
         {
             -- [raceScoreType] = { [name] = { actualRace, hits = {time} }
@@ -141,7 +155,7 @@ local clubbingCompData =
             duration = 0,
         },
 
-        topClubbers = 
+        topClubbers =
         {
             lastUpdateTimestamp = 0,
             clubbers = {} -- [idx] = {name, score}
@@ -153,15 +167,15 @@ local ClubbingComp = WCCCAD:CreateModule("WCCC_ClubbingCompetition", clubbingCom
 ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
-    ClubbingComp:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
+    self:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
     WCCCAD.UI:PrintAddOnMessage("Clubbing Competition module loaded.")
 
-    ClubbingComp:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceieved)
 end
 
 function ClubbingComp:OnEnable()
-    ClubbingComp:InitiateSync()
-    ClubbingComp:UpdateActiveFrenzy()
+    self:InitiateSync()
+    self:UpdateActiveFrenzy()
 
     ClubbingComp.UI:ShowHUDIfEnabled()
 end
@@ -178,10 +192,12 @@ end
 --- Returns the score for clubbing the specified race including season multiplier if in season and frenzy multiplier if in frenzy.
 ---
 function ClubbingComp:GetRaceScore(race)
-    local raceScoreData = ClubbingComp:GetRaceScoreData(race)
+    local raceScoreData = self:GetRaceScoreData(race)
     local score = raceScoreData.score
 
-    if self.moduleDB.seasonData.currentSeasonRace ~= nil and self.moduleDB.seasonData.currentSeasonRace == raceScoreData.type then
+    if self.moduleDB.seasonData.currentSeasonRace ~= nil 
+        and self.moduleDB.seasonData.currentSeasonRace == raceScoreData.type 
+    then
         score = score * SEASON_MULTIPLIER
     end
 
@@ -197,7 +213,7 @@ function ClubbingComp:ClubCommand(args)
         if args[1] == "info" then
             self.UI:Show()
         end
-        return 
+        return
     end
 
     if not WCCCAD:CheckAddonActive(true) then
@@ -205,58 +221,58 @@ function ClubbingComp:ClubCommand(args)
     end
 
     -- Standard club command
-    local targetRace, targetRaceEn = UnitRace("target")
-    local targetFaction, targetFactionEn = UnitFactionGroup("target")
+    local _, targetRaceEn = UnitRace("target")
+    local _, targetFactionEn = UnitFactionGroup("target")
     local targetName = UnitName("target")
 
     local raceScoreData = RACES[targetRaceEn]
- 
+
     if targetName == nil then
-        ClubbingComp:PlayEmote(format("swings %s [Worgen Cub Clubbing Club] wildly around in front of %s.", 
-            ns.utils.Pronoun(ns.consts.TENSE.POS),  
+        self:PlayEmote(format("swings %s [Worgen Cub Clubbing Club] wildly around in front of %s.",
+            ns.utils.Pronoun(ns.consts.TENSE.POS),
             ns.utils.Pronoun(ns.consts.TENSE.OBJ)))
         PlaySoundFile(SWING_SOUND, "SFX")
 
-    elseif ClubbingComp:IsTargetInRange() then
+    elseif self:IsTargetInRange() then
         -- If there was a valid target, then it's a success hit!
-        if targetFactionEn == "Alliance" and raceScoreData ~= nil and ClubbingComp:IsRaceClubbable(targetRaceEn) then
-            ClubbingComp:PlayEmote("very forcefully clubs %t with " .. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club].",
+        if targetFactionEn == "Alliance" and raceScoreData ~= nil and self:IsRaceClubbable(targetRaceEn) then
+            self:PlayEmote("very forcefully clubs %t with " .. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club].",
             SUCCESS_HIT_MESSAGES[math.random(1, #SUCCESS_HIT_MESSAGES)])
             PlaySoundFile(SUCCESS_HIT_SOUND, "SFX")
 
             -- If the target is clubbable.
-            if ClubbingComp:HasRecentlyHit(targetName, targetRaceEn) == false then
+            if self:HasRecentlyHit(targetName, targetRaceEn) == false then
                 -- Update score
-                local raceScore = ClubbingComp:GetRaceScore(targetRaceEn)
+                local raceScore = self:GetRaceScore(targetRaceEn)
                 self.moduleDB.score = self.moduleDB.score + raceScore
                 WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, self.moduleDB.score))
-                
-                ClubbingComp:RegisterHit(targetName, targetRaceEn)
-                ClubbingComp.UI:UpdateHUD()
+
+                self:RegisterHit(targetName, targetRaceEn)
+                self.UI:UpdateHUD()
 
                 if raceScoreData.type == "Worgen" then
-                    ClubbingComp:SendGuildyClubbedWorgenComm(targetName)
+                    self:SendGuildyClubbedWorgenComm(targetName)
                 end
             else
-                WCCCAD.UI:PrintAddOnMessage("You've already clubbed "..targetName.." recently, so won't earn any points.");
+                WCCCAD.UI:PrintAddOnMessage("You've already clubbed "..targetName.." recently, so won't earn any points.")
             end
 
          -- Otherwise, if there wasn't a valid target but the target is in range, then it's a bog standard emote hit.
         else
             if targetName == UnitName("player") then
-                ClubbingComp:PlayEmote("flails ".. ns.utils.Pronoun(ns.consts.TENSE.POS)  .." [Worgen Cub Clubbing Club] around and hits ".. ns.utils.Pronoun(ns.consts.TENSE.OBJ) .. "self. It makes the most satisfying 'thwack'.");    
+                self:PlayEmote("flails ".. ns.utils.Pronoun(ns.consts.TENSE.POS)  .." [Worgen Cub Clubbing Club] around and hits ".. ns.utils.Pronoun(ns.consts.TENSE.OBJ) .. "self. It makes the most satisfying 'thwack'.")
             else
-                ClubbingComp:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.");    
+                self:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.")
             end
-            PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)]);
+            PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)])
         end
-    end   
+    end
 end
 
 --#region Clubbing Hit Funcs
 
 ---
---- Saves a hit on the specified target to the hit table. 
+--- Saves a hit on the specified target to the hit table.
 ---
 function ClubbingComp:RegisterHit(targetName, targetRaceEn)
     local raceScoreType = RACES[targetRaceEn].type
@@ -265,9 +281,9 @@ function ClubbingComp:RegisterHit(targetName, targetRaceEn)
         self.moduleDB.hitTable[raceScoreType] = {}
     end
 
-    targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
+    local targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
     if targetHitData == nil or targetHitData.race ~= targetRaceEn then
-        targetHitData = 
+        targetHitData =
         {
             race = targetRaceEn,
             hits = {}
@@ -289,14 +305,14 @@ function ClubbingComp:GetRaceHitCount(raceScoreType)
     end
 
     local hitCount = 0
-    for k, v in pairs(raceHitTable) do
+    for _, v in pairs(raceHitTable) do
         hitCount = hitCount + #v.hits
     end
 
     return hitCount
 end
 
--- 
+--
 --- Checks to see if the target has been recently hit.
 ---
 function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
@@ -312,25 +328,25 @@ function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
 
     local targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
     if targetHitData == nil or targetHitData.hits == nil or #targetHitData.hits == 0 then
-        return false;
+        return false
     end
 
     local lastHitTime = targetHitData.hits[#targetHitData.hits]
 	-- Check current time and time the target was last hit.
 	if GetServerTime() > lastHitTime + HIT_COOLDOWN then
-		return false;
+		return false
 	end
 
-    return true;
+    return true
 end
 
 function ClubbingComp:IsRaceClubbable(targetRaceEn)
-    local raceData = ClubbingComp:GetRaceScoreData(targetRaceEn)
+    local raceData = self:GetRaceScoreData(targetRaceEn)
     if raceData == nil then
         return false
     end
 
-    if raceData.type == "Worgen" 
+    if raceData.type == "Worgen"
         or raceData.type == ClubbingComp.moduleDB.seasonData.currentSeasonRace
         or raceData.type == ClubbingComp.moduleDB.frenzyData.race
     then
@@ -352,11 +368,11 @@ end
 
 --#endregion
 
-function ClubbingComp:PlayEmote(emote, chatMsg) 
+function ClubbingComp:PlayEmote(emote, chatMsg)
     SendChatMessage(emote, ns.consts.CHAT_CHANNEL.EMOTE)
 
     -- Random chance to /say something.
-    if chatMsg ~= nil and ClubbingComp.moduleDB.sayEmotesEnabled == true then
+    if chatMsg ~= nil and self.moduleDB.sayEmotesEnabled == true then
         if random() <= 0.5 then
             SendChatMessage(chatMsg, ns.consts.CHAT_CHANNEL.SAY)
         end
@@ -370,7 +386,7 @@ function ClubbingComp:SendGuildyClubbedWorgenComm(worgenName)
     local playerName = UnitName("player")
     local playerLoc = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")).name
     local messageIndex = random(1, #GUILDY_CLUBBED_MESSAGES)
-    local data = 
+    local data =
     {
         messageIndex = messageIndex,
         worgenName = worgenName,
@@ -378,13 +394,13 @@ function ClubbingComp:SendGuildyClubbedWorgenComm(worgenName)
         playerLoc = playerLoc
     }
 
-    ClubbingComp:SendModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, data, ns.consts.CHAT_CHANNEL.GUILD)
+    self:SendModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
 function ClubbingComp:OnGuildyClubbedWorgenCommReceieved(data)
-    if ClubbingComp.moduleDB.showGuildMemberClubNotification == false then
+    if self.moduleDB.showGuildMemberClubNotification == false then
         return
-    end    
+    end
 
     local message = GUILDY_CLUBBED_MESSAGES[data.messageIndex]
     message = message:gsub("{playerName}", data.playerName)
@@ -402,133 +418,147 @@ function ClubbingComp:OC_SetSeason(raceKey)
         return
     end
 
-    ClubbingComp:StartNewSeason(raceKey, GetServerTime())
-    ClubbingComp:BroadcastSyncData()
+    self:StartNewSeason(raceKey, GetServerTime())
+    self:BroadcastSyncData()
 end
 ---
 --- Sends local season data to the target, or whole guild if target is null.
 ---
 function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     -- If current timestamp and race are same as the new, we have the latest data.
-    if updateTimestamp < ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
-        or (updateTimestamp == ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
-            and seasonRace == ClubbingComp.moduleDB.seasonData.currentSeasonRace)
+    if updateTimestamp < self.moduleDB.seasonData.lastUpdateTimestamp 
+        or (updateTimestamp == self.moduleDB.seasonData.lastUpdateTimestamp 
+            and seasonRace == self.moduleDB.seasonData.currentSeasonRace)
     then
-        WCCCAD.UI:PrintDebugMessage("Already have equal or newer data, skipping season update.", ClubbingComp.moduleDB.debugMode)
+        WCCCAD.UI:PrintDebugMessage(
+            "Already have equal or newer data, skipping season update.", 
+            self.moduleDB.debugMode
+        )
         return
     end
 
-    WCCCAD.UI:PrintDebugMessage("Starting new season.", ClubbingComp.moduleDB.debugMode)
+    WCCCAD.UI:PrintDebugMessage("Starting new season.", self.moduleDB.debugMode)
 
-    ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp = updateTimestamp
-    ClubbingComp.moduleDB.seasonData.currentSeasonRace = seasonRace
-    ClubbingComp.moduleDB.score = 0;
+    self.moduleDB.seasonData.lastUpdateTimestamp = updateTimestamp
+    self.moduleDB.seasonData.currentSeasonRace = seasonRace
+    self.moduleDB.score = 0
 
     -- Prune last season clubbings and update score.
     for scoreRaceType, players in pairs(self.moduleDB.hitTable) do
-        for playerName, playerEntry in pairs(players) do
+        for _, playerEntry in pairs(players) do
             if playerEntry.hits ~= nil then
                 local newSeasonPlayerHits = {}
-                for idx, hitTime in pairs(playerEntry.hits) do
+                for _, hitTime in pairs(playerEntry.hits) do
                     if hitTime >= updateTimestamp then
-                        table.insert(newSeasonPlayerHits, playerEntry.hits[i])
+                        table.insert(newSeasonPlayerHits, hitTime)
                     end
                 end
                 playerEntry.hits = newSeasonPlayerHits
 
-                local playerScore = #playerEntry.hits * ClubbingComp:GetRaceScore(scoreRaceType)
-                ClubbingComp.moduleDB.score = ClubbingComp.moduleDB.score + playerScore;
+                local playerScore = #playerEntry.hits * self:GetRaceScore(scoreRaceType)
+                self.moduleDB.score = self.moduleDB.score + playerScore
             end
         end
     end
-    WCCCAD.UI:PrintDebugMessage("Pruned hit table, new score: "..ClubbingComp.moduleDB.score, ClubbingComp.moduleDB.debugMode)
+    WCCCAD.UI:PrintDebugMessage(
+        "Pruned hit table, new score: "..self.moduleDB.score, 
+        self.moduleDB.debugMode
+    )
 
-    ClubbingComp.UI:UpdateHUD()
-    WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. ClubbingComp:GetRaceScoreData(seasonRace).name .. " Season!")
+    self.UI:UpdateHUD()
+    WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. self:GetRaceScoreData(seasonRace).name .. " Season!")
 end
 
 --#endregion
 
 --#region Frenzy
 
---- @duration  Duration in seconds.
+--- @param duration number @Duration in seconds.
 function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
     if not WCCCAD:IsPlayerOfficer() then
         return
     end
 
-    ClubbingComp:UpdateFrenzyData(raceKey, multiplier, GetServerTime(), duration)
-    ClubbingComp:BroadcastSyncData()
+    self:UpdateFrenzyData(raceKey, multiplier, GetServerTime(), duration)
+    self:BroadcastSyncData()
 end
 
 ---
 --- Called when new data is received from a client.
 ---
-function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration) 
-    if startTime < ClubbingComp.moduleDB.frenzyData.startTimestamp
-        or (startTime == ClubbingComp.moduleDB.frenzyData.startTimestamp 
-            and race == ClubbingComp.moduleDB.frenzyData.race
-            and multiplier == ClubbingComp.moduleDB.frenzyData.multiplier
-            and duration == ClubbingComp.moduleDB.frenzyData.duration)
+function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration)
+    if startTime < self.moduleDB.frenzyData.startTimestamp
+        or (startTime == self.moduleDB.frenzyData.startTimestamp
+            and race == self.moduleDB.frenzyData.race
+            and multiplier == self.moduleDB.frenzyData.multiplier
+            and duration == self.moduleDB.frenzyData.duration)
     then
-        WCCCAD.UI:PrintDebugMessage("Already have equal or newer data, skipping frenzy update.", ClubbingComp.moduleDB.debugMode)
+        WCCCAD.UI:PrintDebugMessage("Already have equal or newer data, skipping frenzy update.", self.moduleDB.debugMode)
         return
     end
 
     if GetServerTime() > startTime + duration then
         WCCCAD.UI:PrintDebugMessage("UpdateFrenzyData: Frenzy has ended, clearing data.", ClubbingComp.moduleDB.debugMode)
-        ClubbingComp.moduleDB.frenzyData.startTimestamp = 0
-        ClubbingComp.moduleDB.frenzyData.race = nil
-        ClubbingComp.moduleDB.frenzyData.multiplier = 0
-        ClubbingComp.moduleDB.frenzyData.duration = 0
-        ClubbingComp:UpdateActiveFrenzy()
+        self.moduleDB.frenzyData.startTimestamp = 0
+        self.moduleDB.frenzyData.race = nil
+        self.moduleDB.frenzyData.multiplier = 0
+        self.moduleDB.frenzyData.duration = 0
+        self:UpdateActiveFrenzy()
         return
     end
 
-    ClubbingComp.moduleDB.frenzyData.startTimestamp = startTime
-    ClubbingComp.moduleDB.frenzyData.race = race
-    ClubbingComp.moduleDB.frenzyData.multiplier = multiplier
-    ClubbingComp.moduleDB.frenzyData.duration = duration
+    self.moduleDB.frenzyData.startTimestamp = startTime
+    self.moduleDB.frenzyData.race = race
+    self.moduleDB.frenzyData.multiplier = multiplier
+    self.moduleDB.frenzyData.duration = duration
 
-    WCCCAD.UI:PrintAddOnMessage(format("A %sx %s frenzy has started for %smins, get clubbing!", multiplier, ClubbingComp:GetRaceScoreData(race).name, duration / 60))
-    ClubbingComp:UpdateActiveFrenzy()
+    WCCCAD.UI:PrintAddOnMessage(format(
+        "A %sx %s frenzy has started for %smins, get clubbing!",
+        multiplier,
+        self:GetRaceScoreData(race).name,
+        duration / 60)
+    )
+    self:UpdateActiveFrenzy()
 end
 
-function ClubbingComp:GetFrenzyTimeRemaining() 
-    return (ClubbingComp.moduleDB.frenzyData.startTimestamp + ClubbingComp.moduleDB.frenzyData.duration) - GetServerTime()
+function ClubbingComp:GetFrenzyTimeRemaining()
+    return (self.moduleDB.frenzyData.startTimestamp + self.moduleDB.frenzyData.duration) - GetServerTime()
 end
 
 ---
 --- Called internally to update frenzy timers.
 ---
 function ClubbingComp:UpdateActiveFrenzy()
-    local frenzyDurationRemaining = ClubbingComp:GetFrenzyTimeRemaining()
+    local frenzyDurationRemaining = self:GetFrenzyTimeRemaining()
     local frenzyEnded = frenzyDurationRemaining <= 0
-    WCCCAD.UI:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining, tostring(frenzyEnded)), ClubbingComp.moduleDB.debugMode)
+
+    WCCCAD.UI:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining,
+        tostring(frenzyEnded)), self.moduleDB.debugMode)
 
     if frenzyEnded == true then
-        if ClubbingComp.activeFrenzyTimerID ~= nil then
-            WCCCAD:CancelTimer(ClubbingComp.activeFrenzyTimerID)
-            ClubbingComp.activeFrenzyTimerID = nil
-            WCCCAD.UI:PrintAddOnMessage(format("%s frenzy has ended.", ClubbingComp:GetRaceScoreData(ClubbingComp.moduleDB.frenzyData.race).name))
+        if self.activeFrenzyTimerID ~= nil then
+            WCCCAD:CancelTimer(self.activeFrenzyTimerID)
+            self.activeFrenzyTimerID = nil
+            WCCCAD.UI:PrintAddOnMessage(format("%s frenzy has ended.",
+            self:GetRaceScoreData(self.moduleDB.frenzyData.race).name))
         end
 
-        WCCCAD.UI:PrintDebugMessage("UpdateActiveFrenzy - Cleared frenzy data.", ClubbingComp.moduleDB.debugMode)
+        WCCCAD.UI:PrintDebugMessage("UpdateActiveFrenzy - Cleared frenzy data.", self.moduleDB.debugMode)
 
-        ClubbingComp.moduleDB.frenzyData.startTimestamp = 0
-        ClubbingComp.moduleDB.frenzyData.race = nil
-        ClubbingComp.moduleDB.frenzyData.multiplier = 0
-        ClubbingComp.moduleDB.frenzyData.duration = 0
+        self.moduleDB.frenzyData.startTimestamp = 0
+        self.moduleDB.frenzyData.race = nil
+        self.moduleDB.frenzyData.multiplier = 0
+        self.moduleDB.frenzyData.duration = 0
     end
 
     --- Start timer ticker if it's not running.
-    if frenzyEnded == false and ClubbingComp.activeFrenzyTimerID == nil then
+    if frenzyEnded == false and self.activeFrenzyTimerID == nil then
         local tickIntervalSecs = 5
-        ClubbingComp.activeFrenzyTimerID = WCCCAD:ScheduleRepeatingTimer(function() ClubbingComp:UpdateActiveFrenzy() end, tickIntervalSecs)
-        WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", ClubbingComp.moduleDB.debugMode)    
-    end    
-    
-    ClubbingComp.UI:UpdateHUD()
+        self.activeFrenzyTimerID = WCCCAD:ScheduleRepeatingTimer(function() self:UpdateActiveFrenzy() end, tickIntervalSecs)
+        WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", self.moduleDB.debugMode)
+    end
+
+    self.UI:UpdateHUD()
 end
 
 --#endregion
@@ -540,44 +570,44 @@ function ClubbingComp:OC_SetTopClubbers(clubberEntries)
         return
     end
 
-    ClubbingComp:UpdateTopClubbers(clubberEntries, GetServerTime())
-    ClubbingComp:BroadcastSyncData()
+    self:UpdateTopClubbers(clubberEntries, GetServerTime())
+    self:BroadcastSyncData()
 end
 
 function ClubbingComp:UpdateTopClubbers(clubberEntries, updateTime)
-    if ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp > updateTime then
+    if self.moduleDB.topClubbers.lastUpdateTimestamp > updateTime then
         return
     end
 
-    ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp = updateTime
-    ClubbingComp.moduleDB.topClubbers.clubbers = clubberEntries
+    self.moduleDB.topClubbers.lastUpdateTimestamp = updateTime
+    self.moduleDB.topClubbers.clubbers = clubberEntries
 end
 
 --#endregion
 
 --#region Sync functions
 
-function ClubbingComp:GetSyncData() 
+function ClubbingComp:GetSyncData()
     local syncData =
     {
         seasonData =
         {
-            seasonRace = ClubbingComp.moduleDB.seasonData.currentSeasonRace,
-            updateTime = ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp
+            seasonRace = self.moduleDB.seasonData.currentSeasonRace,
+            updateTime = self.moduleDB.seasonData.lastUpdateTimestamp
         },
 
-        frenzyData = 
+        frenzyData =
         {
-            startTimestamp = ClubbingComp.moduleDB.frenzyData.startTimestamp,
-            race = ClubbingComp.moduleDB.frenzyData.race,
-            multiplier = ClubbingComp.moduleDB.frenzyData.multiplier,
-            duration = ClubbingComp.moduleDB.frenzyData.duration
+            startTimestamp = self.moduleDB.frenzyData.startTimestamp,
+            race = self.moduleDB.frenzyData.race,
+            multiplier = self.moduleDB.frenzyData.multiplier,
+            duration = self.moduleDB.frenzyData.duration
         },
 
         topClubbers =
         {
-            lastUpdateTimestamp = ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp,
-            clubbers = ClubbingComp.moduleDB.topClubbers.clubbers
+            lastUpdateTimestamp = self.moduleDB.topClubbers.lastUpdateTimestamp,
+            clubbers = self.moduleDB.topClubbers.clubbers
         }
     }
 
@@ -587,45 +617,45 @@ end
 function ClubbingComp:CompareSyncData(remoteData)
     -- Season
     local seasonComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
-    if remoteData.seasonData.updateTime > ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp then
+    if remoteData.seasonData.updateTime > self.moduleDB.seasonData.lastUpdateTimestamp then
         seasonComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
-    elseif remoteData.seasonData.updateTime == ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp 
-        and remoteData.seasonData.seasonRace == ClubbingComp.moduleDB.seasonData.currentSeasonRace 
+    elseif remoteData.seasonData.updateTime == self.moduleDB.seasonData.lastUpdateTimestamp
+        and remoteData.seasonData.seasonRace == self.moduleDB.seasonData.currentSeasonRace
     then
         seasonComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
     -- Frenzy
     local frenzyComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
-    if remoteData.frenzyData.startTimestamp > ClubbingComp.moduleDB.frenzyData.startTimestamp then
+    if remoteData.frenzyData.startTimestamp > self.moduleDB.frenzyData.startTimestamp then
         frenzyComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
-    elseif remoteData.frenzyData.startTimestamp == ClubbingComp.moduleDB.frenzyData.startTimestamp
-        and remoteData.frenzyData.race == ClubbingComp.moduleDB.frenzyData.race
-        and remoteData.frenzyData.multiplier == ClubbingComp.moduleDB.frenzyData.multiplier
-        and remoteData.frenzyData.duration == ClubbingComp.moduleDB.frenzyData.duration
+    elseif remoteData.frenzyData.startTimestamp == self.moduleDB.frenzyData.startTimestamp
+        and remoteData.frenzyData.race == self.moduleDB.frenzyData.race
+        and remoteData.frenzyData.multiplier == self.moduleDB.frenzyData.multiplier
+        and remoteData.frenzyData.duration == self.moduleDB.frenzyData.duration
     then
         frenzyComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
     -- Top Clubbers
     local topClubbersComparison = ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
-    if remoteData.topClubbers.lastUpdateTimestamp > ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp then
+    if remoteData.topClubbers.lastUpdateTimestamp > self.moduleDB.topClubbers.lastUpdateTimestamp then
         topClubbersComparison = ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
 
-    elseif remoteData.topClubbers.lastUpdateTimestamp == ClubbingComp.moduleDB.topClubbers.lastUpdateTimestamp then
+    elseif remoteData.topClubbers.lastUpdateTimestamp == self.moduleDB.topClubbers.lastUpdateTimestamp then
         topClubbersComparison = ns.consts.DATA_SYNC_RESULT.EQUAL
     end
 
     -- Result
-    return ClubbingComp:GetTotalSyncResult(seasonComparison, frenzyComparison, topClubbersComparison)
+    return self:GetTotalSyncResult(seasonComparison, frenzyComparison, topClubbersComparison)
 end
 
 function ClubbingComp:OnSyncDataReceived(data)
-    ClubbingComp:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
-    ClubbingComp:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
-    ClubbingComp:UpdateTopClubbers(data.topClubbers.clubbers, data.topClubbers.lastUpdateTimestamp)
+    self:StartNewSeason(data.seasonData.seasonRace, data.seasonData.updateTime)
+    self:UpdateFrenzyData(data.frenzyData.race, data.frenzyData.multiplier, data.frenzyData.startTimestamp, data.frenzyData.duration)
+    self:UpdateTopClubbers(data.topClubbers.clubbers, data.topClubbers.lastUpdateTimestamp)
 end
 
 --#endregion

@@ -2,7 +2,7 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local MythicPlus = WCCCAD:GetModule("WCCC_MythicPlus")
@@ -77,7 +77,7 @@ The window can be opened from the guild roster and the button below.",
                             get = function() return MythicPlus.moduleDB.showGuildMemberReceivedKeystoneNotification end,
                             order = 2.11,
                         },     
-                        
+
                         toggleSendGuildyReceievedKeystoneNotification  =
                         {
                             type = "toggle",
@@ -90,7 +90,7 @@ The window can be opened from the guild roster and the button below.",
                         }, 
                     }
                 },
-                
+
                 weeklyBestNotifications = 
                 {
                     type = "group",
@@ -109,7 +109,7 @@ The window can be opened from the guild roster and the button below.",
                             get = function() return MythicPlus.moduleDB.showGuildmemberNewRecordNotification end,
                             order = 2.21,
                         },     
-                        
+
                         toggleSendNewRecordNotification  =
                         {
                             type = "toggle",
@@ -232,13 +232,15 @@ function WCCC_MythicPlusFrameMixin:OpenSettings()
     MythicPlus_UI:Show()
 end
 ---
---- Update frame with the MythicPlus guildKeys and leaderboardData tables.
+--- Update frame with the MythicPlus guildKeys and leaderboardData tables
+--- @param guildKeys table<string, GuildKeyDataEntry>
+--- @param leaderboardData table<string, LeaderboardDataEntry>
 ---
 function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     self.orderedGuildKeys = {}
 
     local idx = 1
-    for name, entryData in pairs(guildKeys) do        
+    for _, entryData in pairs(guildKeys) do        
         if entryData then
             local leaderboardEntry = leaderboardData[entryData.GUID]
             self.orderedGuildKeys[idx] =
@@ -264,7 +266,7 @@ end
 
 function WCCC_MythicPlusFrameMixin:RefreshLayout()
     local scrollFrame = self.ListScrollFrame
-    
+
     local offset = HybridScrollFrame_GetOffset(scrollFrame)
     local shownEntries = 0
     local idx
@@ -310,7 +312,7 @@ end
 
 ---
 --- Sorts local data by the specified sort method.
---- @param reverseOnSameSort - Whether to reverse the sort if the specified method is the same as the active sort.
+--- @param reverseOnSameSort boolean @Whether to reverse the sort if the specified method is the same as the active sort.
 ---
 function WCCC_MythicPlusFrameMixin:SortDataByColumn(sortMethod, reverseOnSameSort)
     if sortMethod == nil or not self.orderedGuildKeys then
@@ -392,7 +394,6 @@ end
 
 function WCCC_MythicPlusEntryMixin:OnMouseDown(button)
     if button == "RightButton" and self.Data.isOnline then
-        local cursorPos = GetCursorPosition()
 		ToggleDropDownMenu(1, nil, self.RightClickDropdown, self, 100, 0)
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
 	end
@@ -415,7 +416,7 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
     self.Data.isOnline = false
     local _, numMembersOnline = GetNumGuildMembers()
     for i=1, numMembersOnline do
-        local memberName, _, _, _, _, _, _, _, isOnline, _, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
+        local _, _, _, _, _, _, _, _, isOnline, _, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
         if memberGUID == self.Data.GUID then
             self.Data.isOnline = isOnline
             break;
@@ -424,7 +425,7 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
 
     local textColour = self.Data.isOnline and CreateColor(1, 1, 1) or CreateColor(0.4, 0.4, 0.4)
 
-    local className, classTag = GetClassInfo(self.Data.classID)
+    local _, classTag = GetClassInfo(self.Data.classID)
     local classColour = CreateColor(GetClassColor(classTag))
     self.NameLabel:SetText(self.Data.playerName)
     if self.Data.isOnline then

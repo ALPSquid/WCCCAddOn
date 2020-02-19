@@ -2,22 +2,11 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WCCCAD_UI = {}
-
-local UI_CHAT_CHANNEL_NAME = 
-{
-    EMOTE = "Emote",
-    SAY = "Say",
-    YELL = "Yell",
-    GUILD = "Guild",
-    PARTY = "Party",
-    RAID = "Raid",
-    INSTANCE_CHAT = "Instance Chat"
-}
 
 local WCCC_UI_CONFIG = 
 {
@@ -68,7 +57,7 @@ Use the 'WCCC Companion' escape menu button or type '/wccc' to open this window.
 Happy Clubbing!\n\n",
             order = 3
         },
-        
+
 
         settingsPanel = 
         {
@@ -130,7 +119,7 @@ function WCCCAD_UI:LoadModuleUI(wcccModule, moduleDisplayName, moduleUIConfig)
 end
 
 function WCCCAD_UI:Show() 
-    InterfaceOptionsFrame_OpenToCategory(WCCCAD.UI.optionsFrameRoot)
+    InterfaceOptionsFrame_OpenToCategory(self.optionsFrameRoot)
 end
 
 function WCCCAD_UI:PrintAddOnMessage(msg, type)
@@ -153,30 +142,30 @@ function WCCCAD_UI:PrintDebugMessage(msg, debuggingEnabled)
         return
     end
 
-    WCCCAD_UI:PrintAddOnMessage("[DEBUG] "..msg, ns.consts.MSG_TYPE.WARN)
+    self:PrintAddOnMessage("[DEBUG] "..msg, ns.consts.MSG_TYPE.WARN)
 end
 
 ---
 --- Prints a notification saying the addon has been disabled.
 ---
 function WCCCAD_UI:PrintAddonDisabledMessage()
-    WCCCAD_UI:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
+    self:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
 end
 
 
 --#region Guild Controls Panel
 function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction) 
-    if WCCCAD_UI.GuildControlFrame == nil then
-        WCCCAD_UI:CreateGuildControlFrame()
+    if self.GuildControlFrame == nil then
+        self:CreateGuildControlFrame()
     end
 
-    local buttonsArray = WCCCAD_UI.GuildControlFrame.buttons
+    local buttonsArray = self.GuildControlFrame.buttons
     local prevButton = buttonsArray and buttonsArray[#buttonsArray] or nil
     local buttonWidth = 150
     local leftMargin = 30
     local buttonPadding = 5
 
-    local controlButton = CreateFrame("Button", nil, WCCCAD_UI.GuildControlFrame, "UIPanelButtonTemplate");
+    local controlButton = CreateFrame("Button", nil, self.GuildControlFrame, "UIPanelButtonTemplate");
     controlButton:SetText(text)
     controlButton.tooltipText = tooltipText
     controlButton:SetSize(buttonWidth, 20)
@@ -184,7 +173,7 @@ function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction)
     if prevButton then
         controlButton:SetPoint("LEFT", prevButton, "RIGHT", buttonPadding, 0)
     else
-        controlButton:SetPoint("LEFT", WCCCAD_UI.GuildControlFrame, "LEFT", leftMargin, 0)
+        controlButton:SetPoint("LEFT", self.GuildControlFrame, "LEFT", leftMargin, 0)
     end
 
     controlButton:RegisterForClicks("AnyUp")
@@ -197,15 +186,15 @@ function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction)
     for i=1, #buttonsArray do
         totalButtonWidth = totalButtonWidth + buttonsArray[i]:GetWidth() + buttonPadding
     end
-    WCCCAD_UI.GuildControlFrame:SetWidth(totalButtonWidth)
+    self.GuildControlFrame:SetWidth(totalButtonWidth)
 
-    WCCCAD_UI.GuildControlFrame.buttons = buttonsArray
+    self.GuildControlFrame.buttons = buttonsArray
 end
 
 function WCCCAD_UI:CreateGuildControlFrame()
     local rootFrame = CreateFrame("Frame", nil, CommunitiesFrame)
-    WCCCAD_UI.GuildControlFrame = rootFrame
-    WCCCAD_UI.GuildControlFrame.buttons = {}
+    self.GuildControlFrame = rootFrame
+    self.GuildControlFrame.buttons = {}
 
     rootFrame:SetPoint("TOPRIGHT", CommunitiesFrame, "BOTTOMRIGHT", 0, 0)
     rootFrame:SetWidth(300)
@@ -222,9 +211,9 @@ function WCCCAD_UI:CreateGuildControlFrame()
     rootFrame:SetBackdropColor(0, 0, 0, 0.7)
     rootFrame:SetBackdropBorderColor(1, 0.62, 0, 0.8)
 
-    rootFrame:SetScript("OnShow", function(self)
+    rootFrame:SetScript("OnShow", function(frameSelf)
         if not WCCCAD:CheckAddonActive(false) then
-            self:Hide()
+            frameSelf:Hide()
         end
     end)
 
@@ -235,7 +224,7 @@ function WCCCAD_UI:CreateGuildControlFrame()
 	guildLogo:SetWidth(24)
 	guildLogo:SetHeight(24)
     guildLogo:SetScript("OnClick", function()
-        WCCCAD_UI:Show() 
+        WCCCAD.UI:Show() 
     end) 
 end
 --#endregion
