@@ -241,6 +241,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
 
     WCCCAD.UI:PrintDebugMessage("Weekly Chest Level: " .. weekBestLevel, self.moduleDB.debugMode)
 
+    local hasWeeklyRun = false
     local maps = C_ChallengeMode.GetMapTable()
     for _, mapID in pairs(maps) do
         local _, level, _, _, members = C_MythicPlus.GetWeeklyBestForMap(mapID)
@@ -248,6 +249,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
             for _, member in pairs(members) do
                 if member.name == playerName then
                     WCCCAD.UI:PrintDebugMessage("Found weekly best for " .. mapID .. " +" .. level, self.moduleDB.debugMode)
+                    hasWeeklyRun = true
                     if highestMapID == nil or (level and level > weekBestLevel) then
                         highestMapID = mapID
                         break
@@ -259,16 +261,20 @@ function MythicPlus:UpdateOwnWeeklyBest()
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
-    self.moduleDB.leaderboardData[GUID] = 
-    {
-        GUID = GUID,
-        playerName = playerName,
-        classID = classID,
-        mapID = highestMapID,
-        level = weekBestLevel,
-        lastUpdateTimestamp = GetServerTime()
-    }
-
+    if not hasWeeklyRun then
+        WCCCAD.UI:PrintDebugMessage("No weekly run found.", self.moduleDB.debugMode)
+        self.moduleDB.leaderboardData[GUID] = nil
+    else
+        self.moduleDB.leaderboardData[GUID] =
+        {
+            GUID = GUID,
+            playerName = playerName,
+            classID = classID,
+            mapID = highestMapID,
+            level = weekBestLevel,
+            lastUpdateTimestamp = GetServerTime()
+        }
+    end
 end
 
 ---
