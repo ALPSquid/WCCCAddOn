@@ -17,7 +17,7 @@ local mythicPlusData =
     profile =
     {
         showGuildMemberReceivedKeystoneNotification = true,
-        showGuildmemberNewRecordNotification = true,
+        showGuildMemberNewRecordNotification = true,
 
         sendGuildReceivedKeystoneNotification = true,
         sendGuildNewRecordNotification = true,
@@ -106,18 +106,9 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         return
     end
 
-    local mapID = mapChallengeModeID
-    local keystoneLevel = level
-
-    -- Fallback in-case level is nil. (Has happened: Completed an Underrot +5, level was nil, GetWeeklyBestForMap had no record of it)
-    local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
-    if keystoneLevel == nil or keystoneLevel == 0 then
-        if activeKeystoneLevel ~= nil and activeKeystoneLevel ~= 0 then
-            keystoneLevel = activeKeystoneLevel
-        else
-            keystoneLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
-        end
-    end
+    -- For some reason the arguments for this event are always nil.
+    local mapID = C_ChallengeMode.GetActiveChallengeMapID()
+    local keystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
@@ -314,7 +305,7 @@ function MythicPlus:SendGuildyNewRecordComm(keystoneData)
 end
 
 function MythicPlus:OnGuildyNewRecordCommReceived(data)
-    if not self.moduleDB.showGuildmemberNewRecordNotification then
+    if not self.moduleDB.showGuildMemberNewRecordNotification then
         return
     end
 
