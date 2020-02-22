@@ -71,11 +71,11 @@ function MythicPlus:OnEnable()
     C_MythicPlus.RequestMapInfo()
     C_MythicPlus.RequestRewards()
 
-    self:RegisterEvent("BAG_UPDATE", function() self:ScheduleOwnKeystoneUpdate() end)
-    self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", function() self:OnNewWeeklyRecord() end)
-    self:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", function() self:ScheduleOwnKeystoneUpdate() end)
-    self:RegisterEvent("CHALLENGE_MODE_RESET", function() self:ScheduleOwnKeystoneUpdate() end)
-    self:RegisterEvent("CHALLENGE_MODE_COMPLETED", function() self:ScheduleOwnKeystoneUpdate() end)
+    self:RegisterEvent("MYTHIC_PLUS_NEW_WEEKLY_RECORD", self.OnNewWeeklyRecord, self)
+    self:RegisterEvent("BAG_UPDATE", self.ScheduleOwnKeystoneUpdate, self)
+    self:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE", self.ScheduleOwnKeystoneUpdate, self)
+    self:RegisterEvent("CHALLENGE_MODE_RESET", self.ScheduleOwnKeystoneUpdate, self)
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.OnChallengeModeCompleted, self)
 
     --Bit of a heavy handed catch for reset. Ideally we should calculate the time until reset and start a timer on that.
     WCCCAD:ScheduleRepeatingTimer(function() self:PruneOldEntries() end, PRUNE_TICK_INTERVAl)
@@ -129,7 +129,7 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
     WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, self.moduleDB.debugMode)
 end
 
-function MythicPlus:OnChallengeModeComplete()
+function MythicPlus:OnChallengeModeCompleted()
     --- Force an update ignoring the active keystone when an M+ is completed.
     WCCCAD.UI:PrintDebugMessage("Forcing keystone update.", self.moduleDB.debugMode)
     if self.updateKeystoneTimer ~= nil then
@@ -137,6 +137,7 @@ function MythicPlus:OnChallengeModeComplete()
     end
     self:UpdateOwnKeystone(false)
 end
+
 
 function MythicPlus:ScheduleOwnKeystoneUpdate()
     if not self.updateKeystoneTimer then
