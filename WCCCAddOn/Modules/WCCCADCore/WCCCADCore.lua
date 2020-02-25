@@ -37,7 +37,7 @@ WCCCADCore.knownAddonUsers =
 function WCCCADCore:InitializeModule()
     self:RegisterModuleSlashCommand("ver", self.VersionCommand)
 
-    self:RegisterModuleComm(COMM_KEY_SHARE_VERSION, self.OnShareVersionCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_SHARE_VERSION, self.OnShareVersionCommReceived)
 end
 
 function WCCCADCore:OnEnable()  
@@ -140,7 +140,7 @@ function WCCCADCore:SenRequestVersionComm()
     self:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
-function WCCCADCore:OnShareVersionCommReceieved(data)
+function WCCCADCore:OnShareVersionCommReceived(data)
     if data.requestingPlayer ~= nil then
         -- We've received a request.
         WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, WCCCAD.db.profile.debugMode)
