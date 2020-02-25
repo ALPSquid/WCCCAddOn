@@ -61,7 +61,7 @@ function MythicPlus:InitializeModule()
     self:RegisterModuleSlashCommand("mp", self.MythicPlusCommand)
     WCCCAD.UI:PrintAddOnMessage("Mythic Plus module loaded.")
 
-    self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceived)
     self:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, self.OnGuildyNewRecordCommReceived)
 end
 
@@ -126,7 +126,7 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
     self:InitiateSync()
     self.UI:OnDataUpdated()
 
-    WCCCAD.UI:PrintDebugMessage("Updating own weekly best: "..mapID.. " +"..keystoneLevel, self.moduleDB.debugMode)
+    WCCCAD.UI:PrintDebugMessage("Updating own weekly best: ".. (mapID or "<NO MAPID>") .. " +"..keystoneLevel, self.moduleDB.debugMode)
 end
 
 function MythicPlus:OnChallengeModeCompleted()
@@ -135,11 +135,14 @@ function MythicPlus:OnChallengeModeCompleted()
     if self.updateKeystoneTimer ~= nil then
         WCCCAD:CancelTimer(self.updateKeystoneTimer)
     end
-    self:UpdateOwnKeystone(false)
+    self:ScheduleOwnKeystoneUpdate(false)
 end
 
-
-function MythicPlus:ScheduleOwnKeystoneUpdate()
+---
+--- Schedules a player keystone update.
+--- @param skipIfMythicInProgress boolean @[default=true] If true, the update will be skipped if a Mythic+ is in progress
+---
+function MythicPlus:ScheduleOwnKeystoneUpdate(skipIfMythicInProgress)
     if not self.updateKeystoneTimer then
         WCCCAD.UI:PrintDebugMessage("Scheduling keystone update.", self.moduleDB.debugMode)
 
@@ -158,7 +161,7 @@ function MythicPlus:ScheduleOwnKeystoneUpdate()
                     self.UI:OnDataUpdated()
                     self:InitiateSync()
                 else
-                    self:UpdateOwnKeystone()
+                    self:UpdateOwnKeystone(skipIfMythicInProgress)
                 end 
             end, 
         KEYSTONE_UPDATE_DELAY)
@@ -186,7 +189,7 @@ function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
     -- Don't update if we're currently in a run since the key will show as downgraded already
     -- and we don't want to update other users until the run is finished.
     local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
-    if activeKeystoneLevel > 0 and skipIfMythicInProgress then
+    if activeKeystoneLevel > 0 and skipIfMythicInProgress and C_ChallengeMode.IsChallengeModeActive() then
         WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", self.moduleDB.debugMode)
         return false
     end
@@ -288,7 +291,7 @@ function MythicPlus:SendGuildyReceivedKeystoneComm(keystoneData)
     self:SendModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, keystoneData, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
-function MythicPlus:OnGuildyReceivedKeystoneCommReceieved(data)
+function MythicPlus:OnGuildyReceivedKeystoneCommReceived(data)
     if not self.moduleDB.showGuildMemberReceivedKeystoneNotification then
         return
     end
@@ -316,11 +319,11 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
         return
     end
 
-    local dungeonName = C_ChallengeMode.GetMapUIInfo(data.mapID)
+    local dungeonName = data.mapID and C_ChallengeMode.GetMapUIInfo(data.mapID) or nil
 
-    local message = "{playerName} has completed {dungeonName} +{level}."
+    local message = "{playerName} has earned a new weekly best: +{level}{dungeonName}."
     message = message:gsub("{playerName}", data.playerName)
-    message = message:gsub("{dungeonName}", dungeonName)
+    message = message:gsub("{dungeonName}", dungeonName and (" "..dungeonName) or "")
     message = message:gsub("{level}", data.level)
 
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)

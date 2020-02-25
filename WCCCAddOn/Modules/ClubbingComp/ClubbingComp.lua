@@ -170,7 +170,7 @@ function ClubbingComp:InitializeModule()
     self:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
     WCCCAD.UI:PrintAddOnMessage("Clubbing Competition module loaded.")
 
-    self:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceived)
 end
 
 function ClubbingComp:OnEnable()
@@ -397,7 +397,7 @@ function ClubbingComp:SendGuildyClubbedWorgenComm(worgenName)
     self:SendModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
-function ClubbingComp:OnGuildyClubbedWorgenCommReceieved(data)
+function ClubbingComp:OnGuildyClubbedWorgenCommReceived(data)
     if self.moduleDB.showGuildMemberClubNotification == false then
         return
     end

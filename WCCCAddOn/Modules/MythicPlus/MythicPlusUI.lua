@@ -67,7 +67,7 @@ The window can be opened from the guild roster and the button below.",
                     order = 2.1,
                     args =
                     {
-                        toggleGuildyReceievedKeystoneNotification  =
+                        toggleGuildyReceivedKeystoneNotification =
                         {
                             type = "toggle",
                             name = "Show guild chat notification when Guildy receives a keystone.",
@@ -76,9 +76,9 @@ The window can be opened from the guild roster and the button below.",
                             set = function(info, val) MythicPlus.moduleDB.showGuildMemberReceivedKeystoneNotification = val end,
                             get = function() return MythicPlus.moduleDB.showGuildMemberReceivedKeystoneNotification end,
                             order = 2.11,
-                        },     
+                        },
 
-                        toggleSendGuildyReceievedKeystoneNotification  =
+                        toggleSendGuildyReceivedKeystoneNotification  =
                         {
                             type = "toggle",
                             name = "Send guild chat notification when you receive a keystone.",
