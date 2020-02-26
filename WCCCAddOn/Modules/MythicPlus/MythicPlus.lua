@@ -188,8 +188,10 @@ function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
 
     -- Don't update if we're currently in a run since the key will show as downgraded already
     -- and we don't want to update other users until the run is finished.
+    -- Note, C_ChallengeMode.IsChallengeModeActive() cannot be used as it returns false if the dungeon is exited when
+    -- the run is still in progress.
     local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
-    if activeKeystoneLevel > 0 and skipIfMythicInProgress and C_ChallengeMode.IsChallengeModeActive() then
+    if activeKeystoneLevel > 0 and skipIfMythicInProgress then
         WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", self.moduleDB.debugMode)
         return false
     end
