@@ -77,6 +77,8 @@ function MythicPlus:OnEnable()
     self:RegisterEvent("CHALLENGE_MODE_RESET", self.ScheduleOwnKeystoneUpdate, self)
     self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.OnChallengeModeCompleted, self)
 
+    self:RegisterEvent("GUILD_ROSTER_UPDATE", self.UI.OnGuildRosterUpdate, self.UI)
+
     --Bit of a heavy handed catch for reset. Ideally we should calculate the time until reset and start a timer on that.
     WCCCAD:ScheduleRepeatingTimer(function() self:PruneOldEntries() end, PRUNE_TICK_INTERVAl)
 end
@@ -87,6 +89,8 @@ function MythicPlus:OnDisable()
     self:UnregisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
     self:UnregisterEvent("CHALLENGE_MODE_RESET")
     self:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
+
+    self:UnregisterEvent("GUILD_ROSTER_UPDATE")
 end
 
 

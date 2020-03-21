@@ -202,6 +202,10 @@ function MythicPlus_UI:OnDataUpdated()
     WCCC_MythicPlus_Frame:UpdateData(MythicPlus.moduleDB.guildKeys, MythicPlus.moduleDB.leaderboardData)
 end
 
+function MythicPlus_UI:OnGuildRosterUpdate()
+    WCCC_MythicPlus_Frame:OnGuildRosterUpdate()
+end
+
 WCCCAD.UI:AddGuildControlButton("Guild Keystones", "View Guild Mythic+ Keystones", MythicPlus_UI.ShowWindow) 
 
 
@@ -243,25 +247,79 @@ function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     for _, entryData in pairs(guildKeys) do        
         if entryData then
             local leaderboardEntry = leaderboardData[entryData.GUID]
+
             self.orderedGuildKeys[idx] =
             {
-                GUID = entryData.GUID,
+                GUID = entryData.GUID,            
                 playerName = entryData.playerName,
                 classID = entryData.classID,
                 mapID = entryData.mapID,
                 level = entryData.level,
                 bestLevel = leaderboardEntry and leaderboardEntry.level or 0,
-                updateTimestamp = entryData.lastUpdateTimestamp
+                updateTimestamp = entryData.lastUpdateTimestamp,
+                presence = Enum.ClubMemberPresence.Offline
             }
+
             idx = idx + 1
         end
     end    
 
+    --- Extra iteration but easier to maintain.
+    self:UpdateMemberPresence()
+
     --- Reapply active sort.
     if self.activeColumnSortMethod then
         self:SortDataByColumn(self.activeColumnSortMethod, false)
+    else
+        self:ResetColumnSort()
     end
+
     self:RefreshLayout()
+end
+
+---
+--- This is a brute-force way of getting member presence info.
+--- Required due to "CLUB_MEMBER_PRESENCE_UPDATED" seemingly not firing for guilds
+--- and C_Club.GetMemberInfoForSelf always returning memberId as 1 so we can't pass that around instead.
+--- @return boolean True if any member has a new presence value.
+---
+function WCCC_MythicPlusFrameMixin:UpdateMemberPresence()
+    local presenceUpdated = false
+
+    local _, numMembersOnline = GetNumGuildMembers()
+    for _, entryData in pairs(self.orderedGuildKeys) do        
+        if entryData then
+            local newPresence = Enum.ClubMemberPresence.Offline
+            for i=1, numMembersOnline do
+                local _, _, _, _, _, _, _, _, isOnline, status, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
+                if memberGUID == entryData.GUID then
+                    if status == 0 then
+                        newPresence = Enum.ClubMemberPresence.Online
+                    elseif status == 1 then
+                        newPresence = Enum.ClubMemberPresence.Away
+                    elseif status == 2 then
+                        newPresence = Enum.ClubMemberPresence.Busy
+                    end        
+                    break
+                end
+            end
+
+            if entryData.presence ~= newPresence then
+                entryData.presence = newPresence
+                presenceUpdated = true
+                WCCCAD.UI:PrintDebugMessage("Updated presence for ".. entryData.playerName, MythicPlus.moduleDB.debugMode)
+            end
+        end
+    end
+
+    return presenceUpdated
+end
+
+function WCCC_MythicPlusFrameMixin:OnGuildRosterUpdate()
+    if self:UpdateMemberPresence() and self:IsShown() then
+        self:SortDataByColumn(self.activeColumnSortMethod, false)
+        self:RefreshLayout()
+    end
 end
 
 function WCCC_MythicPlusFrameMixin:RefreshLayout()
@@ -307,7 +365,10 @@ end
 
 function WCCC_MythicPlusFrameMixin:ResetColumnSort()
 	self.reverseColumnSort = false
-	self.activeColumnSortMethod = nil
+    self.activeColumnSortMethod = nil
+
+    self:SortDataByColumn(MythicPlus_UI.SortMethod.NAME, false)
+    self:RefreshLayout()
 end
 
 ---
@@ -323,35 +384,46 @@ function WCCC_MythicPlusFrameMixin:SortDataByColumn(sortMethod, reverseOnSameSor
         self.reverseColumnSort = sortMethod ~= self.activeColumnSortMethod and false or not self.reverseColumnSort
     end
     self.activeColumnSortMethod = sortMethod
+    -- Function that takes two tables and returns the values to compare from each.
+    local sortValuesGetter = nil
 
     if sortMethod == MythicPlus_UI.SortMethod.NAME then
-        table.sort(self.orderedGuildKeys, function(a, b)
-            return self:SortFunction(self.reverseColumnSort, a.playerName:upper(), b.playerName:upper())
-        end)
+        sortValuesGetter = function(a, b) 
+            -- Flip name order so it's alphabetically descending.
+            return b.playerName:upper(), a.playerName:upper()
+        end
 
     elseif sortMethod == MythicPlus_UI.SortMethod.DUNGEON then
-        table.sort(self.orderedGuildKeys, function(a, b)
-            return self:SortFunction(self.reverseColumnSort, a.mapID, b.mapID)
-        end)
+        sortValuesGetter = function(a, b) 
+            return a.mapID, b.mapID
+        end
 
     elseif sortMethod == MythicPlus_UI.SortMethod.LEVEL then
-        table.sort(self.orderedGuildKeys, function(a, b)
-            return self:SortFunction(self.reverseColumnSort, a.level, b.level)
-        end)
+        sortValuesGetter = function(a, b) 
+            return a.level, b.level
+        end
 
     elseif sortMethod == MythicPlus_UI.SortMethod.BEST then
-        table.sort(self.orderedGuildKeys, function(a, b)
-            return self:SortFunction(self.reverseColumnSort, a.bestLevel, b.bestLevel)
-        end)
+        sortValuesGetter = function(a, b) 
+            return a.bestLevel, b.bestLevel
+        end
 
     elseif sortMethod == MythicPlus_UI.SortMethod.LAST_UPDATED then
-        table.sort(self.orderedGuildKeys, function(a, b)
-            return self:SortFunction(self.reverseColumnSort, a.updateTimestamp, b.updateTimestamp)
-        end)
+        sortValuesGetter = function(a, b) 
+            return a.updateTimestamp, b.updateTimestamp
+        end
     end
+
+    table.sort(self.orderedGuildKeys, function(a, b)
+        return self:SortFunction(self.reverseColumnSort, a.presence, b.presence, sortValuesGetter(a, b))
+    end)
 end
 
-function WCCC_MythicPlusFrameMixin:SortFunction(shouldReverse, firstValue, secondValue)
+function WCCC_MythicPlusFrameMixin:SortFunction(shouldReverse, firstOnlinePresence, secondOnlinePresence, firstValue, secondValue)
+    if firstOnlinePresence ~= secondOnlinePresence then
+        return firstOnlinePresence < secondOnlinePresence
+    end
+
 	if shouldReverse then 
 		return firstValue < secondValue
 	else 
@@ -393,7 +465,7 @@ function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(le
 end
 
 function WCCC_MythicPlusEntryMixin:OnMouseDown(button)
-    if button == "RightButton" and self.Data.isOnline then
+    if button == "RightButton" and self.Data.presence ~= Enum.ClubMemberPresence.Offline then
 		ToggleDropDownMenu(1, nil, self.RightClickDropdown, self, 100, 0)
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
 	end
@@ -413,22 +485,13 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
         return
     end
 
-    self.Data.isOnline = false
-    local _, numMembersOnline = GetNumGuildMembers()
-    for i=1, numMembersOnline do
-        local _, _, _, _, _, _, _, _, isOnline, _, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
-        if memberGUID == self.Data.GUID then
-            self.Data.isOnline = isOnline
-            break;
-        end
-    end
-
-    local textColour = self.Data.isOnline and CreateColor(1, 1, 1) or CreateColor(0.4, 0.4, 0.4)
+    local isOnline = self.Data.presence ~= Enum.ClubMemberPresence.Offline
+    local textColour = isOnline and CreateColor(1, 1, 1) or CreateColor(0.4, 0.4, 0.4)
 
     local _, classTag = GetClassInfo(self.Data.classID)
     local classColour = CreateColor(GetClassColor(classTag))
     self.NameLabel:SetText(self.Data.playerName)
-    if self.Data.isOnline then
+    if isOnline then
         self.NameLabel:SetTextColor(classColour.r, classColour.g, classColour.b)
     else 
         self.NameLabel:SetTextColor(textColour.r, textColour.g, textColour.b)

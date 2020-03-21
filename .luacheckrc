@@ -3,6 +3,7 @@ std = {
 	{
 		-- WoW Vars
 		"C_ChallengeMode",
+		"C_Club",
 		"C_GuildInfo",
 		"C_Map",
 		"C_MythicPlus",
