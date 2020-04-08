@@ -126,16 +126,16 @@ function WCCCADCore:VersionCommand()
     end
 
     lastVerTimestamp = GetServerTime()
-    self:SenRequestVersionComm()
+    self:SendRequestVersionComm()
 end
 
-function WCCCADCore:SenRequestVersionComm()
+function WCCCADCore:SendRequestVersionComm()
     local data = 
     {
         requestingPlayer = ns.utils.GetPlayerNameRealmString()
     }
 
-    WCCCAD.UI:PrintDebugMessage("Sending version request", WCCCAD.db.profile.debugMode)
+    WCCCAD.UI:PrintDebugMessage("Sending version request", self.moduleDB.debugMode)
     WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s - %s", WCCCAD.versionString, WCCCAD.versionType.name))
     self:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
@@ -143,7 +143,7 @@ end
 function WCCCADCore:OnShareVersionCommReceived(data)
     if data.requestingPlayer ~= nil then
         -- We've received a request.
-        WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, WCCCAD.db.profile.debugMode)
+        WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, self.moduleDB.debugMode)
         local responseData = 
         {
             respondingPlayer = ns.utils.GetPlayerNameRealmString(),
@@ -161,7 +161,7 @@ function WCCCADCore:OnShareVersionCommReceived(data)
         --#endregion
 
         -- It's a response to a request we made.
-        WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, WCCCAD.db.profile.debugMode)
+        WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, self.moduleDB.debugMode)
         local versionOutput = "v"..data.versionString.." - "..data.versionType.name
         if data.version < WCCCAD.version then
             versionOutput =  "|cFFE91100"..versionOutput.."|r (out of date)"

@@ -4,6 +4,7 @@
 --
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
+local WCCCADCore = WCCCAD:GetModule("WCCC_Core")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WCCCAD_UI = {}
@@ -75,10 +76,9 @@ Happy Clubbing!\n\n",
                     name = "Debug Mode",
                     desc = "Enable verbose debug logging.",
                     set = function(info, val) 
-                        WCCCAD.db.profile.debugMode = val
-                        WCCCAD:GetModule("WCCC_Core").moduleDB.debugMode = val
+                        WCCCADCore.moduleDB.debugMode = val
                     end,
-                    get = function() return WCCCAD.db.profile.debugMode end,
+                    get = function() return WCCCADCore.moduleDB.debugMode end,
                     disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
                     hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
                     order = 10.1
