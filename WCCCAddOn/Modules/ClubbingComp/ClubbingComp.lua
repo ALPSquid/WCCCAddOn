@@ -168,7 +168,7 @@ ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
     self:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
-    WCCCAD.UI:PrintAddOnMessage("Clubbing Competition module loaded.")
+    WCCCAD.UI:PrintDebugMessage("Clubbing Competition module loaded.", self.moduleDB.debugMode)
 
     self:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceived)
 end

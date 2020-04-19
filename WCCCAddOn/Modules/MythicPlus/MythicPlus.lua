@@ -59,7 +59,7 @@ function MythicPlus:InitializeModule()
     self:RegisterModuleSlashCommand("mythics", self.MythicPlusCommand)
     self:RegisterModuleSlashCommand("mythicplus", self.MythicPlusCommand)
     self:RegisterModuleSlashCommand("mp", self.MythicPlusCommand)
-    WCCCAD.UI:PrintAddOnMessage("Mythic Plus module loaded.")
+    WCCCAD.UI:PrintDebugMessage("Mythic Plus module loaded.", self.moduleDB.debugMode)
 
     self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceived)
     self:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, self.OnGuildyNewRecordCommReceived)

@@ -63,7 +63,7 @@ local InfoHUD = WCCCAD:CreateModule("WCCC_InfoHUD", infoHUDData)
 
 function InfoHUD:InitializeModule()
     self:RegisterModuleSlashCommand("infohud", self.InfoHUDCommand)
-    WCCCAD.UI:PrintAddOnMessage("Info HUD module loaded.")
+    WCCCAD.UI:PrintDebugMessage("Info HUD module loaded.", self.moduleDB.debugMode)
 end
 
 function InfoHUD:OnEnable()
