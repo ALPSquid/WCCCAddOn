@@ -421,7 +421,11 @@ end
 
 function WCCC_MythicPlusFrameMixin:SortFunction(shouldReverse, firstOnlinePresence, secondOnlinePresence, firstValue, secondValue)
     if firstOnlinePresence ~= secondOnlinePresence then
-        return firstOnlinePresence < secondOnlinePresence
+        if firstOnlinePresence == Enum.ClubMemberPresence.Offline then
+			return false
+		elseif secondOnlinePresence == Enum.ClubMemberPresence.Offline then
+			return true
+		end
     end
 
 	if shouldReverse then 
