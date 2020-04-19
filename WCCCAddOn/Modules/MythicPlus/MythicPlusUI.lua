@@ -221,7 +221,7 @@ function WCCC_MythicPlusFrameMixin:OnLoad()
 
     HybridScrollFrame_CreateButtons(self.ListScrollFrame, "WCCC_MythicPlusEntryTemplate", 0, 0)
     HybridScrollFrame_SetDoNotHideScrollBar(self.ListScrollFrame, true)
-    self.ListScrollFrame.update = self.RefreshLayout
+    self.ListScrollFrame.update = function() self:RefreshLayout() end
 
     tinsert(UISpecialFrames, self:GetName())
 end
