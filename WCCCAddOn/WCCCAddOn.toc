@@ -10,9 +10,10 @@ embeds.xml
 
 Utils.lua
 WCCCAddOn.lua
-UI.lua
 Modules\ModuleBase.lua
 Modules\WCCCADCore\WCCCADCore.lua
+UI.lua
+
 
 WCCCAddOn.xml
 
