@@ -122,32 +122,67 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                     order = 10.1,
                     args =
                     {
+                        tabSelectDropdown =
+                        {
+                            type = "select",  
+                            name = "Select Tab",   
+                            desc = "Select tab to send to.",
+                            descStyle = "inline",
+                            order = 10.111,                            
+                            values = function() 
+                                local tabOptions = {}
+                                for tabName, v in pairs(InfoHUD.moduleDB.activeMessages) do
+                                    tabOptions[tabName] = tabName
+                                end
+                                return tabOptions
+                            end,
+                            get = function() return InfoHUD.UI.OC_SelectedTabKey end,
+                            set = function(options, key) InfoHUD.UI.OC_SelectedTabKey = key end 
+                        },                        
 
-                        clearGuildBtn = 
+                        clearMessageBtn = 
                         {
                             type = "execute",
-                            name = "Clear Guild Message",
-                            desc = "Clear the currently set guild message.",
-                            func = function() InfoHUD:OC_SetMessage("guild", nil) end,
-                            confirm = function() return "Clear guild message?" end,
-                            order = 10.1
-                        },
+                            name = "Clear Message",
+                            desc = "Clear the currently selected tab message.",
+                            func = function() InfoHUD:OC_SetMessage(InfoHUD.UI.OC_SelectedTabKey , nil) end,
+                            confirm = function() return "Clear ".. InfoHUD.UI.OC_SelectedTabKey .. " message?" end,
+                            order = 10.112
+                        },                        
 
-                        clearRaidBtn = 
+                        tabSelectDropdownDesc = 
                         {
-                            type = "execute",
-                            name = "Clear Raid Message",
-                            desc = "Clear the currently set raid message.",
-                            func = function() InfoHUD:OC_SetMessage("raid", nil) end,
-                            confirm = function() return "Clear raid message?" end,
-                            order = 10.1
+                            type = "description",
+                            name = "Select tab to edit, or enter a new tab name to create.",
+                            order = 10.113,
+                            width = "full"
                         },
 
-                        clearButtonsDivider = 
+                        tabName =
+                        {
+                            type = "input",
+                            order = 10.121,
+                            name = "Tab Name",
+                            desc = "Name of new tab to create. Leave blank if using an existing one.",
+                            width = "full",
+                            descStyle = "inline",
+                            set = function(info, val) InfoHUD.UI.OC_SelectedTabKey = val end,
+                            get = function() return InfoHUD.UI.OC_SelectedTabKey end,
+                        },
+
+                        tabNameDesc =
+                        {
+                            type = "description",
+                            order = 10.122,
+                            name = "Name of tab to use. Select from above or enter a new one to create a tab.",
+                            width = "full"
+                        },
+
+                        tabButtonsDivider = 
                         {
                             type = "description",
                             name = " -- ",
-                            order = 10.12,
+                            order = 10.13,
                             width = "full"
                         },                        
 
@@ -157,7 +192,7 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                             name = "Load Saved Message",   
                             desc = "Select message to edit, or start writing with no message selected to create new or send without saving.",
                             descStyle = "inline",
-                            order = 10.12,                            
+                            order = 10.14,                            
                             values = function() 
                                 local messageOptions = {}
                                 for k, v in pairs(InfoHUD.moduleDB.savedMessages) do
@@ -173,7 +208,7 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                         {
                             type = "execute",
                             name = "Delete",
-                            order = 10.121,
+                            order = 10.141,
                             desc = "Delete the selected message.",
                             disabled = function() return InfoHUD.UI.OC_SelectedMessageDataKey == nil end,
                             func = function() InfoHUD.UI:OC_DeleteMessage(InfoHUD.UI.OC_SelectedMessageDataKey) end,
@@ -184,52 +219,42 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                         {
                             type = "description",
                             name = "Select message to edit, or start writing with no message selected to create new or send without saving.",
-                            order = 10.122,
+                            order = 10.142,
                             width = "full"
-                        },                        
+                        },
 
                         messageNameDivider = 
                         {
                             type = "description",
                             name = " ",
-                            order = 10.13,
+                            order = 10.15,
                             width = "full"
                         },
 
                         messageClear =
                         {
                             type = "execute",
-                            name = "Clear/Add New",
-                            order = 10.131,
+                            name = "Clear/Create New",
+                            order = 10.151,
                             desc = "Clear entered message data to add a new one.",
                             func = function() InfoHUD.UI:OC_ClearSelectedMessage() end
                         },     
 
-                        loadActiveGuildDataBtn =
+                        loadActiveMessageDataBtn =
                         {
                             type = "execute",
-                            name = "Load Active Guild Data",
-                            order = 10.132,
-                            desc = "Load message data currently active in the guild tab, if there is any.",
-                            disabled = function() return InfoHUD.moduleDB.activeMessages["guild"] == nil or InfoHUD.moduleDB.activeMessages["guild"].content == nil end,
-                            func = function() InfoHUD.UI:OC_LoadActiveMessageForTab("guild") end
-                        }, 
-
-                        loadActiveRaidDataBtn =
-                        {
-                            type = "execute",
-                            name = "Load Active Raid Data",
-                            order = 10.133,
-                            desc = "Load message data currently active in the raid tab, if there is any.",
-                            disabled = function() return InfoHUD.moduleDB.activeMessages["raid"] == nil or InfoHUD.moduleDB.activeMessages["raid"].content == nil end,
-                            func = function() InfoHUD.UI:OC_LoadActiveMessageForTab("raid") end
-                        }, 
+                            name = "Load Active Message Data",
+                            order = 10.152,
+                            desc = "Load message data currently active in the selected tab, if there is any.",
+                            disabled = function() return InfoHUD.moduleDB.activeMessages[InfoHUD.UI.OC_SelectedTabKey] == nil or InfoHUD.moduleDB.activeMessages[InfoHUD.UI.OC_SelectedTabKey].content == nil end,
+                            func = function() InfoHUD.UI:OC_LoadActiveMessageForTab(InfoHUD.UI.OC_SelectedTabKey) end
+                        },  
 
                         messageName =
                         {
                             type = "input",
-                            order = 10.14,
-                            name = "Name",
+                            order = 10.16,
+                            name = "Message Name",
                             desc = "Name to save the message as. Leave blank if you don't want to save the message.",
                             width = "full",
                             descStyle = "inline",
@@ -241,14 +266,14 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                         {
                             type = "description",
                             name = "Name to save the message as. Leave blank if you don't want to save the message.",
-                            order = 10.141,
+                            order = 10.161,
                             width = "full"
                         },
 
                         messageContent =
                         {
                             type = "input",
-                            order = 10.15,
+                            order = 10.17,
                             name = "Content",
                             desc = "Message content to show in the Info HUD.",
                             width = "full",
@@ -259,25 +284,36 @@ The HUD can be hidden from the Settings tab, as well as toggling auto-height and
                             end,
                         }, 
 
-                        messageSendToGuildBtn =
+                        messageSendToTabBtn =
                         {
                             type = "execute",
-                            name = "Send to Guild",
-                            order = 10.16,
-                            desc = "Send message to guild HUD.",
-                            disabled = function() return InfoHUD.UI.OC_SelectedMessageData.content == nil end,
-                            func = function() InfoHUD:OC_SetMessage("guild", InfoHUD.UI.OC_SelectedMessageData.content) end
-                        },
+                            name = "Send to Selected Tab",
+                            order = 10.18,
+                            desc = "Send message to selected tab.",
+                            validate = function()
+                                if InfoHUD.UI.OC_SelectedTabKey == nil then
+                                    return "Select a tab or enter a new tab name before sending the message."
+                                end
+                                return true
+                            end,
+                            confirm = function()
+                                local isNewTab = true
+                                for tabName, v in pairs(InfoHUD.moduleDB.activeMessages) do
+                                    if tabName == InfoHUD.UI.OC_SelectedTabKey then
+                                        isNewTab = false
+                                        break
+                                    end
+                                end
 
-                        messageSendToRaidBtn =
-                        {
-                            type = "execute",
-                            name = "Send to Raid",
-                            order = 10.17,
-                            desc = "Send message to raid HUD.",
+                                if isNewTab then
+                                    return "Create new tab: " .. InfoHUD.UI.OC_SelectedTabKey
+                                end
+
+                                return false
+                            end,
                             disabled = function() return InfoHUD.UI.OC_SelectedMessageData.content == nil end,
-                            func = function() InfoHUD:OC_SetMessage("raid", InfoHUD.UI.OC_SelectedMessageData.content) end
-                        },
+                            func = function() InfoHUD:OC_SetMessage(InfoHUD.UI.OC_SelectedTabKey, InfoHUD.UI.OC_SelectedMessageData.content) end
+                        }
                     }
                 },
             }
@@ -291,6 +327,7 @@ WCCCAD.UI:AddGuildControlButton("Info HUD Settings", "View Info HUD settings, to
 -- Officer controls
 InfoHUD_UI.OC_SelectedMessageData = {}
 InfoHUD_UI.OC_SelectedMessageDataKey = nil
+InfoHUD_UI.OC_SelectedTabKey = "guild"
 
 function InfoHUD_UI:OC_LoadActiveMessageForTab(tabName)
     self:OC_ClearSelectedMessage()
@@ -488,7 +525,7 @@ function InfoHUD_UI:CreateHUD()
 
         local tabButton = CreateFrame("Button", frameName.."_tab", hudFrameSelf, "OptionsFrameTabButtonTemplate")
         tabButton:SetText(tabName)
-        PanelTemplates_TabResize(tabButton, 2, nil, 30, 30, tabButton:GetFontString():GetStringWidth())
+        PanelTemplates_TabResize(tabButton, 2, nil, 30, 50, tabButton:GetFontString():GetStringWidth())
         tabButton:SetScript("OnClick", function()
             hudFrameSelf:SwitchTab(frameName)
         end)
@@ -554,9 +591,13 @@ function InfoHUD_UI:CreateHUD()
         local msgLines = 0
         for frameName, frameData in pairs(hudFrameSelf.messageFrames) do
             local lines = frameData.messageFrame:GetMaxLines()
+            if InfoHUD.moduleDB.activeMessages[frameName].content == nil then
+                lines = 1
+            end
             frameData.messageFrame:SetHeight(lines * 20)
 
             if lines > msgLines then
+                WCCCAD.UI:PrintDebugMessage("InfoHUD more lines on "..frameName, InfoHUD.moduleDB.debugMode)
                 msgLines = lines
             end
         end
