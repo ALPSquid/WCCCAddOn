@@ -8,6 +8,102 @@ local WCCCAD = ns.WCCCAD
 local HIT_COOLDOWN = 15 * 60 -- 15 mins between hitting the same target.
 local SEASON_MULTIPLIER = 1
 
+local RESTRICTED_ZONE_WINDOW_TIME = 10 * 60  -- 10 mins  10 * 60
+local RESTRICTED_ZONE_WINDOW_COOLDOWN = 30 * 60 -- 30 mins  30 * 60
+
+local RESTRICTED_ZONE_STATE =
+{
+	AVAILABLE = 1,
+	IN_ACTIVE_WINDOW = 2,
+	IN_COOLDOWN = 3
+}
+
+---@type table<number, boolean> @Table of restricted zones.
+local RESTRICTED_ZONES =
+{
+	-- Chamber of Heart
+	[1473] = true
+}
+
+--- 
+---@class RestrictedZoneEventMessage
+---@field message string @Message to print when this event triggers.
+---@field soundID number optional @Sound ID to play when this event triggers.
+---@field soundFileID number optional @Sound File ID to play when this event triggers.
+---
+---@class RestrictedZoneMessageData
+---@field windowStart RestrictedZoneEventMessage @Event Message for when the clubbing window starts.
+---@field windowEnd RestrictedZoneEventMessage @Event Message for when the clubbing window ends and the cooldown starts.
+---@field cooldownEnd RestrictedZoneEventMessage @Event Message for when the cooldown ends.
+---
+---@type table<number, RestrictedZoneMessageData>
+local RESTRICTED_ZONE_MESSAGES =
+{
+    [1] =
+    {
+        windowStart = 
+        {
+            message = "The Guards have been called and will arrive soon...",
+            soundID = 28625 -- HunterHorn
+        },
+
+        windowEnd = 
+        {
+            message = "The Guards have arrived, you should lay low for a while...",
+            soundFileID = 556905 --"Belf Military 'mind yourself'"
+        },
+
+        cooldownActive =
+        {
+            message = "The Guards are still on high alert, you should lay low for a while...",
+            soundFileID = 556905 --"Belf Military 'mind yourself'"
+        },
+
+        cooldownEnd =
+        {
+            message = "The Guards have moved on, it's safe to club again!",
+            soundFileID = 552061 --"sound/creature/horse/mhorseattackc.ogg"
+        }
+    },
+
+    [2] =
+    {
+        windowStart = 
+        {
+            message = "You hear rumours that Khadgar is looking for someone to help him with a quest...",
+            soundFileID = 1258397 --"There is much to be done"
+        },
+
+        windowEnd = 
+        {
+            message = "Khadgar is calling out for quest volunteers, you should lay low for a while...",
+            soundFileID = 1258394 --"Hail and well met, champion"
+        },
+
+        cooldownActive =
+        {
+            message = "Khadgar is still calling out for quest volunteers, you should lay low for a while...",
+            soundFileID = 1258394 --"Hail and well met, champion"
+        },
+
+        cooldownEnd =
+        {
+            message = "Khadgar's given up, it's safe to club again!",
+            soundFileID = 1054376 --"Be vigilant, friend"
+        }
+    }
+}
+
+---@class ActiveRestrictedZoneTimerData
+---@field zoneState number @State of the zone relating to a RESTRICTED_ZONE_STATE
+---@field timerHandle string @Active Ace-Timer handle
+---
+---@type table<number, ActiveRestrictedZoneTimerData> @Table of active restricted zone timer handles.
+local ActiveRestrictedZoneTimers =
+{
+	-- [zoneID] = {zoneState, timerHandle}
+}
+
 ---@class RaceData
 ---@field type string @Race type to register hits under
 ---@field name string @Front-facing singular name
@@ -159,6 +255,16 @@ local clubbingCompData =
         {
             lastUpdateTimestamp = 0,
             clubbers = {} -- [idx] = {name, score}
+        },
+
+        ---@class ActiveRestrictedZoneData
+        ---@field windowStartTimestamp number @Timestamp when the last restriction window started.
+        ---@field selectedMessagesIdx number @Index used to retrieve messages and sounds from the RESTRICTED_ZONE_MESSAGES table for this event sequence.
+        ---
+        ---@type table<number, ActiveRestrictedZoneData>
+        ActiveRestrictedZoneData =
+        {
+            -- [zoneID] = { windowStartTimestamp = <timestamp>, selectedMessageIdx = idx }
         }
     }
 }
@@ -176,6 +282,10 @@ end
 function ClubbingComp:OnEnable()
     self:InitiateSync()
     self:UpdateActiveFrenzy()
+
+    for zoneID, _ in pairs(RESTRICTED_ZONES) do
+        self:CheckZoneState(zoneID)
+    end
 
     ClubbingComp.UI:ShowHUDIfEnabled()
 end
@@ -221,6 +331,12 @@ function ClubbingComp:ClubCommand(args)
     end
 
     -- Standard club command
+    local zoneID = C_Map.GetBestMapForUnit("player")
+    self:OnClubUsedInZone(zoneID)
+    if not self:CanClubInZone(zoneID) then
+        return
+    end
+
     local _, targetRaceEn = UnitRace("target")
     local _, targetFactionEn = UnitFactionGroup("target")
     local targetName = UnitName("target")
@@ -409,6 +525,116 @@ function ClubbingComp:OnGuildyClubbedWorgenCommReceived(data)
 
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)
 end
+
+
+--#region Zone Restrictions
+function ClubbingComp:CanClubInZone(zoneID)
+	return self:CheckZoneState(zoneID) ~= RESTRICTED_ZONE_STATE.IN_COOLDOWN
+end
+
+--- 
+--- Returns the current restriction state for the specified zone, ensuring the required timers are running.
+--- @param zoneID number The ZoneID to check. Obtained with C_Map.GetBestMapForUnit("player").
+--- @return number number corresponding to a RESTRICTED_ZONE_STATE.
+---
+function ClubbingComp:CheckZoneState(zoneID)
+	if RESTRICTED_ZONES[zoneID] == nil then
+		return RESTRICTED_ZONE_STATE.AVAILABLE
+	end
+
+	local currentTime = GetServerTime()
+	local windowStartTimestamp = self.moduleDB.ActiveRestrictedZoneData[zoneID] and self.moduleDB.ActiveRestrictedZoneData[zoneID].windowStartTimestamp or 0
+	local windowEndTimestamp = windowStartTimestamp + RESTRICTED_ZONE_WINDOW_TIME
+    local cooldownEndTimestamp = windowEndTimestamp + RESTRICTED_ZONE_WINDOW_COOLDOWN
+
+    local currentZoneState = ActiveRestrictedZoneTimers[zoneID] and ActiveRestrictedZoneTimers[zoneID].zoneState or nil
+
+    if windowStartTimestamp == nil or windowStartTimestamp == 0 or currentTime >= cooldownEndTimestamp then
+        -- No window active or window has ended, clear data and exit.
+        WCCCAD.UI:PrintDebugMessage("Cooldown reset for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+
+        if currentZoneState ~= RESTRICTED_ZONE_STATE.AVAILABLE 
+        and zoneID == C_Map.GetBestMapForUnit("player") 
+        and self.moduleDB.ActiveRestrictedZoneData[zoneID] ~= nil then
+            self:ShowRestrictedZoneMessage(RESTRICTED_ZONE_MESSAGES[self.moduleDB.ActiveRestrictedZoneData[zoneID].selectedMessagesIdx].cooldownEnd)  
+        end
+
+        self.moduleDB.ActiveRestrictedZoneData[zoneID] = nil
+        ActiveRestrictedZoneTimers[zoneID] = nil
+
+		return RESTRICTED_ZONE_STATE.AVAILABLE
+
+	elseif currentTime >= windowEndTimestamp then
+        -- Still in cooldown, check timer is running.
+        if currentZoneState ~= RESTRICTED_ZONE_STATE.IN_COOLDOWN then
+            WCCCAD.UI:PrintDebugMessage("Cooldown timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+
+			ActiveRestrictedZoneTimers[zoneID] = 
+            {
+                zoneState = RESTRICTED_ZONE_STATE.IN_COOLDOWN,
+                timerHandle = WCCCAD:ScheduleTimer(self.CheckZoneState, cooldownEndTimestamp - currentTime, self, zoneID)
+            }
+
+            if zoneID == C_Map.GetBestMapForUnit("player") then
+                self:ShowRestrictedZoneMessage(RESTRICTED_ZONE_MESSAGES[self.moduleDB.ActiveRestrictedZoneData[zoneID].selectedMessagesIdx].windowEnd)  
+            end
+        end
+
+		return RESTRICTED_ZONE_STATE.IN_COOLDOWN
+
+	elseif currentTime >= windowStartTimestamp then
+		-- Still in active window, check timer is running.
+        if currentZoneState ~= RESTRICTED_ZONE_STATE.IN_ACTIVE_WINDOW then
+            WCCCAD.UI:PrintDebugMessage("Clubbing window timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+
+            ActiveRestrictedZoneTimers[zoneID] = 
+            {
+                zoneState = RESTRICTED_ZONE_STATE.IN_ACTIVE_WINDOW,
+                timerHandle = WCCCAD:ScheduleTimer(self.CheckZoneState, windowEndTimestamp - currentTime, self, zoneID)
+            }
+
+            if zoneID == C_Map.GetBestMapForUnit("player") then
+                self:ShowRestrictedZoneMessage(RESTRICTED_ZONE_MESSAGES[self.moduleDB.ActiveRestrictedZoneData[zoneID].selectedMessagesIdx].windowStart)
+            end
+        end	
+
+		return RESTRICTED_ZONE_STATE.IN_ACTIVE_WINDOW
+	end
+end
+
+function ClubbingComp:OnClubUsedInZone(zoneID)
+	if RESTRICTED_ZONES[zoneID] == nil then
+		return
+	end
+
+	local zoneState = self:CheckZoneState(zoneID)
+
+	if zoneState == RESTRICTED_ZONE_STATE.AVAILABLE then
+		-- All done, can start a new window.
+		self.moduleDB.ActiveRestrictedZoneData[zoneID] = 
+		{
+            windowStartTimestamp = GetServerTime(),
+            selectedMessagesIdx = math.random(1, #RESTRICTED_ZONE_MESSAGES)
+        }
+        self:CheckZoneState(zoneID)
+
+	elseif zoneState == RESTRICTED_ZONE_STATE.IN_COOLDOWN then
+        self:ShowRestrictedZoneMessage(RESTRICTED_ZONE_MESSAGES[self.moduleDB.ActiveRestrictedZoneData[zoneID].selectedMessagesIdx].cooldownActive)
+	end
+end
+
+--- @param messageData RestrictedZoneEventMessage
+function ClubbingComp:ShowRestrictedZoneMessage(messageData)
+    WCCCAD.UI:PrintAddOnMessage(messageData.message)
+    if messageData.soundID ~= nil then
+        PlaySound(messageData.soundID, "SFX")
+    end
+
+    if messageData.soundFileID ~= nil then
+        PlaySoundFile(messageData.soundFileID, "SFX")
+    end
+end
+--#endregion
 
 
 --#region Seasons
