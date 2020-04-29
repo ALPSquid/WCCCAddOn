@@ -1,3 +1,11 @@
+# v1.0.23 - beta
+* Some zones are now on high-alert and looking out for Clubbers, you'll have to lay low periodically to avoid confrontation.
+* Fixes InfoHUD tabs resizing and sorting incorrectly.
+* Fixes InfoHUD sometimes resizing to max height if a tab has no data in it.
+* Fixes debug messages printing when a version request is sent.
+* Fixes Mythic Plus UI not scrolling.
+* Fixes Mythic Plus UI sorting offline players above away/busy players.
+
 # v1.0.22
 * Adds Mythic Keystones module 
     * See what keystones each guild member has and what their weekly best is!
