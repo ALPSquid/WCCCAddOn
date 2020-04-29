@@ -1,4 +1,4 @@
-# v1.0.23 - beta
+# v1.0.23
 * Some zones are now on high-alert and looking out for Clubbers, you'll have to lay low periodically to avoid confrontation.
 * Fixes InfoHUD tabs resizing and sorting incorrectly.
 * Fixes InfoHUD sometimes resizing to max height if a tab has no data in it.
