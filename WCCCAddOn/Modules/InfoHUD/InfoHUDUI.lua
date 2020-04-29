@@ -525,6 +525,7 @@ function InfoHUD_UI:CreateHUD()
 
         local tabButton = CreateFrame("Button", frameName.."_tab", hudFrameSelf, "OptionsFrameTabButtonTemplate")
         tabButton:SetText(tabName)
+        tabButton:Show()
         PanelTemplates_TabResize(tabButton, 2, nil, 30, 50, tabButton:GetFontString():GetStringWidth())
         tabButton:SetScript("OnClick", function()
             hudFrameSelf:SwitchTab(frameName)
@@ -542,9 +543,29 @@ function InfoHUD_UI:CreateHUD()
 
     --- Relayout shown tab buttons
     function self.hudFrame.LayoutTabs(hudFrameSelf) 
+        local GetSortIndexForName = function(frameName)
+            local stringOrder = {"guild", "raid"}
+            for i, stringTarget in ipairs(stringOrder) do
+                if string.find(frameName:lower(), stringTarget) then
+                    return i
+                end
+            end
+            return #stringOrder + 1
+        end
+
+        local sortedFrames = {}
+        for frameName, _ in pairs(hudFrameSelf.messageFrames) do
+            table.insert(
+                sortedFrames, 
+                math.min(GetSortIndexForName(frameName), #sortedFrames + 1),
+                frameName
+            )
+        end
+
         local tabOffset = 0
-        for frameName, frameData in pairs(hudFrameSelf.messageFrames) do
-            if frameData.hidden == false then
+        for _, frameName in ipairs(sortedFrames) do
+            local frameData = hudFrameSelf.messageFrames[frameName]
+            if not frameData.hidden then
                 tabOffset = tabOffset + frameData.tabButton:GetWidth() - 10
             end
 
