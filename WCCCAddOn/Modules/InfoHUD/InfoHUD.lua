@@ -2,7 +2,7 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local infoHUDData = 
@@ -62,21 +62,21 @@ Classes\
 local InfoHUD = WCCCAD:CreateModule("WCCC_InfoHUD", infoHUDData)
 
 function InfoHUD:InitializeModule()
-    InfoHUD:RegisterModuleSlashCommand("infohud", InfoHUD.InfoHUDCommand)
-    WCCCAD.UI:PrintAddOnMessage("Info HUD module loaded.")
+    self:RegisterModuleSlashCommand("infohud", self.InfoHUDCommand)
+    WCCCAD.UI:PrintDebugMessage("Info HUD module loaded.", self.moduleDB.debugMode)
 end
 
 function InfoHUD:OnEnable()
-    InfoHUD:InitiateSync()
+    self:InitiateSync()
 
-    InfoHUD.UI:RestoreHUDShownState()
-    InfoHUD:UpdateHUDMessages()
+    self.UI:RestoreHUDShownState()
+    self:UpdateHUDMessages()
 end
 
 function InfoHUD:InfoHUDCommand(args)
     if args ~= nil and args[1] ~= nil then
         if args[1] == "toggle" then
-            InfoHUD.UI:ToggleHUD()
+            self.UI:ToggleHUD()
         end
         return 
     end
@@ -89,17 +89,17 @@ function InfoHUD:OC_SetMessage(messageTab, messageContent)
         return
     end
 
-    InfoHUD.moduleDB.activeMessages[messageTab] = 
+    self.moduleDB.activeMessages[messageTab] = 
     {
         content = messageContent,
         updateTime = GetServerTime()
     }
 
-    InfoHUD:BroadcastSyncData()
-    InfoHUD:UpdateHUDMessages()
+    self:BroadcastSyncData()
+    self:UpdateHUDMessages()
 end
 
---- 
+---
 --- Update the UI to match the data on disk or new message data if supplied
 ---
 function InfoHUD:UpdateHUDMessages(newMessageData) 
@@ -109,19 +109,19 @@ function InfoHUD:UpdateHUDMessages(newMessageData)
     --- Update local data.
     if newMessageData ~= nil then 
         for frameName, messageData in pairs(newMessageData.activeMessages) do
-            local localMessageData = InfoHUD.moduleDB.activeMessages[frameName]
+            local localMessageData = self.moduleDB.activeMessages[frameName]
             if localMessageData == nil or messageData.updateTime > localMessageData.updateTime then
-                InfoHUD.moduleDB.activeMessages[frameName] = messageData
+                self.moduleDB.activeMessages[frameName] = messageData
             end
         end
     end
-    
+
     --- Update UI to show latest messages and switch to the newest tab.
-    for frameName, messageData in pairs(InfoHUD.moduleDB.activeMessages) do
+    for frameName, messageData in pairs(self.moduleDB.activeMessages) do
         if messageData.content == nil then
-            InfoHUD.UI.hudFrame:HideTab(frameName)
+            self.UI.hudFrame:HideTab(frameName)
         else
-            InfoHUD.UI.hudFrame:SetTabMessage(frameName, messageData.content)
+            self.UI.hudFrame:SetTabMessage(frameName, messageData.content)
 
             if messageData.updateTime > lastUpdatedFrameTime then
                 lastUpdatedFrameTime = messageData.updateTime
@@ -131,12 +131,12 @@ function InfoHUD:UpdateHUDMessages(newMessageData)
     end
 
     if lastUpdatedFrame ~= nil then
-        InfoHUD.UI.hudFrame:SwitchTab(lastUpdatedFrame)
-        if newMessageData ~= nil and not InfoHUD.UI.hudFrame:IsShown() then
-            if lastUpdatedFrame ~= "guild" or not InfoHUD.moduleDB.hudData.autoShow then
+        self.UI.hudFrame:SwitchTab(lastUpdatedFrame)
+        if newMessageData ~= nil and not self.UI.hudFrame:IsShown() then
+            if lastUpdatedFrame ~= "guild" or not self.moduleDB.hudData.autoShow then
                 WCCCAD.UI:PrintAddOnMessage("Info HUD message updated, use '/wccc infohud' to open.")
-            elseif InfoHUD.moduleDB.hudData.autoShow and lastUpdatedFrame == "guild" then
-                InfoHUD.UI:SetHUDShown(true)
+            elseif self.moduleDB.hudData.autoShow and lastUpdatedFrame == "guild" then
+                self.UI:SetHUDShown(true)
             end
         end
     end
@@ -148,7 +148,7 @@ end
 function InfoHUD:GetSyncData() 
     local syncData =
     {
-        activeMessages = InfoHUD.moduleDB.activeMessages
+        activeMessages = self.moduleDB.activeMessages
     }
 
     return syncData
@@ -160,7 +160,7 @@ function InfoHUD:CompareSyncData(remoteData)
     local numRemoteNewer = 0
 
     for frameName, messageData in pairs(remoteData.activeMessages) do
-        local localMessageData = InfoHUD.moduleDB.activeMessages[frameName]
+        local localMessageData = self.moduleDB.activeMessages[frameName]
         if localMessageData == nil then
             numRemoteNewer = numRemoteNewer + 1
         else 
@@ -185,10 +185,10 @@ function InfoHUD:CompareSyncData(remoteData)
     elseif numLocalNewer > 0 then
         return ns.consts.DATA_SYNC_RESULT.LOCAL_NEWER
     end
-    
+
     return ns.consts.DATA_SYNC_RESULT.EQUAL
 end
 
 function InfoHUD:OnSyncDataReceived(data)
-    InfoHUD:UpdateHUDMessages(data)
+    self:UpdateHUDMessages(data)
 end

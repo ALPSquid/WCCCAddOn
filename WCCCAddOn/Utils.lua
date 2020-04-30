@@ -2,10 +2,31 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 
 ns.consts = {}
 ns.utils = {}
+
+ns.consts.VERSION_TYPE =
+{
+    ALPHA = 
+    {
+        value = 1,
+        name = "alpha"
+    },
+
+    BETA = 
+    {
+        value = 2,
+        name = "beta"
+    },
+
+    RELEASE = 
+    {
+        value = 3,
+        name = "release"
+    }
+}
 
 ns.consts.DATA_SYNC_RESULT =
 {
@@ -15,7 +36,8 @@ ns.consts.DATA_SYNC_RESULT =
     BOTH_NEWER = 2
 }
 
-ns.consts.CHAT_CHANNEL = {
+ns.consts.CHAT_CHANNEL = 
+{
     EMOTE = "EMOTE",
     SAY = "SAY",
     YELL = "YELL",
@@ -98,6 +120,62 @@ ns.utils.DaysSince = function(timeStamp)
     return ceil(timeDelta / 86400)
 end
 
+ns.utils.HoursSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 3600)
+end
+
+ns.utils.MinutesSince = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+
+    return ceil(timeDelta / 60)
+end
+
+--- Creates a string displaying the time since the specified timestamp. e.g. "10 hours ago", "5 minutes ago"
+ns.utils.GetTimeSinceString = function(timeStamp)
+    local timeDelta = GetServerTime() - timeStamp
+    local formattedTime
+    local unitString
+
+    if timeDelta >= 86400 then
+        formattedTime = ns.utils.DaysSince(timeStamp)
+        unitString = formattedTime == 1 and "day" or "days"
+
+    elseif timeDelta >= 3600 then
+        formattedTime = ns.utils.HoursSince(timeStamp)
+        unitString = formattedTime == 1 and "hour" or "hours"
+
+    else
+        formattedTime = ns.utils.MinutesSince(timeStamp)
+        unitString = formattedTime == 1 and "min" or "mins"
+    end
+
+    return format("%i %s ago", formattedTime, unitString)
+
+end
+
+ns.utils.GetLastServerResetTimestamp = function()
+    local currentTimestamp = GetServerTime()
+    local currentDate = date("!*t", currentTimestamp)
+
+    local minutesPastResetMinute = currentDate.min
+    local hoursPastResetHour = currentDate.hour - 7
+
+    local daysPastResetDay = currentDate.wday - 4
+    if daysPastResetDay < 0 or (daysPastResetDay == 0 and hoursPastResetHour < 0) then
+        daysPastResetDay = 7 + daysPastResetDay
+    end
+
+    local secondsPastReset = currentDate.sec + (minutesPastResetMinute * 60) + (hoursPastResetHour * 60 * 60) + (daysPastResetDay * 24 * 60 * 60)
+
+    -- TODO: Might not be necessary? Test in other timezones.
+    local serverOffset = currentTimestamp - time(currentDate)
+    secondsPastReset = secondsPastReset +  serverOffset
+
+    return currentTimestamp - secondsPastReset
+end
+
 --- Format special sequences in a string, such as {skull} and |cblue word |r
 ns.utils.FormatSpecialString = function(inputString)
     local formatStrings = 
@@ -146,28 +224,27 @@ ns.utils.FormatSpecialString = function(inputString)
     }
 
     local formattedString = inputString:gsub("||", "|")
-    for k, formatData in pairs(formatStrings) do
+    for _, formatData in pairs(formatStrings) do
         formattedString = formattedString:gsub(formatData[1], formatData[2])
     end
-            
+
     return formattedString
 end
 
-
 ---
 --- Creates a floating UI panel themed in the WCCC style. Includes lock and dragging.
---- @param framePointGetter - Function that returns the point, offsetX, offsetY for the frame.
---- @param framePointSetter - Function that takes the point, offsetX, offsetY for the frame to be saved.
---- @param infoPressedCallback - Function called when the info button or guild logo is pressed.
---- @param resizable - [Optional] Whether the frame should be resizable.
---- @param sizeGetter - [Optional] Function that returns the width, height for the frame.
---- @param sizeSetter - [Optional] Function that takes the width, height for the frame to be saved.
+--- @param framePointGetter fun():number, number, number @Function that returns the point, offsetX, offsetY for the frame.
+--- @param framePointSetter fun(point:number, offsetX:number, offsetY:number) @Function that takes the point, offsetX, offsetY for the frame to be saved.
+--- @param infoPressedCallback fun() @Function called when the info button or guild logo is pressed.
+--- @param resizable boolean optional @Whether the frame should be resizable.
+--- @param sizeGetter fun():number, number optional @Function that returns the width, height for the frame.
+--- @param sizeSetter fun(width:number, height:number) optional @Function that takes the width, height for the frame to be saved.
 ---
 ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, closePressedCallback, resizable, sizeGetter, sizeSetter) 
     local hudFrame = CreateFrame("Frame", nil, UIParent)
     hudFrame:SetFrameStrata("MEDIUM")
 
-    point, offsetX, offsetY = framePointGetter()
+    local point, offsetX, offsetY = framePointGetter()
     hudFrame:SetPoint(
         point, 
         nil,
@@ -194,13 +271,13 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     hudFrame:SetScript("OnDragStop", function()
         hudFrame:StopMovingOrSizing()
 
-        point, relativeTo, relativePoint, offsetX, offsetY = hudFrame:GetPoint()
-        framePointSetter(point, offsetX, offsetY)
+        local newPoint, _, _, newOffsetX, newOffsetY = hudFrame:GetPoint()
+        framePointSetter(newPoint, newOffsetX, newOffsetY)
     end)
 
-    hudFrame.SetLocked = function(self, locked)
-        hudFrame.IsLocked = locked
-        hudFrame:EnableMouse(not locked) 
+    function hudFrame.SetLocked(hudFrameSelf, locked)
+        hudFrameSelf.IsLocked = locked
+        hudFrameSelf:EnableMouse(not locked) 
 
         local lockTexture = "Interface\\LFGFRAME\\UI-LFG-ICON-LOCK"
         local backdropAlpha = 0.3
@@ -211,16 +288,16 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
             lockTexture = "Interface\\CURSOR\\UI-Cursor-Move"
         end
 
-        hudFrame:SetBackdropColor(0, 0, 0, backdropAlpha)
-        hudFrame:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
+        hudFrameSelf:SetBackdropColor(0, 0, 0, backdropAlpha)
+        hudFrameSelf:SetBackdropBorderColor(1, 0.62, 0, borderAlpha)
 
-        hudFrame.lockBtn:SetNormalTexture(lockTexture)
+        hudFrameSelf.lockBtn:SetNormalTexture(lockTexture)
 
-        if hudFrame.resizeHandle ~= nil then
+        if hudFrameSelf.resizeHandle ~= nil then
             if locked then 
-                hudFrame.resizeHandle:Hide()
+                hudFrameSelf.resizeHandle:Hide()
             else
-                hudFrame.resizeHandle:Show()
+                hudFrameSelf.resizeHandle:Show()
             end                
         end
     end
@@ -277,7 +354,7 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
     if resizable then
         hudFrame:SetResizable(true)
 
-        width, height = sizeGetter()
+        local width, height = sizeGetter()
         hudFrame:SetSize(width, height)
         hudFrame:SetMinResize(200, 200)
 
@@ -296,8 +373,8 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
             hudFrame:StartSizing("BOTTOMRIGHT")
         end)
 
-        hudFrame:SetScript("OnSizeChanged", function(frame, width, height)
-            sizeSetter(width, height)
+        hudFrame:SetScript("OnSizeChanged", function(hudFrameSelf, newWidth, newHeight)
+            sizeSetter(newWidth, newHeight)
         end)
 
         hudFrame.resizeHandle:SetScript("OnMouseUp", function() 

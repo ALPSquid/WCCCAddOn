@@ -3,11 +3,12 @@
 -- Author: Aerthok - Defias Brotherhood EU
 --
 -- Core AddOn module-style functionality not intended to be shared across modules.
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1021
-WCCCAD.versionString = "1.0.21"
+WCCCAD.version = 1023
+WCCCAD.versionString = "1.0.23"
+WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 WCCCAD.newVersionAvailable = false
 
 
@@ -34,39 +35,39 @@ WCCCADCore.knownAddonUsers =
 
 
 function WCCCADCore:InitializeModule()
-    WCCCADCore:RegisterModuleSlashCommand("ver", WCCCADCore.VersionCommand)
+    self:RegisterModuleSlashCommand("ver", self.VersionCommand)
 
-    WCCCADCore:RegisterModuleComm(COMM_KEY_SHARE_VERSION, WCCCADCore.OnShareVersionCommReceieved)
+    self:RegisterModuleComm(COMM_KEY_SHARE_VERSION, self.OnShareVersionCommReceived)
 end
 
 function WCCCADCore:OnEnable()  
-    if WCCCADCore.moduleDB.firstTimeUser == true then
-        WCCCADCore:ShowFTUEWindow()
+    if self.moduleDB.firstTimeUser == true then
+        self:ShowFTUEWindow()
     end
 
     -- Setup hook to the community roster refresh event for updating AddOn user icons.
-    WCCCADCore:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
-        WCCCADCore:UpdateGuildRosterAddonIndicators()
+    self:SecureHook(CommunitiesFrame.MemberList, "RefreshListDisplay", function()
+        self:UpdateGuildRosterAddonIndicators()
     end)
     
     local playerGUID = UnitGUID("player")
-    WCCCADCore.knownAddonUsers[playerGUID] = playerGUID
-    WCCCADCore:InitiateSync()
+    self.knownAddonUsers[playerGUID] = playerGUID
+    self:InitiateSync()
 end
 
 function WCCCADCore:OnDisable()
-    WCCCADCore:UnhookAll()
+    self:UnhookAll()
 end
 
 function WCCCADCore:UpdateGuildRosterAddonIndicators() 
     if CommunitiesFrame == nil then
         return
     end
-    
-    for i, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
+
+    for _, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
         local memberInfo = guildieButton:GetMemberInfo()
 
-        if memberInfo == nil or WCCCADCore.knownAddonUsers[memberInfo.guid] == nil then
+        if memberInfo == nil or self.knownAddonUsers[memberInfo.guid] == nil then
             if guildieButton.addonIndicator ~= nil then
                 guildieButton.addonIndicator:Hide()
             end
@@ -86,7 +87,7 @@ function WCCCADCore:UpdateGuildRosterAddonIndicators()
 end
 
 function WCCCADCore:ShowFTUEWindow()
-    WCCCADCore.moduleDB.firstTimeUser = false
+    self.moduleDB.firstTimeUser = false
 
     local AceGUI = LibStub("AceGUI-3.0")
 
@@ -118,43 +119,50 @@ end
 ---
 local lastVerTimestamp = 0
 local verSendDelay = 20
-function WCCCADCore:VersionCommand(args)
+function WCCCADCore:VersionCommand()
     if GetServerTime() < lastVerTimestamp + verSendDelay then
         WCCCAD.UI:PrintAddOnMessage("Please wait a short time before sending another version request.", ns.consts.MSG_TYPE.WARN)
         return
     end
 
     lastVerTimestamp = GetServerTime()
-    WCCCADCore:SenRequestVersionComm()
+    self:SendRequestVersionComm()
 end
 
-function WCCCADCore:SenRequestVersionComm()
+function WCCCADCore:SendRequestVersionComm()
     local data = 
     {
         requestingPlayer = ns.utils.GetPlayerNameRealmString()
     }
 
-    WCCCAD.UI:PrintDebugMessage("Sending version request", WCCCAD.db.profile.debugMode)
-    WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s", WCCCAD.versionString))
-    WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
+    WCCCAD.UI:PrintDebugMessage("Sending version request", self.moduleDB.debugMode)
+    WCCCAD.UI:PrintAddOnMessage(format("Your version: v%s - %s", WCCCAD.versionString, WCCCAD.versionType.name))
+    self:SendModuleComm(COMM_KEY_SHARE_VERSION, data, ns.consts.CHAT_CHANNEL.GUILD)
 end
 
-function WCCCADCore:OnShareVersionCommReceieved(data)
+function WCCCADCore:OnShareVersionCommReceived(data)
     if data.requestingPlayer ~= nil then
         -- We've received a request.
-        WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, WCCCAD.db.profile.debugMode)
+        WCCCAD.UI:PrintDebugMessage("Received version request from " .. data.requestingPlayer, self.moduleDB.debugMode)
         local responseData = 
         {
             respondingPlayer = ns.utils.GetPlayerNameRealmString(),
             version = WCCCAD.version,
-            versionString = WCCCAD.versionString
+            versionString = WCCCAD.versionString,
+            versionType = WCCCAD.versionType
         }
-        WCCCADCore:SendModuleComm(COMM_KEY_SHARE_VERSION, responseData, ns.consts.CHAT_CHANNEL.WHISPER, data.requestingPlayer)
-    
+        self:SendModuleComm(COMM_KEY_SHARE_VERSION, responseData, ns.consts.CHAT_CHANNEL.WHISPER, data.requestingPlayer)
+
     elseif data.respondingPlayer ~= nil then
+        --#region compatibility <= v1.0.21
+        if not data.versionType then
+            data.versionType = ns.consts.VERSION_TYPE.RELEASE
+        end
+        --#endregion
+
         -- It's a response to a request we made.
-        WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, WCCCAD.db.profile.debugMode)
-        local versionOutput = "v"..data.versionString
+        WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, self.moduleDB.debugMode)
+        local versionOutput = "v"..data.versionString.." - "..data.versionType.name
         if data.version < WCCCAD.version then
             versionOutput =  "|cFFE91100"..versionOutput.."|r (out of date)"
         elseif data.version > WCCCAD.version then
@@ -174,23 +182,33 @@ function WCCCADCore:GetSyncData()
     {
         version = WCCCAD.version,
         versionString = WCCCAD.versionString,
+        versionType = WCCCAD.versionType,
         playerGuid = UnitGUID("player")
     }
 
     return syncData
 end
 
-function WCCCADCore:CompareSyncData(remoteData)
+function WCCCADCore:CompareSyncData()
     -- We want to force the initial sync between users so player GUIDs are up-to-date.
     return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
 end
 
 function WCCCADCore:OnSyncDataReceived(data)
-    if data.version > WCCCAD.version and WCCCAD.newVersionAvailable == false then
-        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s) of the WCCC Clubbing Companion is available, please update.", data.versionString), ns.consts.MSG_TYPE.WARN)
-        newVersionAvailable = true
+    --#region compatibility <= v1.0.21
+    if not data.versionType then
+        data.versionType = ns.consts.VERSION_TYPE.RELEASE
+    end
+    --#endregion
+
+    if ((data.version > WCCCAD.version and data.versionType.value >= WCCCAD.versionType.value)
+            or (data.version == WCCCAD.version and data.versionType.value > WCCCAD.versionType.value))
+        and WCCCAD.newVersionAvailable == false 
+    then
+        WCCCAD.UI:PrintAddOnMessage(format("A new version (%s - %s) of the WCCC Clubbing Companion is available, please update.", data.versionString, data.versionType.name), ns.consts.MSG_TYPE.WARN)
+        WCCCAD.newVersionAvailable = true
     end
 
-    WCCCADCore.knownAddonUsers[data.playerGuid] = data.playerGuid
-    WCCCADCore:UpdateGuildRosterAddonIndicators()
+    self.knownAddonUsers[data.playerGuid] = data.playerGuid
+    self:UpdateGuildRosterAddonIndicators()
 end

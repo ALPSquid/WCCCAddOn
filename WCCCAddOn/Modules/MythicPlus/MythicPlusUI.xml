@@ -1,0 +1,144 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+
+<!-- Entry Template -->
+    <Button name="WCCC_MythicPlusEntryTemplate" registerForClicks="LeftButtonUp, RightButtonUp" virtual="true" mixin="WCCC_MythicPlusEntryMixin">
+        <Size x="560" y="20"/>
+        <Frames>      
+            <Frame parentKey="RightClickDropdown" inherits="UIDropDownMenuTemplate" hidden="true"/>
+        </Frames>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="NameLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+                    <Size x="150" y="0"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="7" y="0"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="DungeonLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+                    <Size x="150" y="0"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.NameLabel" relativePoint="RIGHT" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="LevelLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+                    <Size x="60" y="0"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.DungeonLabel" relativePoint="RIGHT" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="BestLevelLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+                    <Size x="80" y="0"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.LevelLabel" relativePoint="RIGHT" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+
+                <FontString parentKey="UpdatedLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+                    <Size x="100" y="0"/>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.BestLevelLabel" relativePoint="RIGHT" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnMouseDown method="OnMouseDown"/>
+        </Scripts>
+        <NormalTexture setAllPoints="true" file="Interface\GuildFrame\GuildFrame">
+            <TexCoords left="0.36230469" right="0.38183594" top="0.95898438" bottom="0.99804688"/>
+        </NormalTexture>
+        <HighlightTexture file="Interface\FriendsFrame\UI-FriendsFrame-HighlightBar" alphaMode="ADD" setAllPoints="true"/>
+  </Button>
+
+<!-- Main Frame -->
+    <Frame name="WCCC_MythicPlus_Frame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate" mixin="WCCC_MythicPlusFrameMixin">
+        <Size x="560" y="505" />
+        <Anchors>
+            <Anchor point="TOPLEFT" x="300" y="-300" relativeTo="UIParent" />
+        </Anchors>
+        <Layers>
+            <Layer level="OVERLAY" textureSubLevel="-1">
+                <Texture name="$parentIcon" file="Interface\AddOns\WCCCAddOn\assets\wccc-logo.tga">
+                <Size x="60" y="60"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="-5" y="7"/>
+                </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Title" inherits="GameFontNormal" text="WCCC Mythic+">
+                    <Size x="250" y="16"/>
+                    <Anchors>
+                        <Anchor point="TOP" x="3" y="-3"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Frame parentKey="InsetFrame" inherits="InsetFrameTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="4" y="-78"/>
+                    <Anchor point="BOTTOMRIGHT" x="-6" y="30"/>
+                </Anchors>
+            </Frame>
+            <Frame parentKey="ColumnDisplay" useParentLevel="true" inherits="ColumnDisplayTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="-3" y="-20"/>
+                    <Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="0" y="-20"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="sortingFunction" value="WCCC_MythicPlus_OnColumnClick" type="global"/>
+                </KeyValues>
+            </Frame>
+            <ScrollFrame parentKey="ListScrollFrame" inherits="HybridScrollFrameTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="4" y="-80"/>
+                    <Anchor point="BOTTOMRIGHT" x="-10" y="30"/>
+                </Anchors>
+                <Frames>
+                    <Slider parentKey="scrollBar" inherits="HybridScrollBarTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-15" y="-15"/>
+                            <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="15" y="11"/>
+                        </Anchors>
+                        <Layers>
+                            <Layer level="BACKGROUND">
+                                <Texture parentKey="Background" file="Interface\FrameGeneral\UI-Background-Marble" horizTile="true" vertTile="true" setAllPoints="true"/>
+                            </Layer>
+                        </Layers>
+                    </Slider>
+                </Frames>
+            </ScrollFrame>
+
+            <Button parentKey="CloseButton" inherits="UIPanelButtonTemplate" text="Close">
+                <Size x="100" y="20" />
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" x="-25" y="7"/>
+                </Anchors>
+                <Scripts>
+                    <OnClick>self:GetParent():Hide()</OnClick>
+                </Scripts>
+            </Button>
+
+            <Button parentKey="SettingsButton" inherits="UIPanelButtonTemplate" text="Settings">
+                <Size x="100" y="20" />
+                <Anchors>
+                    <Anchor point="RIGHT" relativePoint="LEFT" relativeKey="$parent.CloseButton" x="-5" y="0"/>
+                </Anchors>
+                <Scripts>
+                    <OnClick>self:GetParent():OpenSettings()</OnClick>
+                </Scripts>
+            </Button>            
+        </Frames>
+
+        <Scripts>
+            <OnLoad method="OnLoad" />
+            <OnShow method="OnShow" />
+            <OnDragStart>self:StartMoving()</OnDragStart>
+            <OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+        </Scripts>
+    </Frame>
+</Ui>

@@ -2,7 +2,7 @@
 ## Title: WCCC Clubbing Companion
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
-## Version: 1.0.21
+## Version: 1.0.23
 ## SavedVariables: WCCCDB
 ## Dependencies: Blizzard_Communities
 
@@ -10,9 +10,10 @@ embeds.xml
 
 Utils.lua
 WCCCAddOn.lua
-UI.lua
 Modules\ModuleBase.lua
 Modules\WCCCADCore\WCCCADCore.lua
+UI.lua
+
 
 WCCCAddOn.xml
 
@@ -22,5 +23,9 @@ Modules\ClubbingComp\ClubbingCompUI.lua
 
 Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua
+
+Modules\MythicPlus\MythicPlus.lua
+Modules\MythicPlus\MythicPlusUI.lua
+Modules\MythicPlus\MythicPlusUI.xml
 
 Modules\ApplicantUtils\ApplicantUtils.lua

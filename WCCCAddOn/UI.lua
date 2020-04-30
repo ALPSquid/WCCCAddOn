@@ -2,22 +2,12 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
-local name, ns = ...
+local _, ns = ...
 local WCCCAD = ns.WCCCAD
+local WCCCADCore = WCCCAD:GetModule("WCCC_Core")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local WCCCAD_UI = {}
-
-local UI_CHAT_CHANNEL_NAME = 
-{
-    EMOTE = "Emote",
-    SAY = "Say",
-    YELL = "Yell",
-    GUILD = "Guild",
-    PARTY = "Party",
-    RAID = "Raid",
-    INSTANCE_CHAT = "Instance Chat"
-}
 
 local WCCC_UI_CONFIG = 
 {
@@ -40,7 +30,7 @@ local WCCC_UI_CONFIG =
         {
             type = "description",
             fontSize = "small",
-            name = function() return "Version " .. WCCCAD.versionString end,
+            name = function() return "Version " .. WCCCAD.versionString .. " - " .. WCCCAD.versionType.name end,
             order = 1
         },
 
@@ -68,7 +58,7 @@ Use the 'WCCC Companion' escape menu button or type '/wccc' to open this window.
 Happy Clubbing!\n\n",
             order = 3
         },
-        
+
 
         settingsPanel = 
         {
@@ -86,10 +76,9 @@ Happy Clubbing!\n\n",
                     name = "Debug Mode",
                     desc = "Enable verbose debug logging.",
                     set = function(info, val) 
-                        WCCCAD.db.profile.debugMode = val
-                        WCCCAD:GetModule("WCCC_Core").moduleDB.debugMode = val
+                        WCCCADCore.moduleDB.debugMode = val
                     end,
-                    get = function() return WCCCAD.db.profile.debugMode end,
+                    get = function() return WCCCADCore.moduleDB.debugMode end,
                     disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
                     hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
                     order = 10.1
@@ -130,7 +119,7 @@ function WCCCAD_UI:LoadModuleUI(wcccModule, moduleDisplayName, moduleUIConfig)
 end
 
 function WCCCAD_UI:Show() 
-    InterfaceOptionsFrame_OpenToCategory(WCCCAD.UI.optionsFrameRoot)
+    InterfaceOptionsFrame_OpenToCategory(self.optionsFrameRoot)
 end
 
 function WCCCAD_UI:PrintAddOnMessage(msg, type)
@@ -153,12 +142,89 @@ function WCCCAD_UI:PrintDebugMessage(msg, debuggingEnabled)
         return
     end
 
-    WCCCAD_UI:PrintAddOnMessage("[DEBUG] "..msg, ns.consts.MSG_TYPE.WARN)
+    self:PrintAddOnMessage("[DEBUG] "..msg, ns.consts.MSG_TYPE.WARN)
 end
 
 ---
 --- Prints a notification saying the addon has been disabled.
 ---
 function WCCCAD_UI:PrintAddonDisabledMessage()
-    WCCCAD_UI:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
+    self:PrintAddOnMessage("Character not in the WCCC, addon commands will be disabled on this character.", ns.consts.MSG_TYPE.WARN)
 end
+
+
+--#region Guild Controls Panel
+function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction) 
+    if self.GuildControlFrame == nil then
+        self:CreateGuildControlFrame()
+    end
+
+    local buttonsArray = self.GuildControlFrame.buttons
+    local prevButton = buttonsArray and buttonsArray[#buttonsArray] or nil
+    local buttonWidth = 150
+    local leftMargin = 30
+    local buttonPadding = 5
+
+    local controlButton = CreateFrame("Button", nil, self.GuildControlFrame, "UIPanelButtonTemplate");
+    controlButton:SetText(text)
+    controlButton.tooltipText = tooltipText
+    controlButton:SetSize(buttonWidth, 20)
+
+    if prevButton then
+        controlButton:SetPoint("LEFT", prevButton, "RIGHT", buttonPadding, 0)
+    else
+        controlButton:SetPoint("LEFT", self.GuildControlFrame, "LEFT", leftMargin, 0)
+    end
+
+    controlButton:RegisterForClicks("AnyUp")
+    controlButton:SetScript("OnClick", onClickAction)
+
+    tinsert(buttonsArray, controlButton)
+
+    -- Adjust panel size.
+    local totalButtonWidth = leftMargin
+    for i=1, #buttonsArray do
+        totalButtonWidth = totalButtonWidth + buttonsArray[i]:GetWidth() + buttonPadding
+    end
+    self.GuildControlFrame:SetWidth(totalButtonWidth)
+
+    self.GuildControlFrame.buttons = buttonsArray
+end
+
+function WCCCAD_UI:CreateGuildControlFrame()
+    local rootFrame = CreateFrame("Frame", nil, CommunitiesFrame)
+    self.GuildControlFrame = rootFrame
+    self.GuildControlFrame.buttons = {}
+
+    rootFrame:SetPoint("TOPRIGHT", CommunitiesFrame, "BOTTOMRIGHT", 0, 0)
+    rootFrame:SetWidth(300)
+    rootFrame:SetHeight(35)
+    rootFrame:SetMovable(false)
+    rootFrame:SetResizable(false)
+    rootFrame:SetBackdrop(
+    {
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
+        tile = true, tileSize = 16, edgeSize = 16, 
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    rootFrame:SetBackdropColor(0, 0, 0, 0.7)
+    rootFrame:SetBackdropBorderColor(1, 0.62, 0, 0.8)
+
+    rootFrame:SetScript("OnShow", function(frameSelf)
+        if not WCCCAD:CheckAddonActive(false) then
+            frameSelf:Hide()
+        end
+    end)
+
+    --- Guild Logo
+    local guildLogo = CreateFrame("Button", nil, rootFrame)
+	guildLogo:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+	guildLogo:SetPoint("TOPLEFT", 5, -5)
+	guildLogo:SetWidth(24)
+	guildLogo:SetHeight(24)
+    guildLogo:SetScript("OnClick", function()
+        WCCCAD.UI:Show() 
+    end) 
+end
+--#endregion
