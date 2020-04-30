@@ -37,20 +37,12 @@ ApplicantUtils.queueTimeHandle = nil
 
 function ApplicantUtils:InitializeModule()
     ApplicantUtils:RegisterModuleSlashCommand("checkapplicants", ApplicantUtils.CheckApplicants)
+    WCCCAD.UI:AddGuildControlButton("Check Online Applicants", "Check which guild applicants are currently online.", ApplicantUtils.CheckApplicants)
 end
 
 function ApplicantUtils:OnEnable()
     ApplicantUtils:SecureHook(CommunitiesFrame.ApplicantList, "RefreshLayout", ApplicantUtils.UpdateApplicantsList)
 
-    if ApplicantUtils.CheckApplicantsButton == nil then
-        ApplicantUtils.CheckApplicantsButton = CreateFrame("Button", nil, CommunitiesFrame, "UIPanelButtonTemplate");
-        ApplicantUtils.CheckApplicantsButton:SetText("Check Online Applicants")
-        ApplicantUtils.CheckApplicantsButton:SetSize(180, 20)
-        ApplicantUtils.CheckApplicantsButton:SetPoint("BOTTOMRIGHT", CommunitiesFrame, 0, -20)
-        ApplicantUtils.CheckApplicantsButton:RegisterForClicks("AnyUp")
-        ApplicantUtils.CheckApplicantsButton:SetScript("OnClick", ApplicantUtils.CheckApplicants)
-    end
-    ApplicantUtils.CheckApplicantsButton:Show()
 end
 
 function ApplicantUtils:OnDisable()
@@ -61,26 +53,28 @@ end
 
 function ApplicantUtils:UpdateApplicantsList()
     for i, applicantButton in ipairs(CommunitiesFrame.ApplicantList.ListScrollFrame.buttons) do
-        local playerName = applicantButton:GetApplicantName()
+        if applicantButton.Info then
+            local playerName = applicantButton:GetApplicantName()
 
-        if ApplicantUtils.onlineApplicants[playerName] == nil then
-            if applicantButton.onlineIndicator ~= nil then
-                applicantButton.onlineIndicator:Hide()
-            end
+            if ApplicantUtils.onlineApplicants[playerName] == nil then
+                if applicantButton.onlineIndicator ~= nil then
+                    applicantButton.onlineIndicator:Hide()
+                end
 
-            applicantButton.InviteButton.Text:SetFontObject(GameFontDisableSmall);
-        else
-            if applicantButton.onlineIndicator ~= nil then
-                applicantButton.onlineIndicator:Show()
+                applicantButton.InviteButton.Text:SetFontObject(GameFontDisableSmall);
             else
-                applicantButton.onlineIndicator = CreateFrame("Button", nil, applicantButton)
-                applicantButton.onlineIndicator:SetNormalTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
-                applicantButton.onlineIndicator:SetPoint("RIGHT", -105, 0)
-                applicantButton.onlineIndicator:SetWidth(12)
-                applicantButton.onlineIndicator:SetHeight(12)
-                applicantButton.onlineIndicator:Show()
+                if applicantButton.onlineIndicator ~= nil then
+                    applicantButton.onlineIndicator:Show()
+                else
+                    applicantButton.onlineIndicator = CreateFrame("Button", nil, applicantButton)
+                    applicantButton.onlineIndicator:SetNormalTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
+                    applicantButton.onlineIndicator:SetPoint("RIGHT", -105, 0)
+                    applicantButton.onlineIndicator:SetWidth(12)
+                    applicantButton.onlineIndicator:SetHeight(12)
+                    applicantButton.onlineIndicator:Show()
 
-                applicantButton.InviteButton.Text:SetFontObject(GameFontHighlightSmall);
+                    applicantButton.InviteButton.Text:SetFontObject(GameFontHighlightSmall);
+                end
             end
         end
     end  
