@@ -4,6 +4,7 @@
 --
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
+local ClubberPoints = WCCCAD:GetModule("WCCC_ClubberPoints")
 
 local HIT_COOLDOWN = 15 * 60 -- 15 mins between hitting the same target.
 local SEASON_MULTIPLIER = 1
@@ -216,7 +217,6 @@ local clubbingCompData =
     {
         showGuildMemberClubNotification = true,
         sayEmotesEnabled = true,
-        score = 0,
 
         hudData =
         {
@@ -360,7 +360,7 @@ function ClubbingComp:ClubCommand(args)
             if self:HasRecentlyHit(targetName, targetRaceEn) == false then
                 -- Update score
                 local raceScore = self:GetRaceScore(targetRaceEn)
-                self.moduleDB.score = self.moduleDB.score + raceScore
+                ClubberPoints:AddPoints(raceScore)
                 WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, ClubberPoints:GetPoints()))
 
                 self:RegisterHit(targetName, targetRaceEn)
@@ -644,7 +644,9 @@ function ClubbingComp:OC_SetSeason(raceKey)
         return
     end
 
-    self:StartNewSeason(raceKey, GetServerTime())
+    local seasonTimestamp = GetServerTime()
+    ClubberPoints:OC_StartNewSeason(seasonTimestamp)
+    self:StartNewSeason(raceKey, seasonTimestamp)
     self:BroadcastSyncData()
 end
 ---
@@ -664,7 +666,7 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
 
     self.moduleDB.seasonData.lastUpdateTimestamp = updateTimestamp
     self.moduleDB.seasonData.currentSeasonRace = seasonRace
-    self.moduleDB.score = 0
+    ClubberPoints:StartNewSeason(updateTimestamp)
 
     -- Prune last season clubbings and update score.
     for scoreRaceType, players in pairs(self.moduleDB.hitTable) do
@@ -679,7 +681,7 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
                 playerEntry.hits = newSeasonPlayerHits
 
                 local playerScore = #playerEntry.hits * self:GetRaceScore(scoreRaceType)
-                self.moduleDB.score = self.moduleDB.score + playerScore
+                ClubberPoints:AddPoints(playerScore)
             end
         end
     end

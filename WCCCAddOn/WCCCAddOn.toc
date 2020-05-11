@@ -18,6 +18,9 @@ UI.lua
 WCCCAddOn.xml
 
 # Modules
+Modules\ClubberPoints\ClubberPoints.lua
+Modules\ClubberPoints\ClubberPointsUI.lua
+
 Modules\ClubbingComp\ClubbingComp.lua
 Modules\ClubbingComp\ClubbingCompUI.lua
 

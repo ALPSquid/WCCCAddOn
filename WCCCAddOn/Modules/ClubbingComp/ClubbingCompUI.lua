@@ -6,6 +6,7 @@ local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
 local ClubbingComp = WCCCAD:GetModule("WCCC_ClubbingCompetition")
+local ClubberPoints = WCCCAD:GetModule("WCCC_ClubberPoints")
 
 local CLUBBINGCOMP_UI_CONFIG = 
 {
@@ -110,9 +111,8 @@ local CLUBBINGCOMP_UI_CONFIG =
                         currentScoreInfo =
                         {
                             type = "header",
-                            name = function() 
-                                local score = ClubbingComp.moduleDB.score
-                                return "Score: "..score
+                            name = function()
+                                return "Score: "..ClubberPoints:GetOwnScore()
                             end,
                             order = 1.01
                         },     
@@ -819,8 +819,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
 }
 
 local ClubbingComp_UI = WCCCAD.UI:LoadModuleUI(ClubbingComp, "Clubbing Competition", CLUBBINGCOMP_UI_CONFIG)
-WCCCAD.UI:AddGuildControlButton("Clubbing Competition", "View your score, current season, toggle the HUD and more", ClubbingComp_UI.Show) 
-
+WCCCAD.UI:AddGuildControlButton("Clubbing Competition", "View your score, current season, toggle the HUD and more", ClubbingComp_UI.Show)
 
 -- Officer control vars
 ClubbingComp_UI.OC_SelectedSeason = "Worgen"
@@ -864,7 +863,7 @@ function ClubbingComp_UI:PostSeasonTo(channel)
 end
 
 function ClubbingComp_UI:PostScoreTo(channel)
-    local score = ClubbingComp.moduleDB.score
+    local score = ClubberPoints:GetOwnScore()
 
     local scoreMessages =
     {
@@ -1026,7 +1025,7 @@ function ClubbingComp_UI:UpdateHUD()
         return
     end
 
-    self.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubbingComp.moduleDB.score))
+    self.hudFrame.scoreDisplay:SetText(format("Score: %s", ClubberPoints:GetOwnScore()))
 
     local frenzyRace = ClubbingComp.moduleDB.frenzyData.race
     local frenzyString = "Frenzy Inactive"
