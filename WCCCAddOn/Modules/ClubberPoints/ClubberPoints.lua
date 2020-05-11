@@ -120,7 +120,7 @@ end
 --endregion
 
 --region Officer Controls
-function ClubbingComp:OC_AwardPointsToPlayer(playerGUID, numPoints)
+function ClubberPoints:OC_AwardPointsToPlayer(playerGUID, numPoints)
     if not WCCCAD:IsPlayerOfficer() then
         return
     end
