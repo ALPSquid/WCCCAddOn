@@ -116,26 +116,30 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
 
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
-    self.moduleDB.leaderboardData[GUID] = 
-    {
-        GUID = GUID,
-        playerName = UnitName("player"),
-        classID = classID,
-        mapID = mapID,
-        level = keystoneLevel,
-        lastUpdateTimestamp = GetServerTime()
-    }
+    if self.moduleDB.leaderboardData[GUID] == nil or keystoneLevel > self.moduleDB.leaderboardData[GUID].level then
+        self.moduleDB.leaderboardData[GUID] =
+        {
+            GUID = GUID,
+            playerName = UnitName("player"),
+            classID = classID,
+            mapID = mapID,
+            level = keystoneLevel,
+            lastUpdateTimestamp = GetServerTime()
+        }
 
-    self:SendGuildyNewRecordComm(self.moduleDB.leaderboardData[GUID])
-    self:InitiateSync()
-    self.UI:OnDataUpdated()
+        self:SendGuildyNewRecordComm(self.moduleDB.leaderboardData[GUID])
+        self:InitiateSync()
+        self.UI:OnDataUpdated()
 
         self:PrintDebugMessage(format("Updating own weekly best: %s +%i", (tostring(mapID) or "<NO MAPID>"), keystoneLevel))
+    else
+        self:PrintDebugMessage(format("New weekly map best (not overall weekly best): %s +%i", (tostring(mapID) or "<NO MAPID>"), keystoneLevel))
+    end
 end
 
 function MythicPlus:OnChallengeModeCompleted()
     --- Force an update ignoring the active keystone when an M+ is completed.
-    WCCCAD.UI:PrintDebugMessage("Forcing keystone update.", self.moduleDB.debugMode)
+    self:PrintDebugMessage("Forcing keystone update.")
     if self.updateKeystoneTimer ~= nil then
         WCCCAD:CancelTimer(self.updateKeystoneTimer)
     end
