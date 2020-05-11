@@ -274,7 +274,7 @@ ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
     self:RegisterModuleSlashCommand("club", ClubbingComp.ClubCommand)
-    WCCCAD.UI:PrintDebugMessage("Clubbing Competition module loaded.", self.moduleDB.debugMode)
+    self:PrintDebugMessage("Clubbing Competition module loaded.")
 
     self:RegisterModuleComm(COMM_KEY_GUILDY_CLUBBED_WORGEN, ClubbingComp.OnGuildyClubbedWorgenCommReceived)
 end
@@ -361,7 +361,7 @@ function ClubbingComp:ClubCommand(args)
                 -- Update score
                 local raceScore = self:GetRaceScore(targetRaceEn)
                 self.moduleDB.score = self.moduleDB.score + raceScore
-                WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, self.moduleDB.score))
+                WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, ClubberPoints:GetPoints()))
 
                 self:RegisterHit(targetName, targetRaceEn)
                 self.UI:UpdateHUD()
@@ -551,7 +551,7 @@ function ClubbingComp:CheckZoneState(zoneID)
 
     if windowStartTimestamp == nil or windowStartTimestamp == 0 or currentTime >= cooldownEndTimestamp then
         -- No window active or window has ended, clear data and exit.
-        WCCCAD.UI:PrintDebugMessage("Cooldown reset for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+        self:PrintDebugMessage("Cooldown reset for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"))
 
         if currentZoneState ~= RESTRICTED_ZONE_STATE.AVAILABLE 
         and zoneID == C_Map.GetBestMapForUnit("player") 
@@ -567,7 +567,7 @@ function ClubbingComp:CheckZoneState(zoneID)
 	elseif currentTime >= windowEndTimestamp then
         -- Still in cooldown, check timer is running.
         if currentZoneState ~= RESTRICTED_ZONE_STATE.IN_COOLDOWN then
-            WCCCAD.UI:PrintDebugMessage("Cooldown timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+            self:PrintDebugMessage("Cooldown timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"))
 
 			ActiveRestrictedZoneTimers[zoneID] = 
             {
@@ -585,7 +585,7 @@ function ClubbingComp:CheckZoneState(zoneID)
 	elseif currentTime >= windowStartTimestamp then
 		-- Still in active window, check timer is running.
         if currentZoneState ~= RESTRICTED_ZONE_STATE.IN_ACTIVE_WINDOW then
-            WCCCAD.UI:PrintDebugMessage("Clubbing window timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"), self.moduleDB.debugMode)
+            self:PrintDebugMessage("Clubbing window timer started for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"))
 
             ActiveRestrictedZoneTimers[zoneID] = 
             {
@@ -656,14 +656,11 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
         or (updateTimestamp == self.moduleDB.seasonData.lastUpdateTimestamp 
             and seasonRace == self.moduleDB.seasonData.currentSeasonRace)
     then
-        WCCCAD.UI:PrintDebugMessage(
-            "Already have equal or newer data, skipping season update.", 
-            self.moduleDB.debugMode
-        )
+        self:PrintDebugMessage("Already have equal or newer data, skipping season update.")
         return
     end
 
-    WCCCAD.UI:PrintDebugMessage("Starting new season.", self.moduleDB.debugMode)
+    self:PrintDebugMessage("Starting new season.")
 
     self.moduleDB.seasonData.lastUpdateTimestamp = updateTimestamp
     self.moduleDB.seasonData.currentSeasonRace = seasonRace
@@ -686,10 +683,7 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
             end
         end
     end
-    WCCCAD.UI:PrintDebugMessage(
-        "Pruned hit table, new score: "..self.moduleDB.score, 
-        self.moduleDB.debugMode
-    )
+    self:PrintDebugMessage("Pruned hit table, new score: "..ClubberPoints:GetPoints(playerScore))
 
     self.UI:UpdateHUD()
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. self:GetRaceScoreData(seasonRace).name .. " Season!")
@@ -719,12 +713,12 @@ function ClubbingComp:UpdateFrenzyData(race, multiplier, startTime, duration)
             and multiplier == self.moduleDB.frenzyData.multiplier
             and duration == self.moduleDB.frenzyData.duration)
     then
-        WCCCAD.UI:PrintDebugMessage("Already have equal or newer data, skipping frenzy update.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("Already have equal or newer data, skipping frenzy update.")
         return
     end
 
     if GetServerTime() > startTime + duration then
-        WCCCAD.UI:PrintDebugMessage("UpdateFrenzyData: Frenzy has ended, clearing data.", ClubbingComp.moduleDB.debugMode)
+        self:PrintDebugMessage("UpdateFrenzyData: Frenzy has ended, clearing data.")
         self.moduleDB.frenzyData.startTimestamp = 0
         self.moduleDB.frenzyData.race = nil
         self.moduleDB.frenzyData.multiplier = 0
@@ -758,8 +752,7 @@ function ClubbingComp:UpdateActiveFrenzy()
     local frenzyDurationRemaining = self:GetFrenzyTimeRemaining()
     local frenzyEnded = frenzyDurationRemaining <= 0
 
-    WCCCAD.UI:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining,
-        tostring(frenzyEnded)), self.moduleDB.debugMode)
+    self:PrintDebugMessage(format("UpdateActiveFrenzy - Remaining duration %s, ended=%s", frenzyDurationRemaining, tostring(frenzyEnded)))
 
     if frenzyEnded == true then
         if self.activeFrenzyTimerID ~= nil then
@@ -769,7 +762,7 @@ function ClubbingComp:UpdateActiveFrenzy()
             self:GetRaceScoreData(self.moduleDB.frenzyData.race).name))
         end
 
-        WCCCAD.UI:PrintDebugMessage("UpdateActiveFrenzy - Cleared frenzy data.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("UpdateActiveFrenzy - Cleared frenzy data.")
 
         self.moduleDB.frenzyData.startTimestamp = 0
         self.moduleDB.frenzyData.race = nil
@@ -781,7 +774,7 @@ function ClubbingComp:UpdateActiveFrenzy()
     if frenzyEnded == false and self.activeFrenzyTimerID == nil then
         local tickIntervalSecs = 5
         self.activeFrenzyTimerID = WCCCAD:ScheduleRepeatingTimer(function() self:UpdateActiveFrenzy() end, tickIntervalSecs)
-        WCCCAD.UI:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("Started frenzy timer for " .. (frenzyDurationRemaining/60) .. "mins.")
     end
 
     self.UI:UpdateHUD()

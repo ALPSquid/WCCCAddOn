@@ -59,7 +59,7 @@ function MythicPlus:InitializeModule()
     self:RegisterModuleSlashCommand("mythics", self.MythicPlusCommand)
     self:RegisterModuleSlashCommand("mythicplus", self.MythicPlusCommand)
     self:RegisterModuleSlashCommand("mp", self.MythicPlusCommand)
-    WCCCAD.UI:PrintDebugMessage("Mythic Plus module loaded.", self.moduleDB.debugMode)
+    self:PrintDebugMessage("Mythic Plus module loaded.")
 
     self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceived)
     self:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, self.OnGuildyNewRecordCommReceived)
@@ -130,7 +130,7 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
     self:InitiateSync()
     self.UI:OnDataUpdated()
 
-    WCCCAD.UI:PrintDebugMessage("Updating own weekly best: ".. (mapID or "<NO MAPID>") .. " +"..keystoneLevel, self.moduleDB.debugMode)
+        self:PrintDebugMessage(format("Updating own weekly best: %s +%i", (tostring(mapID) or "<NO MAPID>"), keystoneLevel))
 end
 
 function MythicPlus:OnChallengeModeCompleted()
@@ -148,7 +148,7 @@ end
 ---
 function MythicPlus:ScheduleOwnKeystoneUpdate(skipIfMythicInProgress)
     if not self.updateKeystoneTimer then
-        WCCCAD.UI:PrintDebugMessage("Scheduling keystone update.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("Scheduling keystone update.")
 
         self.updateKeystoneTimer = WCCCAD:ScheduleTimer(
             function() 
@@ -156,7 +156,7 @@ function MythicPlus:ScheduleOwnKeystoneUpdate(skipIfMythicInProgress)
                     return
                 end
 
-                WCCCAD.UI:PrintDebugMessage("Triggering keystone update.", self.moduleDB.debugMode)
+                self:PrintDebugMessage("Triggering keystone update.")
                 self.updateKeystoneTimer = nil
                 if not self.initialSyncComplete then
                     self.initialSyncComplete = true
@@ -196,7 +196,7 @@ function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
     -- the run is still in progress.
     local activeKeystoneLevel = C_ChallengeMode.GetActiveKeystoneInfo()
     if activeKeystoneLevel > 0 and skipIfMythicInProgress then
-        WCCCAD.UI:PrintDebugMessage("Mythic in progress, skipping keystone update.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("Mythic in progress, skipping keystone update.")
         return false
     end
 
@@ -219,11 +219,10 @@ function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
         or (prevKeystoneData.mapID ~= mapID 
         or prevKeystoneData.level ~= keystoneLevel)
 
-    WCCCAD.UI:PrintDebugMessage(format("Updating own key: %i +%i is new: %s", 
+    self:PrintDebugMessage(format("Updating own key: %i +%i is new: %s",
             mapID, 
             keystoneLevel,
-            tostring(isNewKey)), 
-        self.moduleDB.debugMode)
+            tostring(isNewKey)))
 
     if isNewKey then
         self:SendGuildyReceivedKeystoneComm(self.moduleDB.guildKeys[UnitGUID("player")])
@@ -241,14 +240,14 @@ function MythicPlus:UpdateOwnWeeklyBest()
         return
     end
 
-    WCCCAD.UI:PrintDebugMessage("Updating weekly best (scan).", self.moduleDB.debugMode)
+    self:PrintDebugMessage("Updating weekly best (scan).")
 
     -- Using the level from the reward as, for whatever reason, the weekly best data can get corrupted(?) and won't contain the correct reward level or map.
     local weekBestLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
     local highestMapID = nil
     local playerName = UnitName("player")
 
-    WCCCAD.UI:PrintDebugMessage("Weekly Chest Level: " .. weekBestLevel, self.moduleDB.debugMode)
+    self:PrintDebugMessage("Weekly Chest Level: " .. weekBestLevel)
 
     local hasWeeklyRun = false
     local maps = C_ChallengeMode.GetMapTable()
@@ -257,7 +256,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
         if members then
             for _, member in pairs(members) do
                 if member.name == playerName then
-                    WCCCAD.UI:PrintDebugMessage("Found weekly best for " .. mapID .. " +" .. level, self.moduleDB.debugMode)
+                    self:PrintDebugMessage("Found weekly best for " .. mapID .. " +" .. level)
                     hasWeeklyRun = true
                     if highestMapID == nil or (level and level > weekBestLevel) then
                         highestMapID = mapID
@@ -271,7 +270,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
     local GUID = UnitGUID("player")
     local _, _, classID = UnitClass("player")
     if not hasWeeklyRun then
-        WCCCAD.UI:PrintDebugMessage("No weekly run found.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("No weekly run found.")
         self.moduleDB.leaderboardData[GUID] = nil
     else
         self.moduleDB.leaderboardData[GUID] =
@@ -356,7 +355,7 @@ function MythicPlus:PruneOldEntries()
     end
 
     if dataChanged then
-        WCCCAD.UI:PrintDebugMessage("Pruned last season's M+ entries.", self.moduleDB.debugMode)
+        self:PrintDebugMessage("Pruned last season's M+ entries.")
         self.UI:OnDataUpdated()
     end
 end

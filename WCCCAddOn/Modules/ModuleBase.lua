@@ -76,10 +76,10 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         data.expectResponse = expectResponse
 
         if targetPlayer ~= nil then
-            WCCCAD.UI:PrintDebugMessage("Sending "..moduleName.." sync data to "..targetPlayer, moduleSelf.moduleDB.debugMode)
+            moduleSelf:PrintDebugMessage("Sending "..moduleName.." sync data to "..targetPlayer)
             moduleSelf:SendModuleComm("sync", data, ns.consts.CHAT_CHANNEL.WHISPER, targetPlayer)
         else
-            WCCCAD.UI:PrintDebugMessage("Performing "..moduleName.." sync broadcast", moduleSelf.moduleDB.debugMode)
+            moduleSelf:PrintDebugMessage("Performing "..moduleName.." sync broadcast")
             moduleSelf:SendModuleComm("sync", data, ns.consts.CHAT_CHANNEL.GUILD)
         end
     end
@@ -88,11 +88,12 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         if data.sendingPlayer == ns.utils.GetPlayerNameRealmString() and data.isTestData ~= true then
             return 
         end
-        WCCCAD.UI:PrintDebugMessage("Received "..moduleName.." sync data from ", wcccModule.moduleDB.debugMode)
+        -- Debugging nil sendingPlayer
+        moduleSelf:PrintDebugMessage("Received "..moduleName.." sync data from ")
 
         local dataComparisonResult = moduleSelf:CompareSyncData(data)
 
-        WCCCAD.UI:PrintDebugMessage("Received "..moduleName.." sync data from "..data.sendingPlayer..". Data comparison: "..dataComparisonResult, moduleSelf.moduleDB.debugMode)
+        moduleSelf:PrintDebugMessage("Received "..moduleName.." sync data from "..data.sendingPlayer..". Data comparison: "..dataComparisonResult)
         if dataComparisonResult == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER or dataComparisonResult == ns.consts.DATA_SYNC_RESULT.BOTH_NEWER then
             moduleSelf:OnSyncDataReceived(data)
         end
@@ -143,6 +144,10 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
     function wcccModule.SendSelfDebugComm(moduleSelf, testData)
         moduleSelf:_SendSyncComm(ns.utils.GetPlayerNameRealmString(), false, testData)
+    end
+
+    function wcccModule.PrintDebugMessage(moduleSelf, msg)
+        WCCCAD.UI:PrintDebugMessage(format("[%s] %s", moduleSelf.moduleName, msg), moduleSelf.moduleDB.debugMode)
     end
 
     return wcccModule
