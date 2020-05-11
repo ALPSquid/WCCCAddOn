@@ -154,11 +154,11 @@ function WCCCADCore:OnShareVersionCommReceived(data)
         self:SendModuleComm(COMM_KEY_SHARE_VERSION, responseData, ns.consts.CHAT_CHANNEL.WHISPER, data.requestingPlayer)
 
     elseif data.respondingPlayer ~= nil then
-        --#region compatibility <= v1.0.21
+        --region compatibility <= v1.0.21
         if not data.versionType then
             data.versionType = ns.consts.VERSION_TYPE.RELEASE
         end
-        --#endregion
+        --endregion
 
         -- It's a response to a request we made.
         WCCCAD.UI:PrintDebugMessage("Received version response from " .. data.respondingPlayer, self.moduleDB.debugMode)
@@ -195,11 +195,11 @@ function WCCCADCore:CompareSyncData()
 end
 
 function WCCCADCore:OnSyncDataReceived(data)
-    --#region compatibility <= v1.0.21
+    --region compatibility <= v1.0.21
     if not data.versionType then
         data.versionType = ns.consts.VERSION_TYPE.RELEASE
     end
-    --#endregion
+    --endregion
 
     if ((data.version > WCCCAD.version and data.versionType.value >= WCCCAD.versionType.value)
             or (data.version == WCCCAD.version and data.versionType.value > WCCCAD.versionType.value))

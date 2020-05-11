@@ -585,7 +585,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             name = "\nTop Clubbers"      
                         },
 
-                        --#region 1st Clubber
+                        --region 1st Clubber
                         seasonOCTopClubbersEntry1_Title =
                         {
                             type = "description",     
@@ -626,9 +626,9 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             end,
                             order = 10.151
                         },
-                        --#endregion
+                        --endregion
 
-                        --#region 2nd Clubber
+                        --region 2nd Clubber
                         seasonOCTopClubbersEntry2_Title =
                         {
                             type = "description",     
@@ -669,9 +669,9 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             end,
                             order = 10.161
                         },
-                        --#endregion
+                        --endregion
 
-                        --#region 3rd Clubber
+                        --region 3rd Clubber
                         seasonOCTopClubbersEntry3_Title =
                         {
                             type = "description",     
@@ -712,7 +712,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             end,
                             order = 10.171
                         },
-                        --#endregion
+                        --endregion
 
                         seasonOCSetTopClubbersBtn =
                         {
@@ -883,7 +883,7 @@ function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
     return format("%s Clubbed: %i = %ipts (%i each)", raceScoreData.pluralName, hitCount, hitCount * raceScore, raceScore)
 end
 
---#region Top Clubbers UI Controls
+--region Top Clubbers UI Controls
 
 ---
 --- Returns active top clubber data formatted as a string for the idx, or nil if no data exists.
@@ -951,7 +951,7 @@ function ClubbingComp_UI:OC_SaveTopClubbers()
     ClubbingComp:OC_SetTopClubbers(self.OC_TopClubbers)
 end
 
---#endregion
+--endregion
 
 
 function ClubbingComp_UI:CreateHUD()

@@ -336,7 +336,7 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
 end
 
 
---#region Player Entry Tools
+--region Player Entry Tools
 function MythicPlus:PruneOldEntries()
     local dataChanged = false
     local lastResetTimestamp = ns.utils.GetLastServerResetTimestamp()
@@ -360,9 +360,9 @@ function MythicPlus:PruneOldEntries()
         self.UI:OnDataUpdated()
     end
 end
---#endregion
+--endregion
 
---#region Weekly Leaderboard
+--region Weekly Leaderboard
 ---
 --- Called when new data is received from a client.
 ---
@@ -379,9 +379,9 @@ function MythicPlus:UpdateLeaderboard(leaderboardData)
         MythicPlus.UI:OnDataUpdated()
     end
 end
---#endregion
+--endregion
 
---#region Guild Keystones
+--region Guild Keystones
 
 function MythicPlus:UpdateGuildKeys(guildKeys)
     local dataChanged = false
@@ -397,9 +397,9 @@ function MythicPlus:UpdateGuildKeys(guildKeys)
     end
 end
 
---#endregion
+--endregion
 
---#region Sync functions
+--region Sync functions
 
 function MythicPlus:GetSyncData() 
     -- Refresh updated timestamp.
@@ -425,4 +425,4 @@ function MythicPlus:OnSyncDataReceived(data)
     self:PruneOldEntries()
 end
 
---#endregion
+--endregion

@@ -385,7 +385,7 @@ function ClubbingComp:ClubCommand(args)
     end
 end
 
---#region Clubbing Hit Funcs
+--region Clubbing Hit Funcs
 
 ---
 --- Saves a hit on the specified target to the hit table.
@@ -482,7 +482,7 @@ function ClubbingComp:IsTargetInRange()
     return false
 end
 
---#endregion
+--endregion
 
 function ClubbingComp:PlayEmote(emote, chatMsg)
     SendChatMessage(emote, ns.consts.CHAT_CHANNEL.EMOTE)
@@ -527,7 +527,7 @@ function ClubbingComp:OnGuildyClubbedWorgenCommReceived(data)
 end
 
 
---#region Zone Restrictions
+--region Zone Restrictions
 function ClubbingComp:CanClubInZone(zoneID)
 	return self:CheckZoneState(zoneID) ~= RESTRICTED_ZONE_STATE.IN_COOLDOWN
 end
@@ -634,10 +634,10 @@ function ClubbingComp:ShowRestrictedZoneMessage(messageData)
         PlaySoundFile(messageData.soundFileID, "SFX")
     end
 end
---#endregion
+--endregion
 
 
---#region Seasons
+--region Seasons
 
 function ClubbingComp:OC_SetSeason(raceKey)
     if not WCCCAD:IsPlayerOfficer() then
@@ -695,9 +695,9 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. self:GetRaceScoreData(seasonRace).name .. " Season!")
 end
 
---#endregion
+--endregion
 
---#region Frenzy
+--region Frenzy
 
 --- @param duration number @Duration in seconds.
 function ClubbingComp:OC_StartFrenzy(raceKey, multiplier, duration)
@@ -787,9 +787,9 @@ function ClubbingComp:UpdateActiveFrenzy()
     self.UI:UpdateHUD()
 end
 
---#endregion
+--endregion
 
---#region Top Clubbers
+--region Top Clubbers
 
 function ClubbingComp:OC_SetTopClubbers(clubberEntries)
     if not WCCCAD:IsPlayerOfficer() then
@@ -809,9 +809,9 @@ function ClubbingComp:UpdateTopClubbers(clubberEntries, updateTime)
     self.moduleDB.topClubbers.clubbers = clubberEntries
 end
 
---#endregion
+--endregion
 
---#region Sync functions
+--region Sync functions
 
 function ClubbingComp:GetSyncData()
     local syncData =
@@ -884,4 +884,4 @@ function ClubbingComp:OnSyncDataReceived(data)
     self:UpdateTopClubbers(data.topClubbers.clubbers, data.topClubbers.lastUpdateTimestamp)
 end
 
---#endregion
+--endregion

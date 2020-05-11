@@ -209,7 +209,7 @@ end
 WCCCAD.UI:AddGuildControlButton("Guild Keystones", "View Guild Mythic+ Keystones", MythicPlus_UI.ShowWindow) 
 
 
---#region Mythic Plus Frame Mixin
+--region Mythic Plus Frame Mixin
 WCCC_MythicPlusFrameMixin = {}
 
 -- A merged copy of MythicPlus guildKeys and leaderboardData sorted using the current sort method.
@@ -434,10 +434,10 @@ function WCCC_MythicPlusFrameMixin:SortFunction(shouldReverse, firstOnlinePresen
 		return firstValue > secondValue
 	end
 end 
---#endregion
+--endregion
 
 
---#region Mythic Plus Entry Mixin
+--region Mythic Plus Entry Mixin
 WCCC_MythicPlusEntryMixin = {}
 
 WCCC_MythicPlusEntryMixin.Data = nil -- { GUID, playerName, classID, mapID, level, bestLevel, updateTimestamp}
@@ -516,4 +516,4 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
 
     UIDropDownMenu_Initialize(self.RightClickDropdown, self.PlayerEntryRightClickOptionsMenuInitialise, "MENU")
 end
---#endregion
+--endregion

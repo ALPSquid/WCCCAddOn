@@ -153,7 +153,7 @@ function WCCCAD_UI:PrintAddonDisabledMessage()
 end
 
 
---#region Guild Controls Panel
+--region Guild Controls Panel
 function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction) 
     if self.GuildControlFrame == nil then
         self:CreateGuildControlFrame()
@@ -227,4 +227,4 @@ function WCCCAD_UI:CreateGuildControlFrame()
         WCCCAD.UI:Show() 
     end) 
 end
---#endregion
+--endregion
