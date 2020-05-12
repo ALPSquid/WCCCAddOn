@@ -36,47 +36,58 @@ if WCCCAD:IsPlayerOfficer() then
     ClubberPoints_UI = WCCCAD.UI:LoadModuleUI(ClubberPoints, "Clubber Points", CLUBBERPOINTS_UI_CONFIG)
 
     --region Guild Member Tooltip
-    ClubberPoints_UI.AwardPointsDialogKey = ClubberPoints.moduleName .. "AwardPointsDialog"
-    StaticPopupDialogs[ClubberPoints_UI.AwardPointsDialogKey] =
+    ClubberPoints_UI.awardPointsDialogKey = ClubberPoints.moduleName .. "AwardPointsDialog"
+    StaticPopupDialogs[ClubberPoints_UI.awardPointsDialogKey] =
     {
-        test = "Award points to %s",
-        button1 = "Cancel",
-        button2 = "Award Points",
+        text = "Award points to %s",
+        button1 = "Award Points",
+        button2 = "Cancel",
         hasEditBox = true,
         whileDead = true,
         hideOnEscape = true,
         timeout = 0,
-        OnAccept = function()
-            local numPoints = getglobal(this:GetParent():GetName().."EditBox"):GetText()
-            print(format("Awarding %i points", numPoints))
-            -- TODO: Cache target GUID and award points to them.
-            -- TODO: int validation
-            -- ClubberPoints:OC_AwardPointsToPlayer(targetGUID, numPoints)
+        OnAccept = function(dialog)
+            local numPoints = tonumber(dialog.editBox:GetText())
+            if numPoints and numPoints > 0 then
+                WCCCAD.UI:PrintAddOnMessage(format("Awarding %i points to %s (%s)", numPoints, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.nameRealm, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid))
+                ClubberPoints:OC_AwardPointsToPlayer(ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid, numPoints)
+            else
+                WCCCAD.UI:PrintAddOnMessage("Points must be a number above 0.")
+            end
         end
     }
 
     -- TODO: Convert into similar system as the Guild Control Buttons if more buttons are needed.
     local dropDownList1WCCCFrame = CreateFrame("Frame", nil, DropDownList1)
+    ClubberPoints_UI.dropDownList1WCCCFrame = dropDownList1WCCCFrame
     local dropDownWidth = 140
     dropDownList1WCCCFrame:SetSize(dropDownWidth, 30)
     dropDownList1WCCCFrame:SetPoint("TOP", DropDownList1, "BOTTOM", 0, 2)
+    dropDownList1WCCCFrame:SetFrameStrata("FULLSCREEN_DIALOG")
     dropDownList1WCCCFrame:Hide()
 
     -- Give Points Button
-    dropDownList1WCCCFrame.GivePointsBtn = CreateFrame("Button", nil, dropDownList1WCCCFrame, "UIPanelButtonTemplate")
-    dropDownList1WCCCFrame.GivePointsBtn:SetPoint("TOP", dropDownList1WCCCFrame, "TOP", 0, 0)
-    dropDownList1WCCCFrame.GivePointsBtn:SetText("Award Points")
-    dropDownList1WCCCFrame.GivePointsBtn:SetSize(dropDownWidth, 20)
-    dropDownList1WCCCFrame.GivePointsBtn:SetScript("OnClick", function()
-        StaticPopup_Show(ClubberPoints_UI.AwardPointsDialogKey, DropDownList1.dropdown.name)
+    dropDownList1WCCCFrame.givePointsBtn = CreateFrame("Button", nil, dropDownList1WCCCFrame, "UIPanelButtonTemplate")
+    dropDownList1WCCCFrame.givePointsBtn:SetPoint("TOP", dropDownList1WCCCFrame, "TOP", 0, 0)
+    dropDownList1WCCCFrame.givePointsBtn:SetText("Award Points")
+    dropDownList1WCCCFrame.givePointsBtn:SetSize(dropDownWidth, 20)
+    dropDownList1WCCCFrame.givePointsBtn:SetScript("OnClick", function()
+        StaticPopup_Show(ClubberPoints_UI.awardPointsDialogKey, dropDownList1WCCCFrame.targetPlayerInfo.nameRealm)
     end)
+    dropDownList1WCCCFrame.givePointsBtn:SetScript("OnHide", function(buttonSelf)
+        if buttonSelf:IsMouseOver() and IsMouseButtonDown(1) then
+            StaticPopup_Show(ClubberPoints_UI.awardPointsDialogKey, dropDownList1WCCCFrame.targetPlayerInfo.nameRealm)
+        end
+    end)
+
     -- Guild Icon
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon = CreateFrame("Button", nil, dropDownList1WCCCFrame.GivePointsBtn)
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon:SetPoint("LEFT", 5, 0)
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon:SetWidth(12)
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon:SetHeight(12)
-    dropDownList1WCCCFrame.GivePointsBtn.guildIcon:Show()
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon = CreateFrame("Button", nil, dropDownList1WCCCFrame.givePointsBtn)
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:SetNormalTexture("Interface\\AddOns\\WCCCAddOn\\assets\\wccc-logo.tga")
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:SetPoint("LEFT", dropDownList1WCCCFrame.givePointsBtn, "LEFT", 5, 0)
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:SetWidth(12)
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:SetHeight(12)
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:EnableMouse(false)
+    dropDownList1WCCCFrame.givePointsBtn.guildIcon:Show()
 
 
     DropDownList1:HookScript("OnShow", function(_)
@@ -92,10 +103,14 @@ if WCCCAD:IsPlayerOfficer() then
             return
         end
 
-        -- TODO: Can we get GUID here?
+        dropDownList1WCCCFrame.targetPlayerInfo = nil
+        if not DropDownList1.dropdown.clubMemberInfo then
+            return
+        end
+
         local guildID = C_Club.GetGuildClubId()
-        local name = DropDownList1.dropdown.name
-        local realm = DropDownList1.dropdown.server
+        local guid = DropDownList1.dropdown.clubMemberInfo.guid
+        local nameRealm = DropDownList1.dropdown.clubMemberInfo.name
         local targetCommunityID = DropDownList1.dropdown.communityClubID
         if DropDownList1.dropdown.clubInfo then
             targetCommunityID = DropDownList1.dropdown.clubInfo.clubId
@@ -103,10 +118,15 @@ if WCCCAD:IsPlayerOfficer() then
         targetCommunityID = tonumber(targetCommunityID)
 
         if guildID ~= nil and targetCommunityID == guildID then
-            print(name.."-"..(realm and realm or ""))
-            print(targetCommunityID .. " vs guild: " .. guildID)
+            ClubberPoints:PrintDebugMessage(nameRealm)
+            ClubberPoints:PrintDebugMessage(targetCommunityID .. " vs guild: " .. guildID)
 
             dropDownList1WCCCFrame:Show()
+            dropDownList1WCCCFrame.targetPlayerInfo =
+            {
+                guid = guid,
+                nameRealm = nameRealm
+            }
         end
     end)
 

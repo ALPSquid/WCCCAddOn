@@ -125,12 +125,13 @@ function ClubberPoints:OC_AwardPointsToPlayer(playerGUID, numPoints)
         return
     end
 
+    local timestamp = GetServerTime()
     ---@type QueuedRewardEntry
     local newRewardEntry =
     {
         GUID = playerGUID,
         points = numPoints,
-        timestamp = GetServerTime()
+        timestamp = timestamp
     }
 
     if self.moduleDB.queuedRewards[playerGUID] == nil then
