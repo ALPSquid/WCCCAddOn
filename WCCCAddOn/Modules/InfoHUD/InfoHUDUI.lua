@@ -506,7 +506,7 @@ function InfoHUD_UI:CreateHUD()
             return
         end
 
-        self:PrintDebugMessage("InfoHUD:CreateMessageFrame, creating tab: ".. frameName)
+        InfoHUD:PrintDebugMessage("InfoHUD:CreateMessageFrame, creating tab: ".. frameName)
         local tabName = string.gsub(frameName, "^%l", string.upper)
         local messageFrame = CreateFrame("ScrollingMessageFrame", nil, hudFrameSelf)
         messageFrame:SetPoint("TOPLEFT", 5, -50)
@@ -618,13 +618,13 @@ function InfoHUD_UI:CreateHUD()
             frameData.messageFrame:SetHeight(lines * 20)
 
             if lines > msgLines then
-                self:PrintDebugMessage("InfoHUD more lines on "..frameName)
+                InfoHUD:PrintDebugMessage("InfoHUD more lines on "..frameName)
                 msgLines = lines
             end
         end
 
         if msgLines > 0 then
-            self:PrintDebugMessage("InfoHUD Resizing to fit "..msgLines.." lines")
+            InfoHUD:PrintDebugMessage("InfoHUD Resizing to fit "..msgLines.." lines")
             local newHeight = msgLines * 16
             local minWidth, minHeight = hudFrameSelf:GetMinResize()
             if newHeight < minHeight then
