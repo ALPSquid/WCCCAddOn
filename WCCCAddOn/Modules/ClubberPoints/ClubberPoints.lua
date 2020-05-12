@@ -46,7 +46,7 @@ function ClubberPoints:OnEnable()
     self:InitiateSync()
 end
 
-function ClubberPoints:GetOwnPoints()
+function ClubberPoints:GetOwnScore()
     return self.moduleDB.score
 end
 
@@ -76,7 +76,7 @@ function ClubberPoints:CollectAvailableRewards()
         if not isCollected and reward ~= nil then
             table.insert(self.moduleDB.collectedRewards, timestamp)
             self:AddPoints(reward.points)
-            WCCCAD.UI:PrintAddOnMessage(format("Congratulations! You've been awarded %i Clubber Points! Current score: %i", reward.points, self:GetOwnPoints()))
+            WCCCAD.UI:PrintAddOnMessage(format("Congratulations! You've been awarded %i Clubber Points! Current score: %i", reward.points, self:GetOwnScore()))
         end
     end
 end
