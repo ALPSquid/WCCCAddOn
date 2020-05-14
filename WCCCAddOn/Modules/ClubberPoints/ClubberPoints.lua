@@ -37,6 +37,8 @@ local clubberPointsData =
 }
 
 local ClubberPoints = WCCCAD:CreateModule("WCCC_ClubberPoints", clubberPointsData)
+LibStub("AceEvent-3.0"):Embed(ClubberPoints)
+ClubberPoints.SCORE_UPDATED_EVENT = ClubberPoints.moduleName .. "SCORE_UPDATED_EVENT"
 
 function ClubberPoints:InitializeModule()
     self:PrintDebugMessage("Clubber Points module loaded.")
@@ -52,6 +54,7 @@ end
 
 function ClubberPoints:AddPoints(numPoints)
     self.moduleDB.score = self.moduleDB.score + numPoints
+    ClubberPoints:SendMessage(ClubberPoints.SCORE_UPDATED_EVENT)
 end
 
 function ClubberPoints:CollectAvailableRewards()
@@ -138,7 +141,7 @@ function ClubberPoints:OC_AwardPointsToPlayer(playerGUID, numPoints)
         self.moduleDB.queuedRewards[playerGUID] = {}
     end
 
-    self.moduleDB[playerGUID][timestamp] = newRewardEntry
+    self.moduleDB.queuedRewards[playerGUID][timestamp] = newRewardEntry
 
     self:CollectAvailableRewards()
     self:BroadcastSyncData()

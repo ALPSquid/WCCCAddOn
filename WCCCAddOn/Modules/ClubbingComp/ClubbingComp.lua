@@ -270,6 +270,7 @@ local clubbingCompData =
 }
 
 local ClubbingComp = WCCCAD:CreateModule("WCCC_ClubbingCompetition", clubbingCompData)
+LibStub("AceEvent-3.0"):Embed(ClubbingComp)
 ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
@@ -280,6 +281,8 @@ function ClubbingComp:InitializeModule()
 end
 
 function ClubbingComp:OnEnable()
+    self:RegisterMessage(ClubberPoints.SCORE_UPDATED_EVENT, self.UI.UpdateHUD, self.UI)
+
     self:InitiateSync()
     self:UpdateActiveFrenzy()
 
@@ -288,6 +291,10 @@ function ClubbingComp:OnEnable()
     end
 
     ClubbingComp.UI:ShowHUDIfEnabled()
+end
+
+function ClubbingComp:OnDisable()
+    self:UnregisterMessage(ClubberPoints.SCORE_UPDATED_EVENT)
 end
 
 function ClubbingComp:GetRaceScoreData(race)
