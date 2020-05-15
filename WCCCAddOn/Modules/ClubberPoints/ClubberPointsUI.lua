@@ -37,6 +37,7 @@ if WCCCAD:IsPlayerOfficer() then
 
     --region Guild Member Tooltip
     ClubberPoints_UI.awardPointsDialogKey = ClubberPoints.moduleName .. "AwardPointsDialog"
+    ClubberPoints_UI.awardPointsConfirmationDialogKey = ClubberPoints.moduleName .. "AwardPointsConfirmationDialog"
     StaticPopupDialogs[ClubberPoints_UI.awardPointsDialogKey] =
     {
         text = "Award points to %s",
@@ -49,11 +50,36 @@ if WCCCAD:IsPlayerOfficer() then
         OnAccept = function(dialog)
             local numPoints = tonumber(dialog.editBox:GetText())
             if numPoints and numPoints > 0 then
-                WCCCAD.UI:PrintAddOnMessage(format("Awarding %i points to %s (%s)", numPoints, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.nameRealm, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid))
-                ClubberPoints:OC_AwardPointsToPlayer(ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid, numPoints)
+                ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.numPoints = numPoints
+                StaticPopup_Show(ClubberPoints_UI.awardPointsConfirmationDialogKey, numPoints, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.nameRealm)
             else
                 WCCCAD.UI:PrintAddOnMessage("Points must be a number above 0.")
             end
+        end,
+        OnCancel = function(dialog)
+            ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo = nil
+        end
+    }
+
+    StaticPopupDialogs[ClubberPoints_UI.awardPointsConfirmationDialogKey] =
+    {
+        text = "Award %i points to %s?",
+        button1 = "Award Points",
+        button2 = "Cancel",
+        hasEditBox = false,
+        whileDead = true,
+        hideOnEscape = true,
+        timeout = 0,
+        OnAccept = function(dialog)
+            WCCCAD.UI:PrintAddOnMessage(format("Awarding %i points to %s (%s)",
+                    ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.numPoints,
+                    ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.nameRealm,
+                    ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid))
+
+            ClubberPoints:OC_AwardPointsToPlayer(ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.guid, ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo.numPoints)
+        end,
+        OnCancel = function(dialog)
+            ClubberPoints_UI.dropDownList1WCCCFrame.targetPlayerInfo = nil
         end
     }
 
