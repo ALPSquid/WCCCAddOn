@@ -46,6 +46,11 @@ end
 
 function ClubberPoints:OnEnable()
     self:InitiateSync()
+    self.UI:OnEnable()
+end
+
+function ClubberPoints:OnDisable()
+    self.UI:OnDisable()
 end
 
 function ClubberPoints:GetOwnScore()
