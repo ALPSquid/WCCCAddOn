@@ -67,6 +67,7 @@ end
 
 function MythicPlus:OnEnable()
     self.initialSyncComplete = false
+    self:CheckLastTimestamps()
     self:PruneOldEntries()
     C_MythicPlus.RequestMapInfo()
     C_MythicPlus.RequestRewards()
@@ -338,6 +339,30 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)
 end
 
+---
+--- A fun little bug. For some reason, we've seen lastUpdateTimestamps synced that are > GetServerTime() by a long margin.
+---
+function MythicPlus:CheckLastTimestamps()
+    local currentTime = GetServerTime()
+    for _, entryData in pairs(self.moduleDB.leaderboardData) do
+        if entryData.lastUpdateTimestamp > currentTime then
+            entryData.lastUpdateTimestamp = currentTime
+            dataChanged = true
+        end
+    end
+
+    for _, entryData in pairs(self.moduleDB.guildKeys) do
+        if entryData.lastUpdateTimestamp > currentTime then
+            entryData.lastUpdateTimestamp = currentTime
+            dataChanged = true
+        end
+    end
+
+    if dataChanged then
+        self:PrintDebugMessage("Fixed invalid lastUpdateTimestamp.")
+        self.UI:OnDataUpdated()
+    end
+end
 
 --region Player Entry Tools
 function MythicPlus:PruneOldEntries()
@@ -371,7 +396,12 @@ end
 ---
 function MythicPlus:UpdateLeaderboard(leaderboardData)
     local dataChanged = false
+    local currentTime = GetServerTime()
     for key, entryData in pairs(leaderboardData) do
+        -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
+        if entryData.lastUpdateTimestamp > currentTime then
+            entryData.lastUpdateTimestamp = currentTime
+        end
         if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
             self.moduleDB.leaderboardData[key] = entryData
             dataChanged = true
@@ -388,7 +418,12 @@ end
 
 function MythicPlus:UpdateGuildKeys(guildKeys)
     local dataChanged = false
+    local currentTime = GetServerTime()
     for key, entryData in pairs(guildKeys) do
+        -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
+        if entryData.lastUpdateTimestamp > currentTime then
+            entryData.lastUpdateTimestamp = currentTime
+        end
         if self.moduleDB.guildKeys[key] == nil or self.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
             self.moduleDB.guildKeys[key] = entryData
             dataChanged = true

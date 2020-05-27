@@ -134,7 +134,13 @@ end
 
 --- Creates a string displaying the time since the specified timestamp. e.g. "10 hours ago", "5 minutes ago"
 ns.utils.GetTimeSinceString = function(timeStamp)
-    local timeDelta = GetServerTime() - timeStamp
+    local currentTime = GetServerTime()
+    if timeStamp > currentTime then
+        timeStamp = currentTime
+        print("[WCCC][ERROR] Tried to check the time since a date in the future. This should never happen, please inform Aerthok!")
+    end
+
+    local timeDelta = currentTime - timeStamp
     local formattedTime
     local unitString
 

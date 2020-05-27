@@ -307,7 +307,7 @@ function WCCC_MythicPlusFrameMixin:UpdateMemberPresence()
             if entryData.presence ~= newPresence then
                 entryData.presence = newPresence
                 presenceUpdated = true
-                MythicPlus:PrintDebugMessage("Updated presence for ".. entryData.playerName)
+                --MythicPlus:PrintDebugMessage("Updated presence for ".. entryData.playerName)
             end
         end
     end
