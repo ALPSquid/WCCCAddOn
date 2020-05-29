@@ -368,7 +368,7 @@ function ClubbingComp:ClubCommand(args)
                 -- Update score
                 local raceScore = self:GetRaceScore(targetRaceEn)
                 ClubberPoints:AddPoints(raceScore)
-                WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, ClubberPoints:GetPoints()))
+                WCCCAD.UI:PrintAddOnMessage(format("You earned %s points! Current score: %s ", raceScore, ClubberPoints:GetOwnScore()))
 
                 self:RegisterHit(targetName, targetRaceEn)
                 self.UI:UpdateHUD()
@@ -692,7 +692,7 @@ function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
             end
         end
     end
-    self:PrintDebugMessage("Pruned hit table, new score: "..ClubberPoints:GetPoints(playerScore))
+    self:PrintDebugMessage("Pruned hit table, new score: "..ClubberPoints:GetOwnScore(playerScore))
 
     self.UI:UpdateHUD()
     WCCCAD.UI:PrintAddOnMessage("A new season has started! Good luck in " .. self:GetRaceScoreData(seasonRace).name .. " Season!")
