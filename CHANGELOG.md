@@ -1,3 +1,9 @@
+# v1.1.0
+* Reworks the systems behind the Clubbing Competition score to make them a global scoring system across the addon: Clubber Points.
+Officers can now award these during events, so stay tuned!
+* Fixes Mythic+ module reporting weekly bests per map, rather than overall weekly best.
+* Fixes Guild Keystone list not displaying correctly.
+
 # v1.0.23
 * Some zones are now on high-alert and looking out for Clubbers, you'll have to lay low periodically to avoid confrontation.
 * Fixes InfoHUD tabs resizing and sorting incorrectly.
