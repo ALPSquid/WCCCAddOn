@@ -8,7 +8,7 @@ local WCCCAD = ns.WCCCAD
 
 WCCCAD.version = 1100
 WCCCAD.versionString = "1.1.0"
-WCCCAD.versionType = ns.consts.VERSION_TYPE.BETA
+WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 WCCCAD.newVersionAvailable = false
 
 
