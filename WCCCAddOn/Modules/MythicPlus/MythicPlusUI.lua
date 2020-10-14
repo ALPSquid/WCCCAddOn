@@ -469,7 +469,7 @@ function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(le
 end
 
 function WCCC_MythicPlusEntryMixin:OnMouseDown(button)
-    if button == "RightButton" and self.Data.presence ~= Enum.ClubMemberPresence.Offline then
+    if button == "RightButton" and self.Data ~= nil and self.Data.presence ~= Enum.ClubMemberPresence.Offline then
 		ToggleDropDownMenu(1, nil, self.RightClickDropdown, self, 100, 0)
 		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
 	end

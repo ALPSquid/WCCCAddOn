@@ -257,7 +257,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                             order = 1.12,
                             fontSize = "medium",
                             name = function() 
-                                return format("|cFFE97300Season started on %s (%i days ago).|r", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
+                                return format("|cFFE97300Season started on %s (%i days ago).|r", ns.utils.LongDate(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
                             end,        
                             hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                         },
@@ -541,7 +541,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             order = 10.11,
                             fontSize = "medium",
                             name = function() 
-                                return format("Last season update on %s %s (%i days ago).", ns.utils.LongData(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), date("%H:%M", ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
+                                return format("Last season update on %s %s (%i days ago).", ns.utils.LongDate(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), date("%H:%M", ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp), ns.utils.DaysSince(ClubbingComp.moduleDB.seasonData.lastUpdateTimestamp))
                             end,        
                         },
 
@@ -740,7 +740,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             order = 10.2,
                             hidden = function() return ClubbingComp.moduleDB.frenzyData.startTimestamp <= 0 end,
                             name = function() 
-                                return format("Frenzy started on %s %s.", ns.utils.LongData(ClubbingComp.moduleDB.frenzyData.startTimestamp), date("%H:%M", ClubbingComp.moduleDB.frenzyData.startTimestamp))
+                                return format("Frenzy started on %s %s.", ns.utils.LongDate(ClubbingComp.moduleDB.frenzyData.startTimestamp), date("%H:%M", ClubbingComp.moduleDB.frenzyData.startTimestamp))
                             end,        
                         },
 

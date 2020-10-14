@@ -75,6 +75,12 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
         data.targetPlayer = targetPlayer
         data.expectResponse = expectResponse
 
+        -- Debugging nil sendingPlayer
+        if data.sendingPlayer == nil then
+            print(format("_SendSyncComm: sendingPlayer is nil @ %s", moduleName))
+        end
+        -- end
+
         if targetPlayer ~= nil then
             moduleSelf:PrintDebugMessage("Sending "..moduleName.." sync data to "..targetPlayer)
             moduleSelf:SendModuleComm("sync", data, ns.consts.CHAT_CHANNEL.WHISPER, targetPlayer)
@@ -89,6 +95,11 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
             return 
         end
         -- Debugging nil sendingPlayer
+        if data.sendingPlayer == nil then
+            print(format("_OnSyncReceivedComm: sendingPlayer is nil @ %s", moduleName))
+        end
+        -- end
+
         moduleSelf:PrintDebugMessage("Received "..moduleName.." sync data from ")
 
         local dataComparisonResult = moduleSelf:CompareSyncData(data)

@@ -1,3 +1,7 @@
+# v1.2.0
+* Updated for patch 9.0.1.
+* Adds score syncing.
+
 # v1.1.0
 * Reworks the systems behind the Clubbing Competition score to make them a global scoring system across the addon: Clubber Points.
 Officers can now award these during events, so stay tuned!

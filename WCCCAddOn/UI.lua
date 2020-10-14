@@ -192,7 +192,7 @@ function WCCCAD_UI:AddGuildControlButton(text, tooltipText, onClickAction)
 end
 
 function WCCCAD_UI:CreateGuildControlFrame()
-    local rootFrame = CreateFrame("Frame", nil, CommunitiesFrame)
+    local rootFrame = CreateFrame("Frame", nil, CommunitiesFrame, BackdropTemplateMixin and "BackdropTemplate")
     self.GuildControlFrame = rootFrame
     self.GuildControlFrame.buttons = {}
 

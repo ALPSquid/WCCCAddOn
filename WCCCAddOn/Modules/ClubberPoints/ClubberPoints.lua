@@ -7,6 +7,8 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
+local COMM_KEY_PERSONAL_SCORE_UPDATE = "guildyScoreUpdate"
+
 local clubberPointsData =
 {
     profile =
@@ -32,17 +34,35 @@ local clubberPointsData =
         collectedRewards =
         {
             -- [timestamp]
-        }
+        },
+
+        ---@class ClubberLeaderboardDataEntry
+        ---@field GUID string
+        ---@field playerName string
+        ---@field classID number
+        ---@field score number
+        ---@field lastUpdateTimestamp number
+
+        ---@type table<string, ClubberLeaderboardDataEntry>
+        leaderboardData =
+        {
+            -- [GUID] = {GUID, playerName, classID, score, lastUpdateTimestamp}
+        },
     }
 }
 
 local ClubberPoints = WCCCAD:CreateModule("WCCC_ClubberPoints", clubberPointsData)
 LibStub("AceEvent-3.0"):Embed(ClubberPoints)
 ClubberPoints.SCORE_UPDATED_EVENT = ClubberPoints.moduleName .. "SCORE_UPDATED_EVENT"
+ClubberPoints.NEW_SEASON_EVENT = ClubberPoints.moduleName .. "NEW_SEASON_EVENT"
 
 function ClubberPoints:InitializeModule()
+    if self.moduleDB.leaderboardData == nil then
+        self.moduleDB.leaderboardData = {}
+    end
+    self:RegisterModuleComm(COMM_KEY_PERSONAL_SCORE_UPDATE, self.OnGuildyScoreUpdateReceived)
     self:PrintDebugMessage("Clubber Points module loaded.")
-end
+    end
 
 function ClubberPoints:OnEnable()
     self:InitiateSync()
@@ -59,7 +79,38 @@ end
 
 function ClubberPoints:AddPoints(numPoints)
     self.moduleDB.score = self.moduleDB.score + numPoints
-    ClubberPoints:SendMessage(ClubberPoints.SCORE_UPDATED_EVENT)
+    local GUID = UnitGUID("player")
+    local _, _, classID = UnitClass("player")
+    if self.moduleDB.leaderboardData[GUID] == nil then
+        self.moduleDB.leaderboardData[GUID] =
+        {
+            GUID = GUID,
+            playerName = UnitName("player"),
+            classID = classID
+        }
+    end
+    self.moduleDB.leaderboardData[GUID].lastUpdateTimestamp = GetServerTime()
+    self.moduleDB.leaderboardData[GUID].score = self.moduleDB.score
+    self:SendMessage(ClubberPoints.SCORE_UPDATED_EVENT)
+    self:SendPersonalScoreComm()
+end
+
+function ClubberPoints:SendPersonalScoreComm()
+    local GUID = UnitGUID("player")
+    if self.moduleDB.leaderboardData[GUID] == nil then
+        self:PrintDebugMessage("Skipping sending score update as we have no data.")
+        return
+    end
+    self:SendModuleComm(COMM_KEY_PERSONAL_SCORE_UPDATE, self.moduleDB.leaderboardData[GUID], ns.consts.CHAT_CHANNEL.GUILD)
+end
+
+function ClubberPoints:OnGuildyScoreUpdateReceived(data)
+    if self.moduleDB.leaderboardData[data.GUID] ~= nil and self.moduleDB.leaderboardData[data.GUID].lastUpdateTimestamp > data.lastUpdateTimestamp then
+        -- We've got newer data, weirdly.
+        self:PrintDebugMessage(format("Received an old score update from %s.", data.playerName))
+        return
+    end
+    self.moduleDB.leaderboardData[data.GUID] = data
 end
 
 function ClubberPoints:CollectAvailableRewards()
@@ -89,7 +140,14 @@ function ClubberPoints:CollectAvailableRewards()
     end
 end
 
+--region Leaderboard
+
+--endregion
+
 --region Season
+---
+--- Call to start a new season. Subscribe to ClubberPoints.SCORE_UPDATED_EVENT to be notified when this happens.
+---
 function ClubberPoints:OC_StartNewSeason(seasonTimestamp)
     if not WCCCAD:IsPlayerOfficer() then
         return
@@ -99,6 +157,9 @@ function ClubberPoints:OC_StartNewSeason(seasonTimestamp)
     self:BroadcastSyncData()
 end
 
+---
+--- Called internally to actually start a new season.
+---
 function ClubberPoints:StartNewSeason(seasonTimestamp)
     if seasonTimestamp <= self.moduleDB.seasonTimestamp then
         self:PrintDebugMessage("ClubberPoints already have new season data, skipping season update.")
@@ -109,6 +170,7 @@ function ClubberPoints:StartNewSeason(seasonTimestamp)
     self.moduleDB.score = 0
     self.moduleDB.collectedRewards = {}
     self.moduleDB.seasonTimestamp = seasonTimestamp
+    self.moduleDB.leaderboardData = {}
 
     -- Clear out expired rewards
     for GUID, queuedRewards in pairs(self.moduleDB.queuedRewards) do
@@ -124,6 +186,11 @@ function ClubberPoints:StartNewSeason(seasonTimestamp)
             self:PrintDebugMessage(format("Removing expired reward. Timestamp: %i, season: %i ", rewardKey, seasonTimestamp))
         end
     end
+
+    -- TODO: For now, there's a nasty dependency on ClubbingComp managing the season flow.
+    -- TODO: Ideally, this should all be moved into this module and other modules should subscribe to this event instead.
+    -- TODO: How other modules can add data to a season, such as seasonrace, needs to be considered though.
+    self:SendMessage(ClubberPoints.NEW_SEASON_EVENT)
 end
 --endregion
 
@@ -160,14 +227,15 @@ function ClubberPoints:GetSyncData()
     local syncData =
     {
         seasonTimestamp = self.moduleDB.seasonTimestamp,
-        queuedRewards = self.moduleDB.queuedRewards
+        queuedRewards = self.moduleDB.queuedRewards,
+        leaderboardData = self.moduleDB.leaderboardData
     }
 
     return syncData
 end
 
 function ClubberPoints:CompareSyncData(remoteData)
-    -- Can skip the queuedRewards comparison if the season has changed.
+    -- Can skip syncing both if the season has changed.
     if remoteData.seasonTimestamp > self.moduleDB.seasonTimestamp then
         return ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER
     elseif self.moduleDB.seasonTimestamp > remoteData.seasonTimestamp then
@@ -176,6 +244,15 @@ function ClubberPoints:CompareSyncData(remoteData)
 
     local remoteHasNewData = self:DoesRewardsQueueHaveNewData(remoteData.queuedRewards, self.moduleDB.queuedRewards)
     local localHasNewData = self:DoesRewardsQueueHaveNewData(self.moduleDB.queuedRewards, remoteData.queuedRewards)
+
+    -- If we're not already syncing the remote, check the leaderboard
+    if not remoteHasNewData then
+        remoteHasNewData = self:DoesLeaderboardHaveNewData(remoteData.leaderboardData, self.moduleDB.leaderboardData)
+    end
+    -- If we're not already syncing local, check the leaderboard
+    if not localHasNewData then
+        localHasNewData = self:DoesLeaderboardHaveNewData(self.moduleDB.leaderboardData, remoteData.leaderboardData)
+    end
 
     if remoteHasNewData and localHasNewData then
         return ns.consts.DATA_SYNC_RESULT.BOTH_NEWER
@@ -209,10 +286,31 @@ function ClubberPoints:DoesRewardsQueueHaveNewData(sourceQueuedRewardsTable, oth
     return false
 end
 
+---
+--- Checks whether sourceLeaderboardData has newer data than otherLeaderboardData.
+--- @param sourceLeaderboardData table<string, ClubberLeaderboardDataEntry> leaderboardData table from a moduleDB to use as the source.
+--- @param otherLeaderboardData table<string, ClubberLeaderboardDataEntry> leaderboardData table from a moduleDB to compare against.
+---
+function ClubberPoints:DoesLeaderboardHaveNewData(sourceLeaderboardData, otherLeaderboardData)
+    for GUID, entry in pairs(sourceLeaderboardData) do
+        if otherLeaderboardData[GUID] == nil then
+            return true
+        else if entry.lastUpdateTimestamp > otherLeaderboardData[GUID].lastUpdateTimestamp then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+-- TODO: If the other season is less than ours, ignore their leaderboard data
+-- TODO: When we start a new season, reset the leaderboard then take the other data.
 function ClubberPoints:OnSyncDataReceived(data)
     if data.seasonTimestamp > self.moduleDB.seasonTimestamp then
         self:StartNewSeason(data.seasonTimestamp)
     end
+    self:UpdateLeaderboard(data.leaderboardData)
     self:UpdateQueuedRewards(data.queuedRewards)
 end
 
@@ -232,4 +330,11 @@ function ClubberPoints:UpdateQueuedRewards(otherQueuedRewards)
     self:CollectAvailableRewards()
 end
 
+function ClubberPoints:UpdateLeaderboard(leaderboardData)
+    for key, entryData in pairs(leaderboardData) do
+        if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+            self.moduleDB.leaderboardData[key] = entryData
+        end
+    end
+end
 --endregion

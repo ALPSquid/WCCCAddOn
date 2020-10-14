@@ -94,7 +94,7 @@ ns.utils.Pronoun = function(tense, upper)
     return pronoun
 end
 
-ns.utils.LongData = function(timeStamp)
+ns.utils.LongDate = function(timeStamp)
     local day = date("%d", timeStamp)
     local month = date("%B", timeStamp)
 
@@ -162,6 +162,7 @@ ns.utils.GetTimeSinceString = function(timeStamp)
 end
 
 ns.utils.GetLastServerResetTimestamp = function()
+    -- TODO: Could convert this to use the new C_DateAndTime.GetSecondsUntilWeeklyReset() function: GetServerTime() - (reset_length - time_until_reset)
     local currentTimestamp = GetServerTime()
     local currentDate = date("!*t", currentTimestamp)
 
@@ -247,7 +248,7 @@ end
 --- @param sizeSetter fun(width:number, height:number) optional @Function that takes the width, height for the frame to be saved.
 ---
 ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, infoPressedCallback, closePressedCallback, resizable, sizeGetter, sizeSetter) 
-    local hudFrame = CreateFrame("Frame", nil, UIParent)
+    local hudFrame = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
     hudFrame:SetFrameStrata("MEDIUM")
 
     local point, offsetX, offsetY = framePointGetter()

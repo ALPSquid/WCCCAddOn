@@ -656,9 +656,7 @@ function ClubbingComp:OC_SetSeason(raceKey)
     self:StartNewSeason(raceKey, seasonTimestamp)
     self:BroadcastSyncData()
 end
----
---- Sends local season data to the target, or whole guild if target is null.
----
+
 function ClubbingComp:StartNewSeason(seasonRace, updateTimestamp)
     -- If current timestamp and race are same as the new, we have the latest data.
     if updateTimestamp < self.moduleDB.seasonData.lastUpdateTimestamp 

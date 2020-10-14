@@ -344,22 +344,22 @@ end
 ---
 function MythicPlus:CheckLastTimestamps()
     local currentTime = GetServerTime()
-    for _, entryData in pairs(self.moduleDB.leaderboardData) do
+    for key, entryData in pairs(self.moduleDB.leaderboardData) do
         if entryData.lastUpdateTimestamp > currentTime then
-            entryData.lastUpdateTimestamp = currentTime
+            self.moduleDB.leaderboardData[key] = nil
             dataChanged = true
         end
     end
 
-    for _, entryData in pairs(self.moduleDB.guildKeys) do
+    for key, entryData in pairs(self.moduleDB.guildKeys) do
         if entryData.lastUpdateTimestamp > currentTime then
-            entryData.lastUpdateTimestamp = currentTime
+            self.moduleDB.guildKeys[key] = nil
             dataChanged = true
         end
     end
 
     if dataChanged then
-        self:PrintDebugMessage("Fixed invalid lastUpdateTimestamp.")
+        self:PrintDebugMessage("Removed invalid lastUpdateTimestamp.")
         self.UI:OnDataUpdated()
     end
 end
@@ -370,14 +370,16 @@ function MythicPlus:PruneOldEntries()
     local lastResetTimestamp = ns.utils.GetLastServerResetTimestamp()
 
     for key, entryData in pairs(self.moduleDB.leaderboardData) do
-        if entryData.lastUpdateTimestamp < lastResetTimestamp then
+        -- TODO: Mangofox has some weird timestamps so with the new system of discarding timestamps > current time, we need to just get rid of these broken entries first since they keep getting udpated.
+        -- TODO: This must be removed in a future update...
+        if entryData.lastUpdateTimestamp < lastResetTimestamp or entryData.playerName == "Mangofox" then
             self.moduleDB.leaderboardData[key] = nil
             dataChanged = true
         end
     end
 
     for key, entryData in pairs(self.moduleDB.guildKeys) do
-        if entryData.lastUpdateTimestamp < lastResetTimestamp then
+        if entryData.lastUpdateTimestamp < lastResetTimestamp or entryData.playerName == "Mangofox" then
             self.moduleDB.guildKeys[key] = nil
             dataChanged = true
         end
@@ -399,12 +401,12 @@ function MythicPlus:UpdateLeaderboard(leaderboardData)
     local currentTime = GetServerTime()
     for key, entryData in pairs(leaderboardData) do
         -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
-        if entryData.lastUpdateTimestamp > currentTime then
-            entryData.lastUpdateTimestamp = currentTime
-        end
-        if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
-            self.moduleDB.leaderboardData[key] = entryData
-            dataChanged = true
+        -- TODO: Mangofox - Remove
+        if entryData.lastUpdateTimestamp <= currentTime and entryData.playerName ~= "Mangofox" then
+            if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+                self.moduleDB.leaderboardData[key] = entryData
+                dataChanged = true
+            end
         end
     end
 
@@ -421,12 +423,12 @@ function MythicPlus:UpdateGuildKeys(guildKeys)
     local currentTime = GetServerTime()
     for key, entryData in pairs(guildKeys) do
         -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
-        if entryData.lastUpdateTimestamp > currentTime then
-            entryData.lastUpdateTimestamp = currentTime
-        end
-        if self.moduleDB.guildKeys[key] == nil or self.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
-            self.moduleDB.guildKeys[key] = entryData
-            dataChanged = true
+        -- TODO: Mangofox - Remove
+        if entryData.lastUpdateTimestamp <= currentTime and entryData.playerName ~= "Mangofox" then
+            if self.moduleDB.guildKeys[key] == nil or self.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+                self.moduleDB.guildKeys[key] = entryData
+                dataChanged = true
+            end
         end
     end
 

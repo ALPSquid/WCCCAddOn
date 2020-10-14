@@ -673,7 +673,7 @@ function InfoHUD_UI:CreateHUD()
         hudFrameSelf:DoAutoSize()
     end    
 
-    self.hudFrame.tabDivider = CreateFrame("Frame", nil, self.hudFrame)
+    self.hudFrame.tabDivider = CreateFrame("Frame", nil, self.hudFrame, BackdropTemplateMixin and "BackdropTemplate")
     self.hudFrame.tabDivider:SetBackdrop({
         bgFile = "Interface/Tooltips/UI-Tooltip-Background",
         edgeFile = "Interface/Tooltips/UI-Tooltip-Border", 
