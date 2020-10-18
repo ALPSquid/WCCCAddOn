@@ -370,16 +370,14 @@ function MythicPlus:PruneOldEntries()
     local lastResetTimestamp = ns.utils.GetLastServerResetTimestamp()
 
     for key, entryData in pairs(self.moduleDB.leaderboardData) do
-        -- TODO: Mangofox has some weird timestamps so with the new system of discarding timestamps > current time, we need to just get rid of these broken entries first since they keep getting udpated.
-        -- TODO: This must be removed in a future update...
-        if entryData.lastUpdateTimestamp < lastResetTimestamp or entryData.playerName == "Mangofox" then
+        if entryData.lastUpdateTimestamp < lastResetTimestamp then
             self.moduleDB.leaderboardData[key] = nil
             dataChanged = true
         end
     end
 
     for key, entryData in pairs(self.moduleDB.guildKeys) do
-        if entryData.lastUpdateTimestamp < lastResetTimestamp or entryData.playerName == "Mangofox" then
+        if entryData.lastUpdateTimestamp < lastResetTimestamp then
             self.moduleDB.guildKeys[key] = nil
             dataChanged = true
         end
@@ -401,7 +399,6 @@ function MythicPlus:UpdateLeaderboard(leaderboardData)
     local currentTime = GetServerTime()
     for key, entryData in pairs(leaderboardData) do
         -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
-        -- TODO: Mangofox - Remove
         if entryData.lastUpdateTimestamp <= currentTime and entryData.playerName ~= "Mangofox" then
             if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
                 self.moduleDB.leaderboardData[key] = entryData
@@ -423,8 +420,7 @@ function MythicPlus:UpdateGuildKeys(guildKeys)
     local currentTime = GetServerTime()
     for key, entryData in pairs(guildKeys) do
         -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
-        -- TODO: Mangofox - Remove
-        if entryData.lastUpdateTimestamp <= currentTime and entryData.playerName ~= "Mangofox" then
+        if entryData.lastUpdateTimestamp <= currentTime then
             if self.moduleDB.guildKeys[key] == nil or self.moduleDB.guildKeys[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
                 self.moduleDB.guildKeys[key] = entryData
                 dataChanged = true

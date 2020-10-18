@@ -1,3 +1,6 @@
+# v1.2.1
+* Brings mangos
+
 # v1.2.0
 * Updated for patch 9.0.1.
 * Adds score syncing.
