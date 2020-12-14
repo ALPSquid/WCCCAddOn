@@ -1,3 +1,7 @@
+# v1.3.0
+* Oribos is now on high-alert for clubbers!
+* Adds a confirmation dialog when releasing spirit in Castle Nathria, as a group res is pretty likely!
+
 # v1.2.1
 * Brings mangos
 
