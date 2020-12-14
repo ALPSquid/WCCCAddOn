@@ -23,7 +23,12 @@ local RESTRICTED_ZONE_STATE =
 local RESTRICTED_ZONES =
 {
 	-- Chamber of Heart
-	[1473] = true
+	[1473] = true,
+    -- Oribos (all floors)
+    [1670] = true,
+    [1671] = true,
+    [1672] = true,
+    [1673] = true
 }
 
 --- 
