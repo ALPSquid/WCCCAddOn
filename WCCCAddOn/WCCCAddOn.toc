@@ -32,3 +32,4 @@ Modules\MythicPlus\MythicPlusUI.lua
 Modules\MythicPlus\MythicPlusUI.xml
 
 Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmation.lua
+Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmationUI.lua

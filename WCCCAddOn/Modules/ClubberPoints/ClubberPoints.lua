@@ -62,7 +62,7 @@ function ClubberPoints:InitializeModule()
     end
     self:RegisterModuleComm(COMM_KEY_PERSONAL_SCORE_UPDATE, self.OnGuildyScoreUpdateReceived)
     self:PrintDebugMessage("Clubber Points module loaded.")
-    end
+end
 
 function ClubberPoints:OnEnable()
     self:InitiateSync()
