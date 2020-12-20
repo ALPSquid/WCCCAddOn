@@ -36,7 +36,7 @@ local ReleaseSpiritModule = WCCCAD:CreateModule("WCCC_ReleaseSpiritConfirmation"
 
 
 function ReleaseSpiritModule:InitializeModule()
-    ReleaseSpiritModule,defaultReleaseSpiritFunc = StaticPopupDialogs["DEATH"].OnButton1
+    ReleaseSpiritModule.defaultReleaseSpiritFunc = StaticPopupDialogs["DEATH"].OnButton1
 
     StaticPopupDialogs[RELEASE_CONFIRMATION_DIALOG_KEY] =
     {
@@ -49,7 +49,7 @@ function ReleaseSpiritModule:InitializeModule()
         timeout = 0,
 
         OnAccept = function(dialog)
-            return defaultReleaseSpiritFunc()
+            return ReleaseSpiritModule.defaultReleaseSpiritFunc()
         end,
 
         OnCancel = function(dialog)
@@ -66,7 +66,7 @@ function ReleaseSpiritModule:InitializeModule()
         then
             StaticPopup_Show(RELEASE_CONFIRMATION_DIALOG_KEY)
         else
-            return defaultReleaseSpiritFunc()
+            return ReleaseSpiritModule.defaultReleaseSpiritFunc()
         end
     end
 
