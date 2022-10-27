@@ -65,7 +65,7 @@ function WCCCADCore:UpdateGuildRosterAddonIndicators()
         return
     end
 
-    for _, guildieButton in ipairs(CommunitiesFrame.MemberList.ListScrollFrame.buttons) do
+    for _, guildieButton in ipairs(CommunitiesFrame.MemberList.ScrollBox:GetFrames()) do
         local memberInfo = guildieButton:GetMemberInfo()
 
         if memberInfo == nil or self.knownAddonUsers[memberInfo.guid] == nil then

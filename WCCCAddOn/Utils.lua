@@ -363,7 +363,7 @@ ns.utils.CreateHUDPanel = function(title, framePointGetter, framePointSetter, in
 
         local width, height = sizeGetter()
         hudFrame:SetSize(width, height)
-        hudFrame:SetMinResize(200, 200)
+        hudFrame:SetResizeBounds(200, 200)
 
         hudFrame.resizeHandle = CreateFrame("Button", nil, hudFrame)
         hudFrame.resizeHandle:SetPoint("BOTTOMRIGHT", 0, 0)

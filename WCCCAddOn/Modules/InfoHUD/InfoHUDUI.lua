@@ -523,10 +523,10 @@ function InfoHUD_UI:CreateHUD()
         messageFrame:SetInsertMode(SCROLLING_MESSAGE_FRAME_INSERT_MODE_TOP)
         messageFrame:Hide()
 
-        local tabButton = CreateFrame("Button", frameName.."_tab", hudFrameSelf, "OptionsFrameTabButtonTemplate")
-        tabButton:SetText(tabName)
+        local tabButton = CreateFrame("Button", frameName.."_tab", hudFrameSelf, "MinimalTabTemplate")
+        tabButton.Text:SetText(tabName)
         tabButton:Show()
-        PanelTemplates_TabResize(tabButton, 2, nil, 30, 50, tabButton:GetFontString():GetStringWidth())
+        PanelTemplates_TabResize(tabButton, 2, nil, 30, 100, tabButton.Text:GetStringWidth())
         tabButton:SetScript("OnClick", function()
             hudFrameSelf:SwitchTab(frameName)
         end)
@@ -566,11 +566,12 @@ function InfoHUD_UI:CreateHUD()
         for _, frameName in ipairs(sortedFrames) do
             local frameData = hudFrameSelf.messageFrames[frameName]
             if not frameData.hidden then
-                tabOffset = tabOffset + frameData.tabButton:GetWidth() - 10
+                --tabOffset = tabOffset + frameData.tabButton:GetWidth() - 10
+                tabOffset = tabOffset + frameData.tabButton:GetWidth()
             end
 
             frameData.tabButton:ClearAllPoints()
-            frameData.tabButton:SetPoint("TOPLEFT", 3 + (tabOffset - frameData.tabButton:GetWidth()), -20)  
+            frameData.tabButton:SetPoint("TOPLEFT", 3 + tabOffset - frameData.tabButton:GetWidth(), -10)
         end   
     end
 
@@ -590,13 +591,21 @@ function InfoHUD_UI:CreateHUD()
 
         for frameName, frameData in pairs(hudFrameSelf.messageFrames) do
             if frameName == targetFrame then
-                frameData.tabButton:LockHighlight()
+                frameData.hidden = false
+                frameData.tabButton:SetSelected(true)
                 frameData.messageFrame:Show()
                 frameData.tabButton:Show()
-                frameData.hidden = false
+                frameData.tabButton.Text:SetTextColor(1, 0.62, 0)
+                frameData.tabButton.Left:SetVertexColor(1, 0.65, 0)
+                frameData.tabButton.Right:SetVertexColor(1, 0.65, 0)
+                frameData.tabButton.Middle:SetVertexColor(1, 0.65, 0)
             else
-                frameData.tabButton:UnlockHighlight()
+                frameData.tabButton:SetSelected(false)
                 frameData.messageFrame:Hide()
+                frameData.tabButton.Text:SetTextColor(0.9, 0.9, 0.9, 0.8)
+                frameData.tabButton.Left:SetVertexColor(0.9, 0.52, 0)
+                frameData.tabButton.Right:SetVertexColor(0.9, 0.52, 0)
+                frameData.tabButton.Middle:SetVertexColor(0.9, 0.52, 0)
             end
         end
 
@@ -626,7 +635,7 @@ function InfoHUD_UI:CreateHUD()
         if msgLines > 0 then
             InfoHUD:PrintDebugMessage("InfoHUD Resizing to fit "..msgLines.." lines")
             local newHeight = msgLines * 16
-            local minWidth, minHeight = hudFrameSelf:GetMinResize()
+            local _, minHeight, _, _= hudFrameSelf:GetResizeBounds()
             if newHeight < minHeight then
                 newHeight = minHeight
             end
