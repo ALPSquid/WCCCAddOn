@@ -1,3 +1,7 @@
+# v1.3.2
+* Updated for patch 10.0
+* Updated branding to use new guild logo.
+
 # v1.3.1
 * Bumped TOC
 
