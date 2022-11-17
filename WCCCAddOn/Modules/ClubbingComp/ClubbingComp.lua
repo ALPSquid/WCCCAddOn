@@ -151,6 +151,14 @@ local RACES =
 		score = 1
 	},
 
+    ["Dracthyr"] =
+    {
+        type = "Dracthyr",
+        name = "Dracthyr",
+        pluralName = "Dracthyr",
+        score = 1,
+    },
+
 	["Gnome"] =
 	{
         type = "Gnome",

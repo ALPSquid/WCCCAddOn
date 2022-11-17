@@ -1,3 +1,6 @@
+# v1.3.4
+* Added Dracthyr as a clubbable race
+
 # v1.3.3
 * Updated for patch 10.0.2
 
