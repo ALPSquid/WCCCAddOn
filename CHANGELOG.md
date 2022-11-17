@@ -1,3 +1,6 @@
+# v1.3.3
+* Updated for patch 10.0.2
+
 # v1.3.2
 * Updated for patch 10.0
 * Updated branding to use new guild logo.
