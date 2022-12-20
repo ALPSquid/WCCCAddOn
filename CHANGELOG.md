@@ -1,3 +1,7 @@
+# v1.3.5
+* Fixed Mythic Plus weekly bests not updating correctly.
+* Added Vault of the Incarnates to the Release Spirit Confirmation areas.
+
 # v1.3.4
 * Added Dracthyr as a clubbable race
 
