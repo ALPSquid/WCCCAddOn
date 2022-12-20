@@ -264,7 +264,9 @@ function MythicPlus:UpdateOwnWeeklyBest()
                     self:PrintDebugMessage("Found weekly best for " .. mapID .. " +" .. level)
                     hasWeeklyRun = true
                     if highestMapID == nil or (level and level > weekBestLevel) then
+                        self:PrintDebugMessage("- This is a new weekly best, updating.")
                         highestMapID = mapID
+                        weekBestLevel = level
                         break
                     end
                 end
@@ -278,6 +280,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
         self:PrintDebugMessage("No weekly run found.")
         self.moduleDB.leaderboardData[GUID] = nil
     else
+        self:PrintDebugMessage(format("Updating local leaderboard data: map=%i, level=%i", highestMapID, weekBestLevel))
         self.moduleDB.leaderboardData[GUID] =
         {
             GUID = GUID,
@@ -398,9 +401,11 @@ function MythicPlus:UpdateLeaderboard(leaderboardData)
     local dataChanged = false
     local currentTime = GetServerTime()
     for key, entryData in pairs(leaderboardData) do
+        self:PrintDebugMessage(format("Received leaderboard entry for '%s'. Best level: %i", entryData.playerName, entryData.level))
         -- Somehow, we've seen people have timestamps from waaaay in the future. No idea how.
         if entryData.lastUpdateTimestamp <= currentTime and entryData.playerName ~= "Mangofox" then
             if self.moduleDB.leaderboardData[key] == nil or self.moduleDB.leaderboardData[key].lastUpdateTimestamp < entryData.lastUpdateTimestamp then
+                self:PrintDebugMessage(format("Data from '%s' (+%i) is newer", entryData.playerName, entryData.level))
                 self.moduleDB.leaderboardData[key] = entryData
                 dataChanged = true
             end
