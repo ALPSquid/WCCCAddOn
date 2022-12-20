@@ -43,9 +43,9 @@ local RELEASE_SPIRIT_CONFIRMATION_UI_CONFIG = {
                 toggleReleaseSpiritConfirmation =
                 {
                     type = "toggle",
-                    name = "Show Release Spirit confirmation in the latest raid",
+                    name = "Show Release Spirit confirmation",
                     width = "full",
-                    desc = "Show Release Spirit confirmation in the latest raid.",
+                    desc = "If enabled, a confirmation message will be shown after pressing Release Spirit in the latest raid.",
                     set = function(info, val)
                         ReleaseSpiritModule.moduleDB.enabled = val
                     end,
@@ -69,6 +69,28 @@ local RELEASE_SPIRIT_CONFIRMATION_UI_CONFIG = {
                     end,
                     order = 1.2,
                 }
+            }
+        },
+
+        officerControlsPanel =
+        {
+            type = "group",
+            name = "Officer Controls",
+            order = 10,
+            disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
+            hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
+            args =
+            {
+                toggleDebugMode =
+                {
+                    type = "toggle",
+                    name = "Debug Mode",
+                    width = "full",
+                    desc = "Enables verbose printing of events and AddOn functions.",
+                    set = function(info, val) ReleaseSpiritModule.moduleDB.debugMode = val  end,
+                    get = function() return ReleaseSpiritModule.moduleDB.debugMode end,
+                    order = 10.0
+                },
             }
         }
     }

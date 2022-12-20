@@ -10,15 +10,13 @@ local WCCCAD = ns.WCCCAD
 
 local ACTIVE_ZONES =
 {
-    -- Castle Nathria zones
-    [1735] = true,
-    [1744] = true,
-    [1745] = true,
-    [1746] = true,
-    [1747] = true,
-    [1748] = true,
-    [1750] = true,
-    [1755] = true,
+
+}
+
+local ACTIVE_INSTANCES =
+{
+    -- Vault of the Incarnates
+    [2522] = true,
 }
 
 local RELEASE_CONFIRMATION_DIALOG_KEY = "WCCC_CONFIRM_RELEASE_SPIRIT";
@@ -61,9 +59,14 @@ function ReleaseSpiritModule:InitializeModule()
 
     -- Override the default release spirit button to show the confirmation when in an active raid zone.
     StaticPopupDialogs["DEATH"].OnButton1 = function(dialog)
-        if ReleaseSpiritModule.moduleDB.enabled and ACTIVE_ZONES[C_Map.GetBestMapForUnit("player")] == true
-                and (ReleaseSpiritModule.moduleDB.guildGroupOnly and InGuildParty() or true)
+        local _, _, _, _, _, _, _, instanceID = GetInstanceInfo()
+        local zoneID = C_Map.GetBestMapForUnit("player")
+        self:PrintDebugMessage(format("InstanceID=%i UiMapID=%i", instanceID, zoneID))
+        if ReleaseSpiritModule.moduleDB.enabled
+                and (ACTIVE_INSTANCES[instanceID] == true or ACTIVE_ZONES[zoneID] == true)
+                and ((ReleaseSpiritModule.moduleDB.guildGroupOnly and InGuildParty()) or not ReleaseSpiritModule.moduleDB.guildGroupOnly)
         then
+            self:PrintDebugMessage("Showing release spirit confirmation.")
             StaticPopup_Show(RELEASE_CONFIRMATION_DIALOG_KEY)
         else
             return ReleaseSpiritModule.defaultReleaseSpiritFunc()
