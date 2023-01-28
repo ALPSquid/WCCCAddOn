@@ -1,3 +1,6 @@
+# v1.4.1
+* Fixed missing leaderboard icon.
+
 # v1.4.0
 * Added Dragon Racing Leaderboards! 
   * Compete with guildies for the top spot in each race, and overall as the champion Dragon Racer!
