@@ -136,6 +136,7 @@ end
 -- @param targetplayer only used for whisper channel.
 ---
 function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlayer)
+    if channel == ns.consts.CHAT_CHANNEL.GUILD and not IsInGuild() then return end
     local modulePrefix = format("%s[WCCCMOD]%s[WCCCKEY]", moduleName, messageKey)
 
     local serialisedData = self:Serialize(data)

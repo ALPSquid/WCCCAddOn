@@ -1,0 +1,84 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+<Script file="DRL_LeaderboardUI.lua"/>
+
+    <Frame name="DRL_LEADERBOARD_UI_FRAME" mixin="DRL_LeaderboardUIMixin" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
+        <Size x="700" y="600" />
+        <Anchors>
+            <Anchor point="TOPLEFT" x="300" y="-300" relativeTo="UIParent" />
+        </Anchors>
+        <Frames>
+            <Frame parentKey="IconOverlay" frameLevel="300" setAllPoints="true">
+                <Layers>
+                    <Layer level="BACKGROUND" textureSubLevel="1">
+                        <Texture parentKey="FrameIcon" file="Interface\AddOns\DragonRacingLeaderboards\Assets\ui_icon.tga">
+                            <Size x="58" y="58"/>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" x="-5" y="7"/>
+                            </Anchors>
+                        </Texture>
+                        <MaskTexture parentKey="CircleMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeKey="$parent.FrameIcon"/>
+                                <Anchor point="BOTTOMRIGHT" relativeKey="$parent.FrameIcon"/>
+                            </Anchors>
+                            <MaskedTextures>
+                                <MaskedTexture childKey="FrameIcon"/>
+                            </MaskedTextures>
+                        </MaskTexture>
+                    </Layer>
+                </Layers>
+            </Frame>
+
+            <Frame parentKey="RaceListFrame" inherits="DRL_RaceListTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="0" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" x="255" y="0"/>
+                </Anchors>
+            </Frame>
+
+            <Frame parentKey="LeaderboardFrame" inherits="DRL_LeaderboardListTemplate">
+                <Anchors>
+                    <Anchor point="TOP" relativePoint="TOP" x="0" y="-87"/>
+                    <Anchor point="LEFT" relativeKey="$parent.RaceListFrame" relativePoint="RIGHT" x="5" y="0"/>
+                    <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" x="-5" y="5"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="CreateMapPinBtn" inherits="UIPanelButtonTemplate" text="View location">
+                <Size x="150" y="25" />
+                <Anchors>
+                    <Anchor point="TOPRIGHT" relativeKey="$parent.LeaderboardFrame" relativePoint="TOPRIGHT" x="-12" y="-12"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="ARTWORK">
+                        <Texture scale="0.8" file="Interface\MINIMAP\Minimap-Waypoint-MapPin-Untracked">
+                            <Anchors>
+                                <Anchor point="LEFT" x="4" y="-1" />
+                            </Anchors>
+                        </Texture>
+                    </Layer>
+                </Layers>
+            </Button>
+
+            <Frame parentKey="LeaderboardInfoContainer">
+                <Anchors>
+                    <Anchor point="TOP" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.LeaderboardFrame" relativePoint="TOPLEFT" x="10" y="2"/>
+                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.LeaderboardFrame" relativePoint="TOPRIGHT" x="-10" y="2"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="OVERLAY">
+                        <FontString parentKey="DescText" inherits="GameFontNormal" justifyH="LEFT" justifyV="BOTTOM" wordwrap="true" setAllPoints="true" />
+                    </Layer>
+                </Layers>
+            </Frame>
+
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad" />
+            <OnShow method="OnShow" />
+            <OnDragStart>self:StartMoving()</OnDragStart>
+            <OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+        </Scripts>
+    </Frame>
+</Ui>

@@ -107,7 +107,7 @@ function WCCCADCore:ShowFTUEWindow()
     local welcomeText = AceGUI:Create("Label")
     welcomeText:SetWidth(450)
     welcomeText:SetText("Welcome to the official AddOn of the <Worgen Cub Clubbing Club>.\
-Participate in the Clubbing Competition and view guild and raid information on the Info HUD, along with more features to come!\
+Participate in the Clubbing Competition, view guild keystones, compete in dragon races and view event information on the Info HUD!\
 \
 Use the 'WCCC Companion' button on the WoW main menu (press Escape) or type '/wccc' to access the main UI window with instructions on using the AddOn.\
 \

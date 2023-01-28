@@ -1,0 +1,102 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+<Script file="DRL_LeaderboardList.lua"/>
+
+    <!-- Element spanning the entire row. -->
+    <Frame name="DRL_LeaderboardRowTemplate" mixin="DRL_LeaderboardRowMixin" virtual="true">
+        <Size y="16"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="backgroundTexture" file="Interface\WorldStateFrame\WorldStateFinalScore-Highlight">
+                    <TexCoords left="0.15" right="0.8" top="0" bottom="1"/>
+                    <Color r="1" g="0.62" b="0" a="0.8" />
+                    <Anchors>
+                        <Anchor point="LEFT"/>
+                        <Anchor point="RIGHT"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+    </Frame>
+
+    <!-- Header cell -->
+    <Frame name="DRL_LeaderboardHeaderTemplate" mixin="DRL_LeaderboardHeaderMixin" parentKey="header" virtual="true">
+        <Size y="16"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <FontString parentKey="text" inherits="Game12Font" setAllPoints="true"/>
+            </Layer>
+        </Layers>
+    </Frame>
+
+    <!-- Leaderboard entry cell -->
+    <Frame name="DRL_LeaderboardCellTemplate" mixin="DRL_LeaderboardCellMixin" parentKey="cell" virtual="true">
+        <Size y="16"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <FontString parentKey="text" inherits="Game12Font" setAllPoints="true">
+                    <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                        <Anchor point="RIGHT" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+    </Frame>
+
+    <!-- Leaderboard scroll list -->
+    <Frame name="DRL_LeaderboardListTemplate" inherits="TranslucentFrameTemplate" mixin="DRL_LeaderboardListMixin" virtual="true">
+        <Layers>
+            <Layer level="ARTWORK">
+                <FontString parentKey="Title" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="18" y="-18"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Frame parentKey="Container" inherits="TooltipBackdropTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="14" y="-37"/>
+                    <Anchor point="TOPRIGHT" x="-12" y="-37"/>
+                    <Anchor point="BOTTOM" x="0" y="14"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
+                    <KeyValue key="backdropColorAlpha" value="0.9" type="number"/>
+                </KeyValues>
+                <Frames>
+                    <Frame parentKey="ScrollBoxHeader">
+                        <Size y="25"/>
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="8" y="0"/>
+                            <Anchor point="TOPRIGHT" x="-8" y="0"/>
+                        </Anchors>
+                    </Frame>
+
+                    <Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="-4" y="0" relativeKey="$parent.ScrollBoxHeader" relativePoint="BOTTOMLEFT" />
+                            <Anchor point="BOTTOMRIGHT" x="-4" y="4" />
+                        </Anchors>
+                    </Frame>
+                    <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="5" y="13"/>
+                            <Anchor point="BOTTOM" relativeKey="$parent.ScrollBox" relativePoint="BOTTOM" y="0"/>
+                        </Anchors>
+                    </EventFrame>
+                    <Frame parentKey="Spinner" inherits="LoadingSpinnerTemplate">
+                        <Anchors>
+                            <Anchor point="CENTER" x="-5" />
+                        </Anchors>
+                    </Frame>
+                </Frames>
+            </Frame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad" />
+            <OnShow method="OnShow" />
+        </Scripts>
+    </Frame>
+</Ui>

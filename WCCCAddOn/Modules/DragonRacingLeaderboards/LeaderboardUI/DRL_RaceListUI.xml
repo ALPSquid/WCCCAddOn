@@ -1,0 +1,178 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+<Script file="DRL_RaceListUI.lua"/>
+
+    <Button name="DRL_RaceListZoneButtonTemplate" mixin="DRL_RaceListZoneButtonMixin" virtual="true">
+        <Size y="35"/>
+        <!-- Elements are vertically offset to leave a gap at the top -->
+        <Layers>
+            <Layer level="OVERLAY" textureSubLevel="1">
+                <FontString parentKey="Label" inherits="GameFontNormal_NoShadow" justifyH="LEFT">
+                    <Size y="10"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" y="-5"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="LeftPiece" atlas="Professions-recipe-header-left" useAtlasSize="true">
+                    <Anchors>
+                        <Anchor point="LEFT" y="-5"/>
+                    </Anchors>
+                </Texture>
+                <Texture parentKey="RightPiece" atlas="Professions-recipe-header-right" useAtlasSize="true">
+                    <Anchors>
+                        <Anchor point="RIGHT" y="-5"/>
+                    </Anchors>
+                </Texture>
+                <Texture parentKey="CenterPiece" atlas="Professions-recipe-header-middle" useAtlasSize="false">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeKey="$parent.LeftPiece"/>
+                        <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" relativeKey="$parent.RightPiece"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="CollapseIcon">
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-10" y="-5"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="HIGHLIGHT">
+                <Texture parentKey="CollapseIconAlphaAdd" alphaMode="ADD">
+                    <Anchors>
+                        <Anchor point="CENTER" relativeKey="$parent.CollapseIcon"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnEnter method="OnEnter"/>
+            <OnLeave method="OnLeave"/>
+        </Scripts>
+    </Button>
+
+    <Button name="DRL_RaceListRaceButtonTemplate" mixin="DRL_RaceListRaceButtonMixin" registerForClicks="LeftButtonUp, RightButtonUp" virtual="true">
+        <Size y="20"/>
+        <Layers>
+            <Layer level="OVERLAY" textureSubLevel="1">
+                <!--<Texture parentKey="ScoreIcon" atlas="coin-copper">
+                    <Size x="10" y="10"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="0"/>
+                    </Anchors>
+                </Texture>-->
+                <FontString parentKey="Label" inherits="GameFontHighlight_NoShadow" justifyH="LEFT">
+                    <Size y="12"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="OVERLAY" textureSubLevel="2">
+                <Texture parentKey="SelectedOverlay" atlas="Professions_Recipe_Active" useAtlasSize="true" hidden="true">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="-1"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="HIGHLIGHT">
+                <Texture parentKey="HighlightOverlay" atlas="Professions_Recipe_Hover" useAtlasSize="true" alpha="0.5">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="-1"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnEnter method="OnEnter"/>
+            <OnLeave method="OnLeave"/>
+        </Scripts>
+    </Button>
+    
+    <Frame name="DRL_RaceListTemplate" mixin="DRL_RaceListMixin" virtual="true">
+        <Frames>
+            <Button parentKey="OverallLeaderboardBtn" inherits="UIPanelButtonTemplate" text="Overall Leaderboard">
+                <Size y="25" />
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-2"/>
+                    <Anchor point="RIGHT" x="0"/>
+                </Anchors>
+            </Button>
+
+            <Frame parentKey="TabBar">
+                <Size y="25"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.OverallLeaderboardBtn" relativePoint="BOTTOMLEFT" x="0" y="-10"/>
+                    <Anchor point="RIGHT" x="0"/>
+                </Anchors>
+                <Frames>
+                    <Button parentKey="NormalTab" inherits="MinimalTabTemplate">
+                        <KeyValues>
+                            <KeyValue key="raceType" value="DRL_RaceListMixin.DRL.RACE_TYPE.NORMAL" type="global"/>
+                            <KeyValue key="tabText" value="Normal"/>
+                        </KeyValues>
+                        <Anchors>
+                            <Anchor point="BOTTOMLEFT"/>
+                        </Anchors>
+                    </Button>
+                    <Button parentKey="AdvancedTab" inherits="MinimalTabTemplate">
+                        <KeyValues>
+                            <KeyValue key="raceType" value="DRL_RaceListMixin.DRL.RACE_TYPE.ADVANCED" type="global"/>
+                            <KeyValue key="tabText" value="Advanced"/>
+                        </KeyValues>
+                        <Anchors>
+                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.NormalTab" relativePoint="BOTTOMRIGHT" x="3"/>
+                        </Anchors>
+                    </Button>
+                    <Button parentKey="ReverseTab" inherits="MinimalTabTemplate">
+                        <KeyValues>
+                            <KeyValue key="raceType" value="DRL_RaceListMixin.DRL.RACE_TYPE.REVERSE" type="global"/>
+                            <KeyValue key="tabText" value="Reversed"/>
+                        </KeyValues>
+                        <Anchors>
+                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.AdvancedTab" relativePoint="BOTTOMRIGHT" x="3"/>
+                        </Anchors>
+                    </Button>
+                </Frames>
+            </Frame>
+
+            <Frame parentKey="Background" useParentLevel="true">
+                <Anchors>
+                    <Anchor point="TOP" relativeKey="$parent.TabBar" relativePoint="BOTTOM" x="0" y="0" />
+                    <Anchor point="LEFT" x="0" />
+                    <Anchor point="BOTTOMRIGHT" x="0" y="3" />
+                </Anchors>
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <Texture atlas="Professions-background-summarylist" />
+                    </Layer>
+                </Layers>
+
+                <Frames>
+                    <Frame parentKey="BackgroundNineSlice" useParentLevel="true" inherits="NineSlicePanelTemplate">
+                        <KeyValues>
+                            <KeyValue key="layoutType" value="InsetFrameTemplate" type="string"/>
+                        </KeyValues>
+                    </Frame>
+                </Frames>
+            </Frame>
+
+            <Frame parentKey="ScrollBox" inherits="WowScrollBoxList">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.Background" x="0" y="-3"/>
+                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.Background" x="-15" y="3"/>
+                </Anchors>
+            </Frame>
+            <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="-2" y="-5"/>
+                    <Anchor point="BOTTOM" relativeKey="$parent.ScrollBox" relativePoint="BOTTOM" x="0" y="3"/>
+                </Anchors>
+            </EventFrame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+</Ui>

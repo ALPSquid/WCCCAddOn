@@ -1,8 +1,8 @@
-## Interface: 100002
+## Interface: 100005
 ## Title: WCCC Clubbing Companion
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
-## Version: 1.3.5
+## Version: 1.4.0
 ## SavedVariables: WCCCDB
 ## Dependencies: Blizzard_Communities
 
@@ -14,22 +14,42 @@ Modules\ModuleBase.lua
 Modules\WCCCADCore\WCCCADCore.lua
 UI.lua
 
-
 WCCCAddOn.xml
 
-# Modules
+#--Module - Clubber Points
 Modules\ClubberPoints\ClubberPoints.lua
 Modules\ClubberPoints\ClubberPointsUI.lua
+#--endmodule
 
+#-- Module - Clubbing Competition
 Modules\ClubbingComp\ClubbingComp.lua
 Modules\ClubbingComp\ClubbingCompUI.lua
+#--endmodule
 
+#-- Module - Info HUD
 Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua
+#--endmodule
 
+#-- Module - Mythic+
 Modules\MythicPlus\MythicPlus.lua
 Modules\MythicPlus\MythicPlusUI.lua
 Modules\MythicPlus\MythicPlusUI.xml
+#--endmodule
 
+#--Module - Release Spirit Confirmation
 Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmation.lua
 Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmationUI.lua
+#--endmodule
+
+Modules\DragonRacingLeaderboards\Locale\DRL_Locales.xml
+Modules\DragonRacingLeaderboards\DragonRacingLeaderboards.lua
+Modules\DragonRacingLeaderboards\DRL_SettingsUI.lua
+Modules\DragonRacingLeaderboards\Data\DRL_RaceData.lua
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.lua
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.lua
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.xml
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.lua
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.xml
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.xml
+#--endmodule
