@@ -1,3 +1,9 @@
+# v1.4.0
+* Added Dragon Racing Leaderboards! 
+  * Compete with guildies for the top spot in each race, and overall as the champion Dragon Racer!
+* Tentative fix for Release Spirit Confirmation not always closing after releasing.
+* Fixed "You are not in a guild" messages when playing on a guild-less character.
+
 # v1.3.5
 * Fixed Mythic Plus weekly bests not updating correctly.
 * Added Vault of the Incarnates to the Release Spirit Confirmation areas.
