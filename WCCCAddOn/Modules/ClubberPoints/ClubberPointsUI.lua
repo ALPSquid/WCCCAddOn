@@ -33,8 +33,7 @@ local CLUBBERPOINTS_UI_CONFIG =
     }
 }
 
-local ClubberPoints_UI = {}
-ClubberPoints_UI = WCCCAD.UI:LoadModuleUI(ClubberPoints, "Clubber Points", CLUBBERPOINTS_UI_CONFIG)
+local ClubberPoints_UI = WCCCAD.UI:LoadModuleUI(ClubberPoints, "Clubber Points", CLUBBERPOINTS_UI_CONFIG)
 
 function ClubberPoints_UI:OnDisable()
     DropDownList1:UnhookAll()

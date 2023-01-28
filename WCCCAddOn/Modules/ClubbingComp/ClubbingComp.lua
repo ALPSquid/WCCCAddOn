@@ -28,7 +28,9 @@ local RESTRICTED_ZONES =
     [1670] = true,
     [1671] = true,
     [1672] = true,
-    [1673] = true
+    [1673] = true,
+    -- Valdrakken
+    [2112] = true,
 }
 
 --- 

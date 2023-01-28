@@ -295,9 +295,8 @@ function ClubberPoints:DoesLeaderboardHaveNewData(sourceLeaderboardData, otherLe
     for GUID, entry in pairs(sourceLeaderboardData) do
         if otherLeaderboardData[GUID] == nil then
             return true
-        else if entry.lastUpdateTimestamp > otherLeaderboardData[GUID].lastUpdateTimestamp then
-                return true
-            end
+        elseif entry.lastUpdateTimestamp > otherLeaderboardData[GUID].lastUpdateTimestamp then
+            return true
         end
     end
 
