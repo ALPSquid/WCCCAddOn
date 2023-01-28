@@ -47,13 +47,25 @@ function ReleaseSpiritModule:InitializeModule()
         timeout = 0,
 
         OnAccept = function(dialog)
-            return ReleaseSpiritModule.defaultReleaseSpiritFunc()
+            self:PrintDebugMessage("Dialog OnAccept")
+            local result = ReleaseSpiritModule.defaultReleaseSpiritFunc()
+            self:PrintDebugMessage("Default release func result: " .. result)
+            dialog:Hide()
+            return result
         end,
 
         OnCancel = function(dialog)
             if UnitIsDead("player") then
                 StaticPopup_Show("DEATH")
             end
+        end,
+
+        OnShow = function(dialog)
+            self:PrintDebugMessage("Dialog OnShow")
+        end,
+
+        OnHide = function(dialog)
+            self:PrintDebugMessage("Dialog OnHide")
         end
     }
 
