@@ -10,7 +10,7 @@
             <Frame parentKey="IconOverlay" frameLevel="300" setAllPoints="true">
                 <Layers>
                     <Layer level="BACKGROUND" textureSubLevel="1">
-                        <Texture parentKey="FrameIcon" file="Interface\AddOns\DragonRacingLeaderboards\Assets\ui_icon.tga">
+                        <Texture parentKey="FrameIcon" file="Interface\AddOns\WCCCAddOn\assets\dragonracing-logo.tga">
                             <Size x="58" y="58"/>
                             <Anchors>
                                 <Anchor point="TOPLEFT" x="-5" y="7"/>
