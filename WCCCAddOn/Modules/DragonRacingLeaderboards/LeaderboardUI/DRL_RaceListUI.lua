@@ -53,7 +53,7 @@ end
 
 function DRL_RaceListRaceButtonMixin:Refresh()
     -- Set font colour based on whether the player has logged a time.
-    local playerLeaderboardEntry = DRL:GetRaceLeaderboardData(self.raceData.raceID)[UnitGUID("player")]
+    local playerLeaderboardEntry = DRL:GetPlayerAccountBest(UnitGUID("player"), self.raceData.raceID)
     local hasLoggedTime = playerLeaderboardEntry ~= nil and playerLeaderboardEntry.time > 0
     self.fontColour = hasLoggedTime and NORMAL_FONT_COLOR or DISABLED_FONT_COLOR
     self.Label:SetVertexColor(self.fontColour:GetRGB())

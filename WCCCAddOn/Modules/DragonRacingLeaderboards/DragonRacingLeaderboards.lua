@@ -68,6 +68,41 @@ function DRL:GetRaceLeaderboardData(raceID)
 end
 
 ---
+--- @return DRL_LeaderboardDataEntry @Leaderboard entry for the player's account, using their best time across all characters and their main as the player.
+---
+function DRL:GetPlayerAccountBest(characterGUID, raceID)
+    local leaderboardData = self:GetRaceLeaderboardData(raceID)
+    local bestRaceData = nil
+    local playerMainData = WCCCAD:GetPlayerMain(characterGUID)
+    if not playerMainData then
+        playerMainData = {
+            GUID = characterGUID,
+            name = leaderboardData[characterGUID].playerName
+        }
+    end
+    local characters = WCCCAD:GetPlayerCharacters(characterGUID)
+    if characters then
+        for GUID, characterData in pairs(characters) do
+            if leaderboardData[GUID] and (bestRaceData == nil or leaderboardData[GUID].time < bestRaceData.time) then
+                bestRaceData = leaderboardData[GUID]
+            end
+        end
+    end
+    if not bestRaceData then
+        bestRaceData = leaderboardData[characterGUID]
+    end
+    local data =
+    {
+        GUID = playerMainData.GUID,
+        raceID = raceID,
+        playerName = playerMainData.name,
+        time = bestRaceData and bestRaceData.time or 0,
+        achievedTimestamp = bestRaceData and bestRaceData.achievedTimestamp or 0
+    }
+    return data
+end
+
+---
 --- Generic chat command, opens the config panel when the wccc command is entered.
 ---
 function DRL:DRLCommand(args)
@@ -106,6 +141,18 @@ function DRL:OnChatMsg(event, text, playerName, languageName, channelName, playe
             return
         end
         DRL.activeRaceID = nil
+        local guildBestTime = ns.utils.MinAttribute(self:GetRaceLeaderboardData(raceData.raceID), function(leaderboardEntry)
+            if leaderboardEntry.time <= 0 then
+                return 300
+            end
+            return leaderboardEntry.time
+        end)
+        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
+        if bestTime > guildBestTime and (accountBest.time <= 0 or accountBest.time > guildBestTime) then
+            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r", guildBestTime), ns.consts.MSG_TYPE.GUILD)
+        else
+            WCCCAD.UI:PrintAddOnMessage("Your time is the guild best!", ns.consts.MSG_TYPE.GUILD)
+        end
         self:UpdateTime(raceData.raceID, bestTime, true)
     end
 end
@@ -209,7 +256,7 @@ end
 ---
 function DRL:OnGuildyNewPersonalBestCommReceived(data)
     local raceData = self.races[data.raceID]
-    --local guildBestTime = ns.utils.MaxAttribute(self:GetRaceLeaderboardData(raceData.raceID), function(leaderboardEntry) return leaderboardEntry.time end)
+    local accountBest = self:GetPlayerAccountBest(data.GUID, raceData.raceID)
     local position = 1
     for _, leaderboardEntry in pairs(self:GetRaceLeaderboardData(raceData.raceID)) do
         if leaderboardEntry.time < data.time then
@@ -221,12 +268,13 @@ function DRL:OnGuildyNewPersonalBestCommReceived(data)
         end
     end
     self.moduleDB.leaderboardData[raceData.raceID][data.GUID] = data
-
-    local msg = format("%s has achieved a new personal best for the '%s' dragon race: |cFFFFFFFF%.3fs|r", data.playerName, DRL:GetRaceName(raceData.raceID), data.time)
-    WCCCAD.UI:PrintAddOnMessage(msg, ns.consts.MSG_TYPE.GUILD)
-    if position == 1 then WCCCAD.UI:PrintAddOnMessage("This is a new guild record!", ns.consts.MSG_TYPE.GUILD)
-    elseif position == 2 then WCCCAD.UI:PrintAddOnMessage("This is the new 2nd best time!", ns.consts.MSG_TYPE.GUILD)
-    elseif position == 3 then WCCCAD.UI:PrintAddOnMessage("This is the new 3rd best time!", ns.consts.MSG_TYPE.GUILD)
+    if not accountBest.time or data.time < accountBest.time then
+        local msg = format("%s has achieved a new personal best for the '%s' dragon race: |cFFFFFFFF%.3fs|r", data.playerName, DRL:GetRaceName(raceData.raceID), data.time)
+        WCCCAD.UI:PrintAddOnMessage(msg, ns.consts.MSG_TYPE.GUILD)
+        if position == 1 then WCCCAD.UI:PrintAddOnMessage("This is a new guild record!", ns.consts.MSG_TYPE.GUILD)
+        elseif position == 2 then WCCCAD.UI:PrintAddOnMessage("This is the new 2nd best time!", ns.consts.MSG_TYPE.GUILD)
+        elseif position == 3 then WCCCAD.UI:PrintAddOnMessage("This is the new 3rd best time!", ns.consts.MSG_TYPE.GUILD)
+        end
     end
 end
 
