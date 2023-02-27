@@ -1,3 +1,8 @@
+# v1.5.0
+* Added alt tracking! You can now set your main in the AddOn settings.
+  * The Dragon Racing Leaderboards will now combine best times for all players' characters into a single entry for their main. 
+* Added guild best time message when completing a dragon race, so you know what to aim for!
+
 # v1.4.1
 * Fixed missing leaderboard icon.
 
