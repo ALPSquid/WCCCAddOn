@@ -196,6 +196,19 @@ ns.utils.MaxAttribute = function(table, attributeGetter)
     return max
 end
 
+--- Returns the min value of an attribute across all objects in a table.
+--- @param attributeGetter fun(table):number @Function that returns the attribute value for the specified object.
+ns.utils.MinAttribute = function(table, attributeGetter)
+    local min, attrVal = nil
+    for _, object in pairs(table) do
+        attrVal = attributeGetter(object)
+        if min == nil or attrVal < min then
+            min = attrVal
+        end
+    end
+    return min
+end
+
 --- Returns true if the table contains the specified value.
 ns.utils.TableContains = function(table, search_value)
     for _, value in ipairs(table) do
