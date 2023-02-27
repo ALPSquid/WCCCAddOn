@@ -111,9 +111,21 @@ function DRL_LeaderboardListMixin:Refresh()
     local leaderboard = {}
     if DRL.LeaderboardUI.selectedRaceID then
         -- Leaderboard for a specific race
+        local processedMains = {}
         for _, leaderboardEntry in pairs(DRL:GetRaceLeaderboardData(DRL.LeaderboardUI.selectedRaceID)) do
-            if leaderboardEntry.time > 0 then
-                tinsert(leaderboard, leaderboardEntry)
+            local playerMainData = WCCCAD:GetPlayerMain(leaderboardEntry.GUID)
+            if not playerMainData then
+                playerMainData = {
+                    GUID = leaderboardEntry.GUID,
+                    name = leaderboardEntry.playerName
+                }
+            end
+            if not processedMains[playerMainData.GUID] then
+                processedMains[playerMainData.GUID] = true
+                local accountBest = DRL:GetPlayerAccountBest(playerMainData.GUID, DRL.LeaderboardUI.selectedRaceID)
+                if accountBest ~= nil and accountBest.time > 0 then
+                    tinsert(leaderboard, accountBest)
+                end
             end
         end
     else
@@ -124,23 +136,33 @@ function DRL_LeaderboardListMixin:Refresh()
         local numRaces = 0
         for raceID in pairs(DRL.races) do
             numRaces = numRaces + 1
+            local processedMains = {}
             for _, leaderboardEntry in pairs(DRL:GetRaceLeaderboardData(raceID)) do
-                entryIdx = leaderboardGUIDIdx[leaderboardEntry.GUID]
+                local playerMainData = WCCCAD:GetPlayerMain(leaderboardEntry.GUID)
+                if not playerMainData then
+                    playerMainData = {
+                        GUID = leaderboardEntry.GUID,
+                        name = leaderboardEntry.playerName
+                    }
+                end
+                entryIdx = leaderboardGUIDIdx[playerMainData.GUID]
+                processedMains[playerMainData.GUID] = true
                 if not entryIdx then
                     tinsert(leaderboard, {
-                        GUID = leaderboardEntry.GUID,
-                        playerName = leaderboardEntry.playerName,
+                        GUID = playerMainData.GUID,
+                        playerName = playerMainData.name,
                         time = 0,
                         achievedTimestamp = 0,
                         numRacesLogged = 0
                     })
                     entryIdx = #leaderboard
-                    leaderboardGUIDIdx[leaderboardEntry.GUID] = entryIdx
+                    leaderboardGUIDIdx[playerMainData.GUID] = entryIdx
                 end
-                if leaderboardEntry.time > 0 then
-                    leaderboard[entryIdx].time = leaderboard[entryIdx].time + leaderboardEntry.time
+                local accountBest = DRL:GetPlayerAccountBest(playerMainData.GUID, raceID)
+                if accountBest.time > 0 then
+                    leaderboard[entryIdx].time = leaderboard[entryIdx].time + accountBest.time
                     -- Lower achieved timestamp is used as the tie-breaker.
-                    leaderboard[entryIdx].achievedTimestamp = leaderboard[entryIdx].achievedTimestamp + leaderboardEntry.achievedTimestamp
+                    leaderboard[entryIdx].achievedTimestamp = leaderboard[entryIdx].achievedTimestamp + accountBest.achievedTimestamp
                     leaderboard[entryIdx].numRacesLogged = leaderboard[entryIdx].numRacesLogged + 1
                 end
             end

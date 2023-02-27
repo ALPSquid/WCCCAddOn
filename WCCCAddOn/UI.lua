@@ -59,23 +59,42 @@ Happy Clubbing!\n\n",
             order = 3
         },
 
+        mainSelect =
+        {
+            type = "select",
+            name = "Select Main",
+            hidden = function() return WCCCAD:CheckAddonActive(false) == false end,
+            order = 4,
+            values = function()
+                local characterOptions = {}
+                for GUID, characterData in pairs(WCCCADCore.moduleDB.localPlayerCharacters and WCCCADCore.moduleDB.localPlayerCharacters.characters or {}) do
+                    characterOptions[GUID] = characterData.name
+                end
+                return characterOptions
+            end,
+            get = function()
+                return WCCCADCore.moduleDB.localPlayerCharacters and WCCCADCore.moduleDB.localPlayerCharacters.main or "No characters found."
+            end,
+            set = function(options, key)
+                WCCCADCore:SetPlayerCharacterMain(key)
+            end
+        },
 
-        settingsPanel = 
+        officerControlsPanel =
         {
             type = "group",
-            name = "Settings",            
+            name = "Officer Controls",
             inline = true,
             disabled = function() return WCCCAD:IsPlayerOfficer() == false end,
             hidden = function() return WCCCAD:IsPlayerOfficer() == false end,
-            order = 10,
             args =
             {
-                toggleDebugMode = 
+                toggleDebugMode =
                 {
                     type = "toggle",
                     name = "Debug Mode",
                     desc = "Enable verbose debug logging.",
-                    set = function(info, val) 
+                    set = function(info, val)
                         WCCCADCore.moduleDB.debugMode = val
                     end,
                     get = function() return WCCCADCore.moduleDB.debugMode end,
@@ -84,7 +103,7 @@ Happy Clubbing!\n\n",
                     order = 10.1
                 },
             }
-        },
+        }
     },
 }
 

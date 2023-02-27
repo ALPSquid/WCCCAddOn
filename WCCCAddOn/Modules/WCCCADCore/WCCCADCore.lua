@@ -14,12 +14,34 @@ WCCCAD.newVersionAvailable = false
 
 
 local COMM_KEY_SHARE_VERSION = "shareVersionRequest"
+local COMM_KEY_PLAYER_MAIN_UPDATED = "playerMainUpdated"
 
 local wcccCoreData = 
 {
     profile =
     {
-        firstTimeUser = true
+        firstTimeUser = true,
+
+        ---@class WCCCAD_CharacterDataEntry
+        ---@field GUID string
+        ---@field name string
+        ---@field lastUpdateTimestamp number
+
+        ---@class WCCCAD_CharacterData
+        ---@field main string
+        ---@field mainUpdateTimestamp number
+        ---@field characters table<string, WCCCAD_CharacterDataEntry>
+
+        ---@type table<WCCCAD_CharacterData>
+        localPlayerCharacters =
+        {
+            -- { main = GUID, mainUpdateTimestamp, characters = {{GUID, name, lastUpdateTimestamp}}
+        },
+        ---@type table<WCCCAD_CharacterData>
+        guildPlayerCharacters =
+        {
+            -- { main = GUID, mainUpdateTimestamp, characters = {{GUID, name, lastUpdateTimestamp}}
+        }
     }
 }
 
@@ -39,9 +61,10 @@ function WCCCADCore:InitializeModule()
     self:RegisterModuleSlashCommand("ver", self.VersionCommand)
 
     self:RegisterModuleComm(COMM_KEY_SHARE_VERSION, self.OnShareVersionCommReceived)
+    self:RegisterModuleComm(COMM_KEY_PLAYER_MAIN_UPDATED, self.OnPlayerMainUpdated)
 end
 
-function WCCCADCore:OnEnable()  
+function WCCCADCore:OnEnable()
     if self.moduleDB.firstTimeUser == true then
         self:ShowFTUEWindow()
     end
@@ -53,12 +76,211 @@ function WCCCADCore:OnEnable()
 
     local playerGUID = UnitGUID("player")
     self.knownAddonUsers[playerGUID] = playerGUID
+    self:RegisterLocalPlayerCharacter(playerGUID, UnitName("player"))
+    self:BuildPlayerCharactersLookup()
     self:InitiateSync()
 end
 
 function WCCCADCore:OnDisable()
     self:UnhookAll()
 end
+
+--region Alt Tracking
+
+---
+--- @returns WCCCAD_CharacterDataEntry @Main character data for the player that owns the specified character.
+---
+function WCCCAD:GetPlayerMain(characterGUID)
+    if not self.guildPlayerCharactersLookup[characterGUID] then
+        --WCCCADCore:PrintDebugMessage(format("Character with ID %s not found in character lookup!", characterGUID))
+        return nil, nil
+    end
+    local mainGUID = self.guildPlayerCharactersLookup[characterGUID].main
+    local mainData =
+    {
+        GUID = mainGUID,
+        name = self.guildPlayerCharactersLookup[characterGUID].characters[mainGUID].name,
+        lastUpdateTimestamp = self.guildPlayerCharactersLookup[characterGUID].mainUpdateTimestamp
+    }
+    return mainData
+end
+
+---
+--- @returns table<string, WCCCAD_CharacterDataEntry> @Array of characters owned by the player who owns the specified character.
+---
+function WCCCAD:GetPlayerCharacters(characterGUID)
+    if not self.guildPlayerCharactersLookup[characterGUID] then
+        --WCCCADCore:PrintDebugMessage(format("Character with ID %s not found in character lookup!", characterGUID))
+        return nil
+    end
+    return self.guildPlayerCharactersLookup[characterGUID].characters
+end
+
+function WCCCADCore:RegisterLocalPlayerCharacter(GUID, playerName)
+    if not self.moduleDB.localPlayerCharacters then
+        self.moduleDB.localPlayerCharacters =
+        {
+            main = nil,
+            mainUpdateTimestamp = 0,
+            characters = {}
+        }
+    end
+    if not self.moduleDB.localPlayerCharacters.characters then
+        self.moduleDB.localPlayerCharacters.characters = {}
+    end
+    if not self.moduleDB.localPlayerCharacters.characters[GUID] then
+        WCCCAD.UI:PrintAddOnMessage("New alt registered. You can set your main in the AddOn settings - /wccc or click the logo under the guild window.")
+    end
+    -- Always update the entry so the timestamp is up-to-date and potential name changes are caught.
+    self.moduleDB.localPlayerCharacters.characters[GUID] =
+    {
+        GUID = GUID,
+        name = playerName,
+        lastUpdateTimestamp = GetServerTime()
+    }
+    -- Set default main without a timestamp, so newer synced data will overwrite it in the case of a fresh install.
+    if not self.moduleDB.localPlayerCharacters.main then
+        self.moduleDB.localPlayerCharacters.main = GUID
+    end
+
+    -- Update moduleDB data
+    local entryFound = false
+    for i, charactersData in ipairs(self.moduleDB.guildPlayerCharacters) do
+        -- If this entry has data for this character or this entry has data for a different local character, update it.
+        if charactersData.characters[GUID] then
+            entryFound = true
+        else
+            for characterGUID, character in pairs(charactersData.characters) do
+                if self.moduleDB.localPlayerCharacters.characters[characterGUID] then
+                    entryFound = true
+                end
+            end
+        end
+        if entryFound then
+            charactersData.characters[GUID] = self.moduleDB.localPlayerCharacters.characters[GUID]
+            break
+        end
+    end
+    if not entryFound then
+        tinsert(self.moduleDB.guildPlayerCharacters, self.moduleDB.localPlayerCharacters)
+    end
+end
+
+--- Lookup of character GUID to the WCCCAD_CharacterData table they appear in.
+---@type table<string, WCCCAD_CharacterData>
+WCCCAD.guildPlayerCharactersLookup = {}
+
+---
+--- Consolidates guild player character tables from moduleDB and creates a lookup mapping GUIDs to the character table they appear in.
+--- Then removes orphaned tables from moduleDB to remove duplicate entries.
+---
+function WCCCADCore:BuildPlayerCharactersLookup()
+    WCCCAD.guildPlayerCharactersLookup = {}
+    local existingCharactersData = nil
+    for i, charactersData in ipairs(self.moduleDB.guildPlayerCharacters) do
+        for GUID, character in pairs(charactersData.characters) do
+            existingCharactersData = WCCCAD.guildPlayerCharactersLookup[GUID]
+            if existingCharactersData then
+                -- If there's already an entry, take the latest.
+                if character.lastUpdateTimestamp > existingCharactersData.characters[GUID].lastUpdateTimestamp then
+                    existingCharactersData.characters[GUID] = character
+                    if (charactersData.mainUpdateTimestamp or 0) > (existingCharactersData.mainUpdateTimestamp or 0) then
+                        existingCharactersData.main = charactersData.main
+                        existingCharactersData.mainUpdateTimestamp = charactersData.mainUpdateTimestamp
+                    end
+                end
+            else
+                WCCCAD.guildPlayerCharactersLookup[GUID] = charactersData
+            end
+            -- If this is a character in our local data, insert the rest.
+            if self.moduleDB.localPlayerCharacters.characters[GUID] then
+                for localGUID, localCharacter in pairs(self.moduleDB.localPlayerCharacters.characters) do
+                    WCCCAD.guildPlayerCharactersLookup[localGUID] = charactersData
+                    if not charactersData.characters[localGUID] or localCharacter.lastUpdateTimestamp > charactersData.characters[localGUID].lastUpdateTimestamp then
+                        charactersData.characters[localGUID] = localCharacter
+                    end
+                end
+                if (self.moduleDB.localPlayerCharacters.mainUpdateTimestamp or 0) > (charactersData.mainUpdateTimestamp or 0) then
+                    charactersData.main = self.moduleDB.localPlayerCharacters.main
+                    charactersData.mainUpdateTimestamp = self.moduleDB.localPlayerCharacters.mainUpdateTimestamp
+                end
+            end
+        end
+    end
+    -- Remove orphaned tables post-consolidation.
+    for i = #self.moduleDB.guildPlayerCharacters, 1, -1 do
+        local remove = true
+        for _, charactersData in pairs(WCCCAD.guildPlayerCharactersLookup) do
+            if self.moduleDB.guildPlayerCharacters[i] == charactersData then
+                remove = false
+            end
+        end
+        if remove then
+            table.remove(self.moduleDB.guildPlayerCharacters, i)
+        end
+    end
+end
+
+---
+--- Merges guild player character data received from other players with our data.
+---
+function WCCCADCore:OnGuildPlayerCharactersDataReceived(otherGuildPlayerCharacters)
+    for _, otherCharactersData in ipairs(otherGuildPlayerCharacters) do
+        -- Find table in our data that has a matching character.
+        local tableFound = false
+        for searchCharacterGUID, _ in pairs(otherCharactersData.characters) do
+            if WCCCAD.guildPlayerCharactersLookup[searchCharacterGUID] then
+                local localTable = WCCCAD.guildPlayerCharactersLookup[searchCharacterGUID]
+                tableFound = true
+                -- Update main
+                if (otherCharactersData.mainUpdateTimestamp or 0) > (localTable.mainUpdateTimestamp or 0) then
+                    localTable.main = otherCharactersData.main
+                    localTable.mainUpdateTimestamp = otherCharactersData.mainUpdateTimestamp
+                end
+                -- Update/insert each character
+                for otherCharacterGUID, otherCharacter in pairs(otherCharactersData.characters) do
+                    WCCCAD.guildPlayerCharactersLookup[otherCharacterGUID] = localTable
+                    if not localTable.characters[otherCharacterGUID] or otherCharacter.lastUpdateTimestamp > localTable.characters[otherCharacterGUID].lastUpdateTimestamp then
+                        localTable.characters[otherCharacterGUID] = otherCharacter
+                    end
+                end
+                -- Onto the next set of characters as all of these have been processed above.
+                break
+            end
+        end
+        -- If no existing table was found for this set of characters, insert it as new.
+        if not tableFound then
+            tinsert(self.moduleDB.guildPlayerCharacters, otherCharactersData)
+        end
+    end
+    -- Reconsolidate tables and rebuild the lookup.
+    self:BuildPlayerCharactersLookup()
+end
+
+---
+--- Updates which character the local player owns is set as main.
+---
+function WCCCADCore:SetPlayerCharacterMain(mainGUID)
+    assert(WCCCAD.guildPlayerCharactersLookup[mainGUID] ~= nil, "WCCC: Tried to set main to an unregistered character.")
+    local timestamp = GetServerTime()
+    WCCCAD.guildPlayerCharactersLookup[mainGUID].main = mainGUID
+    WCCCAD.guildPlayerCharactersLookup[mainGUID].mainUpdateTimestamp = timestamp
+    self.moduleDB.localPlayerCharacters.main = mainGUID
+    self.moduleDB.localPlayerCharacters.mainUpdateTimestamp = timestamp
+    data =
+    {
+        mainGUID = mainGUID,
+        mainUpdateTimestamp = timestamp
+    }
+    self:SendModuleComm(COMM_KEY_PLAYER_MAIN_UPDATED, data, ns.consts.CHAT_CHANNEL.GUILD)
+end
+
+function WCCCADCore:OnPlayerMainUpdated(data)
+    self:PrintDebugMessage(format("Guildy updated main to %s", WCCCAD.guildPlayerCharactersLookup[data.mainGUID].characters[data.mainGUID].name))
+    WCCCAD.guildPlayerCharactersLookup[data.mainGUID].main = data.mainGUID
+    WCCCAD.guildPlayerCharactersLookup[data.mainGUID].mainUpdateTimestamp = data.mainUpdateTimestamp
+end
+--endregion
 
 function WCCCADCore:UpdateGuildRosterAddonIndicators() 
     if CommunitiesFrame == nil then
@@ -184,7 +406,8 @@ function WCCCADCore:GetSyncData()
         version = WCCCAD.version,
         versionString = WCCCAD.versionString,
         versionType = WCCCAD.versionType,
-        playerGuid = UnitGUID("player")
+        playerGuid = UnitGUID("player"),
+        guildPlayerCharacters = self.moduleDB.guildPlayerCharacters
     }
 
     return syncData
@@ -212,4 +435,9 @@ function WCCCADCore:OnSyncDataReceived(data)
 
     self.knownAddonUsers[data.playerGuid] = data.playerGuid
     self:UpdateGuildRosterAddonIndicators()
+
+    -- Ats
+    if data.guildPlayerCharacters then
+        self:OnGuildPlayerCharactersDataReceived(data.guildPlayerCharacters)
+    end
 end
