@@ -128,7 +128,7 @@ function DRL:OnQuestAccepted(event, questID)
 end
 
 function DRL:OnChatMsg(event, text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons)
-    if ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER"], playerName) then
+    if ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER"], playerName) or ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER_ASSISTANT"], playerName)  then
         -- "Your race time was 64.095 seconds. Your personal best for this race is 58.368 seconds."
         -- "Your race time was 63.125 seconds. That was your best time yet!"
         if DRL.activeRaceID == nil then
@@ -146,14 +146,18 @@ function DRL:OnChatMsg(event, text, playerName, languageName, channelName, playe
                 return 300
             end
             return leaderboardEntry.time
-        end)
-        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
-        if bestTime > guildBestTime and (accountBest.time <= 0 or accountBest.time > guildBestTime) then
-            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r", guildBestTime), ns.consts.MSG_TYPE.GUILD)
-        else
-            WCCCAD.UI:PrintAddOnMessage("Your time is the guild best!", ns.consts.MSG_TYPE.GUILD)
-        end
+        end) or 0
         self:UpdateTime(raceData.raceID, bestTime, true)
+
+        -- Reporting
+        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
+        -- If our time isn't the guild best, output the current best times.
+        if accountBest.time > guildBestTime then
+            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r, Your best: |cFFFFFFFF%.3fs|r (%s)", guildBestTime, accountBest.time, accountBest.playerName), ns.consts.MSG_TYPE.GUILD)
+        -- If our time is the guild best and we didn't just earn that place, report that ours is still the best.
+        elseif bestTime >= accountBest.time then
+            WCCCAD.UI:PrintAddOnMessage(format("Your time of |cFFFFFFFF%.3fs|r (%s) is the guild best!", accountBest.time, accountBest.playerName), ns.consts.MSG_TYPE.GUILD)
+        end
     end
 end
 
@@ -244,8 +248,12 @@ function DRL:UpdateTime(raceID, time, forceUpdate)
         self:GetRaceLeaderboardData(raceID)[playerGUID] = raceData
     end
     if raceData.time <= 0 or time < raceData.time or (forceUpdate and time ~= raceData.time) then
+        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
         raceData.time = time
         raceData.achievedTimestamp = GetServerTime()
+        if time < accountBest.time then
+            self:PrintPersonalBestMessage(raceData.playerName, raceData.raceID, raceData.time)
+        end
         self:SendModuleComm(COMM_KEY_GUILDY_NEW_PERSONAL_BEST_TIME, raceData, ns.consts.CHAT_CHANNEL.GUILD)
         self.LeaderboardUI:OnLeaderboardDataUpdated()
     end
@@ -256,10 +264,21 @@ end
 ---
 function DRL:OnGuildyNewPersonalBestCommReceived(data)
     local raceData = self.races[data.raceID]
-    local accountBest = self:GetPlayerAccountBest(data.GUID, raceData.raceID)
+    local accountBest = self:GetPlayerAccountBest(data.GUID, data.raceID)
+    self.moduleDB.leaderboardData[raceData.raceID][data.GUID] = data
+    -- We need to update PBs for all characters, but we only want to report new account bests.
+    if not accountBest.time or data.time < accountBest.time then
+        self:PrintPersonalBestMessage(data.playerName, data.raceID, data.time)
+    end
+end
+
+function DRL:PrintPersonalBestMessage(playerName, raceID, time)
+    local processedMains = {}
+    local accountBest = 0
     local position = 1
-    for _, leaderboardEntry in pairs(self:GetRaceLeaderboardData(raceData.raceID)) do
-        if leaderboardEntry.time < data.time then
+    for _, leaderboardEntry in pairs(self:GetRaceLeaderboardData(raceID)) do
+        accountBest = self:GetPlayerAccountBest(leaderboardEntry.GUID, raceID)
+        if not processedMains[accountBest.GUID] and leaderboardEntry.time < accountBest.time then
             position = position + 1
         end
         -- We only care about reporting the top 3 places.
@@ -267,14 +286,12 @@ function DRL:OnGuildyNewPersonalBestCommReceived(data)
             break
         end
     end
-    self.moduleDB.leaderboardData[raceData.raceID][data.GUID] = data
-    if not accountBest.time or data.time < accountBest.time then
-        local msg = format("%s has achieved a new personal best for the '%s' dragon race: |cFFFFFFFF%.3fs|r", data.playerName, DRL:GetRaceName(raceData.raceID), data.time)
-        WCCCAD.UI:PrintAddOnMessage(msg, ns.consts.MSG_TYPE.GUILD)
-        if position == 1 then WCCCAD.UI:PrintAddOnMessage("This is a new guild record!", ns.consts.MSG_TYPE.GUILD)
-        elseif position == 2 then WCCCAD.UI:PrintAddOnMessage("This is the new 2nd best time!", ns.consts.MSG_TYPE.GUILD)
-        elseif position == 3 then WCCCAD.UI:PrintAddOnMessage("This is the new 3rd best time!", ns.consts.MSG_TYPE.GUILD)
-        end
+    -- Output
+    local msg = format("%s has achieved a new personal best for the '%s' dragon race: |cFFFFFFFF%.3fs|r", playerName, DRL:GetRaceName(raceID), time)
+    WCCCAD.UI:PrintAddOnMessage(msg, ns.consts.MSG_TYPE.GUILD)
+    if position == 1 then WCCCAD.UI:PrintAddOnMessage("This is a new guild record!", ns.consts.MSG_TYPE.GUILD)
+    elseif position == 2 then WCCCAD.UI:PrintAddOnMessage("This is the new 2nd best time!", ns.consts.MSG_TYPE.GUILD)
+    elseif position == 3 then WCCCAD.UI:PrintAddOnMessage("This is the new 3rd best time!", ns.consts.MSG_TYPE.GUILD)
     end
 end
 
@@ -309,6 +326,9 @@ end
 --- @param otherLeaderboardData table<number, DRL_RaceLeaderboardData> leaderboardData table from a moduleDB to compare against.
 ---
 function DRL:DoesLeaderboardHaveNewData(sourceLeaderboardData, otherLeaderboardData)
+    if not otherLeaderboardData then
+        return true
+    end
     for raceID, raceLeaderboardData in pairs(sourceLeaderboardData) do
         if otherLeaderboardData[raceID] == nil then
             return true

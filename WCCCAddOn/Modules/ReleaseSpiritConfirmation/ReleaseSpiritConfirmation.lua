@@ -48,9 +48,9 @@ function ReleaseSpiritModule:InitializeModule()
 
         OnAccept = function(dialog)
             self:PrintDebugMessage("Dialog OnAccept")
-            local result = ReleaseSpiritModule.defaultReleaseSpiritFunc()
+            local result = ReleaseSpiritModule.defaultReleaseSpiritFunc(dialog)
             self:PrintDebugMessage("Default release func result: " .. result)
-            dialog:Hide()
+            StaticPopup_Hide(RELEASE_CONFIRMATION_DIALOG_KEY)
             return result
         end,
 
@@ -81,7 +81,7 @@ function ReleaseSpiritModule:InitializeModule()
             self:PrintDebugMessage("Showing release spirit confirmation.")
             StaticPopup_Show(RELEASE_CONFIRMATION_DIALOG_KEY)
         else
-            return ReleaseSpiritModule.defaultReleaseSpiritFunc()
+            return ReleaseSpiritModule.defaultReleaseSpiritFunc(dialog)
         end
     end
 
