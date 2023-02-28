@@ -2,12 +2,12 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
--- Core AddOn module-style functionality not intended to be shared across modules.
+-- Core AddOn module-style functionality.
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1501
-WCCCAD.versionString = "1.5.1"
+WCCCAD.version = 1502
+WCCCAD.versionString = "1.5.2"
 WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 --WCCCAD.versionType = ns.consts.VERSION_TYPE.BETA
 WCCCAD.newVersionAvailable = false

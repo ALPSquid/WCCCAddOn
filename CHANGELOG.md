@@ -1,3 +1,7 @@
+# v1.5.2
+* Added better reporting of guild bests and account bests when completing a race.
+* Fixed personal best message not being shown for the player that achieved it.
+
 # v1.5.0
 * Added alt tracking! You can now set your main in the AddOn settings.
   * The Dragon Racing Leaderboards will now combine best times for all players' characters into a single entry for their main. 
