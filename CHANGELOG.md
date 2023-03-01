@@ -1,3 +1,6 @@
+# v1.5.3
+* Fixed personal best times sometimes not being reported.
+
 # v1.5.2
 * Added better reporting of guild bests and account bests when completing a race.
 * Fixed personal best message not being shown for the player that achieved it.
