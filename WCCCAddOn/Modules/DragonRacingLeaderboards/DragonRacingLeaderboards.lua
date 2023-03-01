@@ -236,6 +236,7 @@ function DRL:UpdateTime(raceID, time, forceUpdate)
     self:PrintDebugMessage(format("Time for %s: %.3f", DRL:GetRaceName(raceID), time))
     local playerGUID = UnitGUID("player")
     local raceData = self:GetRaceLeaderboardData(raceID)[playerGUID]
+    local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceID)
     if raceData == nil then
         raceData =
         {
@@ -248,10 +249,9 @@ function DRL:UpdateTime(raceID, time, forceUpdate)
         self:GetRaceLeaderboardData(raceID)[playerGUID] = raceData
     end
     if raceData.time <= 0 or time < raceData.time or (forceUpdate and time ~= raceData.time) then
-        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
         raceData.time = time
         raceData.achievedTimestamp = GetServerTime()
-        if time < accountBest.time then
+        if accountBest.time <= 0 or time < accountBest.time then
             self:PrintPersonalBestMessage(raceData.playerName, raceData.raceID, raceData.time)
         end
         self:SendModuleComm(COMM_KEY_GUILDY_NEW_PERSONAL_BEST_TIME, raceData, ns.consts.CHAT_CHANNEL.GUILD)
@@ -278,9 +278,10 @@ function DRL:PrintPersonalBestMessage(playerName, raceID, time)
     local position = 1
     for _, leaderboardEntry in pairs(self:GetRaceLeaderboardData(raceID)) do
         accountBest = self:GetPlayerAccountBest(leaderboardEntry.GUID, raceID)
-        if not processedMains[accountBest.GUID] and leaderboardEntry.time < accountBest.time then
+        if not processedMains[accountBest.GUID] and accountBest.time < time then
             position = position + 1
         end
+        processedMains[accountBest.GUID] = true
         -- We only care about reporting the top 3 places.
         if position > 3 then
             break
@@ -326,6 +327,9 @@ end
 --- @param otherLeaderboardData table<number, DRL_RaceLeaderboardData> leaderboardData table from a moduleDB to compare against.
 ---
 function DRL:DoesLeaderboardHaveNewData(sourceLeaderboardData, otherLeaderboardData)
+    if not sourceLeaderboardData then
+        return false
+    end
     if not otherLeaderboardData then
         return true
     end
