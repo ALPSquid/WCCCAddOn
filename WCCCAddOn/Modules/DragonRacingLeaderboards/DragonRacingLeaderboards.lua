@@ -48,6 +48,7 @@ function DRL:OnEnable()
     self:RegisterEvent("GOSSIP_SHOW", self.OnGossip, self)
     self:RegisterEvent("QUEST_ACCEPTED", self.OnQuestAccepted, self)
 
+    self:ValidateData()
     self:InitiateSync()
 end
 
@@ -364,6 +365,19 @@ function DRL:UpdateLeaderboard(leaderboardData)
                 if localRaceLeaderboardData[GUID] == nil or localRaceLeaderboardData[GUID].achievedTimestamp < leaderboardEntry.achievedTimestamp then
                     localRaceLeaderboardData[GUID] = leaderboardEntry
                 end
+            end
+        end
+    end
+    self:ValidateData()
+end
+
+--- Removes bad data from the leaderboard table.
+function DRL:ValidateData()
+    for raceID in pairs(DRL.races) do
+        local leaderboardData = self.moduleDB.leaderboardData[raceID]
+        for GUID, leaderboardEntry in pairs(leaderboardData) do
+            if not leaderboardEntry.GUID then
+                leaderboardData[GUID] = nil
             end
         end
     end

@@ -104,7 +104,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
 
         local dataComparisonResult = moduleSelf:CompareSyncData(data)
 
-        moduleSelf:PrintDebugMessage("Received "..moduleName.." sync data from "..data.sendingPlayer..". Data comparison: "..dataComparisonResult)
+        moduleSelf:PrintDebugMessage("Received "..moduleName.." sync data from "..(data.sendingPlayer or "nil")..". Data comparison: "..dataComparisonResult)
         if dataComparisonResult == ns.consts.DATA_SYNC_RESULT.REMOTE_NEWER or dataComparisonResult == ns.consts.DATA_SYNC_RESULT.BOTH_NEWER then
             moduleSelf:OnSyncDataReceived(data)
         end

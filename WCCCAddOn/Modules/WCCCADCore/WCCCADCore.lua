@@ -93,7 +93,7 @@ end
 function WCCCAD:GetPlayerMain(characterGUID)
     if not self.guildPlayerCharactersLookup[characterGUID] then
         --WCCCADCore:PrintDebugMessage(format("Character with ID %s not found in character lookup!", characterGUID))
-        return nil, nil
+        return nil
     end
     local mainGUID = self.guildPlayerCharactersLookup[characterGUID].main
     local mainData =
