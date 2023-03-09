@@ -1,3 +1,7 @@
+# v1.5.4
+* Fixed data corruption preventing the leaderboard from displaying.
+* Fixed races always reporting the player's main as having the best time, even if an alt achieved it.
+
 # v1.5.3
 * Fixed personal best times sometimes not being reported.
 
