@@ -97,6 +97,7 @@ function DRL:GetPlayerAccountBest(characterGUID, raceID)
         GUID = playerMainData.GUID,
         raceID = raceID,
         playerName = playerMainData.name,
+        achievedPlayerName = bestRaceData and bestRaceData.playerName or playerMainData.name,
         time = bestRaceData and bestRaceData.time or 0,
         achievedTimestamp = bestRaceData and bestRaceData.achievedTimestamp or 0
     }
@@ -154,10 +155,10 @@ function DRL:OnChatMsg(event, text, playerName, languageName, channelName, playe
         local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
         -- If our time isn't the guild best, output the current best times.
         if accountBest.time > guildBestTime then
-            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r, Your best: |cFFFFFFFF%.3fs|r (%s)", guildBestTime, accountBest.time, accountBest.playerName), ns.consts.MSG_TYPE.GUILD)
+            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r, Your best: |cFFFFFFFF%.3fs|r (%s)", guildBestTime, accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
         -- If our time is the guild best and we didn't just earn that place, report that ours is still the best.
         elseif bestTime >= accountBest.time then
-            WCCCAD.UI:PrintAddOnMessage(format("Your time of |cFFFFFFFF%.3fs|r (%s) is the guild best!", accountBest.time, accountBest.playerName), ns.consts.MSG_TYPE.GUILD)
+            WCCCAD.UI:PrintAddOnMessage(format("Your time of |cFFFFFFFF%.3fs|r (%s) is the guild best!", accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
         end
     end
 end
