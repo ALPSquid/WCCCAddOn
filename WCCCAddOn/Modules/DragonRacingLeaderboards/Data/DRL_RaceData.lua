@@ -144,4 +144,16 @@ DRL:RegisterRace(70157, 2101, 70158, 2102, 72769, 2198, 2025, 0.395, 0.761)
 -- Tyrhold Trial
 DRL:RegisterRace(69957, 2092, 69958, 2093, 72792, 2195, 2025, 0.572, 0.668)
 
-
+-- Forbidden Reach
+-- Aerie Chasm Cruise
+DRL:RegisterRace(73025, 2203, 73027, 2209, 73028, 2215, 2151, 0.631, 0.518)
+-- Caldera Coaster
+DRL:RegisterRace(73033, 2205, 73034, 2211, 73052, 2217, 2151, 0.413, 0.145)
+-- Forbidden Reach Rush
+DRL:RegisterRace(73061, 2206, 73062, 2212, 73065, 2218, 2151, 0.494, 0.601)
+-- Morqut Ascent
+DRL:RegisterRace(73020, 2202, 73023, 2208, 73024, 2214, 2151, 0.313, 0.656)
+-- Southern Reach Route
+DRL:RegisterRace(73029, 2204, 73030, 2210, 73032, 2216, 2151, 0.636, 0.840)
+-- Stormsunder Crater Circuit
+DRL:RegisterRace(73017, 2201, 73018, 2207, 73019, 2213, 2151, 0.760, 0.657)
