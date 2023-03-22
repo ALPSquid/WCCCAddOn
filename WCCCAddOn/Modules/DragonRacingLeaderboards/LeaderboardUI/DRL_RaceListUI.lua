@@ -218,11 +218,23 @@ end
 ---
 function DRL_RaceListMixin:BuildRaceList()
     local dataProvider = CreateTreeListDataProvider()
+
+    -- Removes a leading "the" from a string.
+    local function StripLeadingThe(str)
+        local firstWord = str:match("(%w+%s+)")
+        if firstWord and firstWord:gsub("%s", ""):lower() == "the" then
+            str = str:gsub(firstWord, "", 1)
+        end
+        return str
+    end
     -- Insert race entries with each location as a category header.
     local function SortComparator(a, b)
         local aData, bData = a:GetData(), b:GetData()
         if aData.zoneCategoryData then
-            return C_Map.GetMapInfo(aData.zoneCategoryData.zoneID).name < C_Map.GetMapInfo(bData.zoneCategoryData.zoneID).name
+            -- Strip "The" to sort by main zone name.
+            local aMapName = StripLeadingThe(C_Map.GetMapInfo(aData.zoneCategoryData.zoneID).name)
+            local bMapName = StripLeadingThe(C_Map.GetMapInfo(bData.zoneCategoryData.zoneID).name)
+            return aMapName < bMapName
         end
         return DRL:GetRaceName(aData.raceData.raceID) < DRL:GetRaceName(bData.raceData.raceID)
     end
