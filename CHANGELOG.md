@@ -1,3 +1,8 @@
+# v1.5.5
+* Updated for patch 10.0.7
+* Added new Forbidden Reach races to the Dragon Racing Leaderboard.
+* Times are now automatically obtained, no need to do a race!
+
 # v1.5.4
 * Fixed data corruption preventing the leaderboard from displaying.
 * Fixed races always reporting the player's main as having the best time, even if an alt achieved it.
