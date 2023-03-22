@@ -34,7 +34,6 @@ local DRL_data =
 local DRL = WCCCAD:CreateModule("WCCC_DragonRacingLeaderboards", DRL_data)
 LibStub("AceEvent-3.0"):Embed(DRL)
 DRL.Locale = LibStub("AceLocale-3.0"):GetLocale("WCCC_DragonRacingLeaderboards")
-DRL.activeRaceID = nil
 
 
 function DRL:InitializeModule()
@@ -44,18 +43,30 @@ function DRL:InitializeModule()
 end
 
 function DRL:OnEnable()
-    self:RegisterEvent("CHAT_MSG_MONSTER_SAY", self.OnChatMsg, self)
-    self:RegisterEvent("GOSSIP_SHOW", self.OnGossip, self)
     self:RegisterEvent("QUEST_ACCEPTED", self.OnQuestAccepted, self)
+    self:RegisterEvent("QUEST_REMOVED", self.OnQuestRemoved, self)
 
     self:ValidateData()
+    self:ScanPersonalBests(false)
     self:InitiateSync()
 end
 
 function DRL:OnDisable()
-    self:UnregisterEvent("CHAT_MSG_MONSTER_SAY")
-    self:UnregisterEvent("GOSSIP_SHOW")
     self:RegisterEvent("QUEST_ACCEPTED")
+    self:RegisterEvent("QUEST_REMOVED")
+end
+
+---
+--- Generic chat command, opens the config panel when the wccc command is entered.
+---
+function DRL:DRLCommand(args)
+    if args ~= nil and args[1] ~= nil then
+        if args[1] == "info" or args[1] == "settings" then
+            self.UI:Show()
+        end
+        return
+    end
+    self.LeaderboardUI:Show()
 end
 
 ---
@@ -66,6 +77,20 @@ function DRL:GetRaceLeaderboardData(raceID)
         self.moduleDB.leaderboardData[raceID] = {}
     end
     return self.moduleDB.leaderboardData[raceID]
+end
+
+---
+--- Updates the player's personal best for every race.
+---
+function DRL:ScanPersonalBests(reportNewPBs)
+    for raceID, raceData in pairs(DRL.races) do
+        if raceData.currencyID > 0 then
+            local rawTime = C_CurrencyInfo.GetCurrencyInfo(raceData.currencyID).quantity
+            if rawTime > 0 then
+                self:UpdateTime(raceID, rawTime / 1000, reportNewPBs)
+            end
+        end
+    end
 end
 
 ---
@@ -104,134 +129,57 @@ function DRL:GetPlayerAccountBest(characterGUID, raceID)
     return data
 end
 
----
---- Generic chat command, opens the config panel when the wccc command is entered.
----
-function DRL:DRLCommand(args)
-    if args ~= nil and args[1] ~= nil then
-        if args[1] == "info" or args[1] == "settings" then
-            self.UI:Show()
-        end
-        return
-    end
-    self.LeaderboardUI:Show()
-end
-
 function DRL:OnQuestAccepted(event, questID)
     if not questID then return end
     self:PrintDebugMessage("Started quest: "..questID)
     for raceID, raceData in pairs(DRL.races) do
         if raceData.questID == questID then
-            self:PrintDebugMessage("Started race: " .. DRL:GetRaceName(raceData.questID))
-            DRL.activeRaceID = raceID
+            self:PrintDebugMessage("Started race: "..DRL:GetRaceName(raceData.questID))
             return
         end
     end
 end
 
-function DRL:OnChatMsg(event, text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons)
-    if ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER"], playerName) or ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER_ASSISTANT"], playerName)  then
-        -- "Your race time was 64.095 seconds. Your personal best for this race is 58.368 seconds."
-        -- "Your race time was 63.125 seconds. That was your best time yet!"
-        if DRL.activeRaceID == nil then
-            return
-        end
-        local raceData = DRL.races[DRL.activeRaceID]
-        local times = self:ExtractTimes(text)
-        local bestTime = #times > 1 and times[2] or times[1]
-        if not bestTime or bestTime <= 0 then
-            return
-        end
-        DRL.activeRaceID = nil
-        local guildBestTime = ns.utils.MinAttribute(self:GetRaceLeaderboardData(raceData.raceID), function(leaderboardEntry)
-            if leaderboardEntry.time <= 0 then
-                return 300
+function DRL:OnQuestRemoved(event, questID)
+    if not questID then return end
+    self:PrintDebugMessage("Removed quest: "..questID)
+    for raceID, raceData in pairs(DRL.races) do
+        if raceData.questID == questID then
+            self:PrintDebugMessage("Race removed: "..DRL:GetRaceName(raceData.questID))
+            local guildBestTime = ns.utils.MinAttribute(self:GetRaceLeaderboardData(raceID), function(leaderboardEntry)
+                if leaderboardEntry.time <= 0 then
+                    return 300
+                end
+                return leaderboardEntry.time
+            end) or 0
+            local bestTime = C_CurrencyInfo.GetCurrencyInfo(raceData.currencyID).quantity
+            if bestTime <= 0 then
+                return
             end
-            return leaderboardEntry.time
-        end) or 0
-        self:UpdateTime(raceData.raceID, bestTime, true)
+            bestTime = bestTime / 1000
+            self:UpdateTime(raceData.raceID, bestTime, true)
 
-        -- Reporting
-        local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceData.raceID)
-        -- If our time isn't the guild best, output the current best times.
-        if accountBest.time > guildBestTime then
-            WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r, Your best: |cFFFFFFFF%.3fs|r (%s)", guildBestTime, accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
-        -- If our time is the guild best and we didn't just earn that place, report that ours is still the best.
-        elseif bestTime >= accountBest.time then
-            WCCCAD.UI:PrintAddOnMessage(format("Your time of |cFFFFFFFF%.3fs|r (%s) is the guild best!", accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
+            -- Reporting
+            local accountBest = self:GetPlayerAccountBest(UnitGUID("player"), raceID)
+            -- If our time isn't the guild best, output the current best times.
+            if accountBest.time > guildBestTime then
+                WCCCAD.UI:PrintAddOnMessage(format("Guild best: |cFFFFFFFF%.3fs|r, Your best: |cFFFFFFFF%.3fs|r (%s)", guildBestTime, accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
+                -- If our time is the guild best and we didn't just earn that place, report that ours is still the best.
+            elseif bestTime >= accountBest.time then
+                WCCCAD.UI:PrintAddOnMessage(format("Your time of |cFFFFFFFF%.3fs|r (%s) is the guild best!", accountBest.time, accountBest.achievedPlayerName), ns.consts.MSG_TYPE.GUILD)
+            end
+            return
         end
     end
-end
-
-function DRL:OnGossip(event, uiTextureKit)
-    local npcName, _ = UnitName("npc")
-    if ns.utils.TableContains(DRL.Locale["NPC_TIMEKEEPER_ASSISTANT"], npcName) then
-        WCCCAD.UI:PrintAddOnMessage("Updating times from Assistants is disabled until Blizz fixes them reporting incorrect times.\
-        To get your personal best, please complete the race again and the Timekeeper will say the correct time.")
-        return
-        -- "Did you know your best time for this course is 61.665 seconds?"
-        -- "And for the advanced course it's 63.215 seconds,"
-        -- "And for the reverse course it's 60.213 seconds.
-        --local text = C_GossipInfo.GetText()
-        --if text then
-        --    local posX, posY = C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit("player"), "player"):GetXY()
-        --    local radius = 0.006
-        --    local times = self:ExtractTimesByType(text)
-        --    for raceID, raceConfig in pairs(DRL.races) do
-        --        if abs(posX - raceConfig.coordX) <= radius and abs(posY - raceConfig.coordY) <= radius then
-        --            local bestTime = times[raceConfig.raceType]
-        --            if bestTime and bestTime > 0 then
-        --                self:UpdateTime(raceID, bestTime, true)
-        --            else
-        --                self:PrintDebugMessage("Failed to get time for race:"..DRL:GetRaceName(raceConfig.raceID))
-        --            end
-        --
-        --        end
-        --    end
-        --end
-    end
-end
-
----
---- Extracts all race times from a string
---- @returns table @Array of extracted times in order of appearance.
----
-function DRL:ExtractTimes(text)
-    local times = {}
-    for time in string.gmatch(text, DRL.Locale["TIME_PATTERN"]) do
-        time = time:gsub(",", ".")
-        times[#times + 1] = tonumber(time)
-    end
-    return times
-end
-
----
---- Extracts race times for each found race type from a string.
---- @returns table @Map of extracted times for each found race type in the format {[DRL.RaceType] = time}
----
-function DRL:ExtractTimesByType(text)
-    local times = {}
-    local searchPattern = nil
-    local time = nil
-    for _, raceTypeID in pairs(DRL.RACE_TYPE) do
-        searchPattern = DRL.Locale["ASSISTANT_TIME_PATTERN_"..raceTypeID]
-        time = string.match(text, searchPattern)
-        if time then
-            time = time:gsub(",", ".")
-            times[raceTypeID] = tonumber(time)
-        end
-    end
-    return times
 end
 
 ---
 --- Updates the logged time for a race. If this is a new personal best, appropriate events will be triggered.
 --- @param raceID number @ID of the race.
 --- @param time number @New time for the race.
---- @param forceUpdate boolean @If true, the time will be updated regardless of whether it's slower.
----     If false, the time will only be updated if it's faster than the player's logged time.
+--- @param reportNewPBs boolean @If true, new PBs will be reported to the guild.
 ---
-function DRL:UpdateTime(raceID, time, forceUpdate)
+function DRL:UpdateTime(raceID, time, reportNewPBs)
     if not WCCCAD:CheckAddonActive(false) then
         return
     end
@@ -250,13 +198,13 @@ function DRL:UpdateTime(raceID, time, forceUpdate)
         }
         self:GetRaceLeaderboardData(raceID)[playerGUID] = raceData
     end
-    if raceData.time <= 0 or time < raceData.time or (forceUpdate and time ~= raceData.time) then
+    if raceData.time <= 0 or time ~= raceData.time then
         raceData.time = time
         raceData.achievedTimestamp = GetServerTime()
-        if accountBest.time <= 0 or time < accountBest.time then
+        if reportNewPBs and (accountBest.time <= 0 or time < accountBest.time) then
             self:PrintPersonalBestMessage(raceData.playerName, raceData.raceID, raceData.time)
         end
-        self:SendModuleComm(COMM_KEY_GUILDY_NEW_PERSONAL_BEST_TIME, raceData, ns.consts.CHAT_CHANNEL.GUILD)
+        self:SendModuleComm(COMM_KEY_GUILDY_NEW_PERSONAL_BEST_TIME, {timeData = raceData, reportNewPBs = reportNewPBs}, ns.consts.CHAT_CHANNEL.GUILD)
         self.LeaderboardUI:OnLeaderboardDataUpdated()
     end
 end
@@ -265,12 +213,16 @@ end
 --- Fired when a guild member achieves a new personal best time.
 ---
 function DRL:OnGuildyNewPersonalBestCommReceived(data)
-    local raceData = self.races[data.raceID]
-    local accountBest = self:GetPlayerAccountBest(data.GUID, data.raceID)
-    self.moduleDB.leaderboardData[raceData.raceID][data.GUID] = data
+    -- Pre 1.5.5 check.
+    if not data.timeData then
+        return
+    end
+    local raceData = self.races[data.timeData.raceID]
+    local accountBest = self:GetPlayerAccountBest(data.timeData.GUID, data.timeData.raceID)
+    self.moduleDB.leaderboardData[raceData.raceID][data.timeData.GUID] = data.timeData
     -- We need to update PBs for all characters, but we only want to report new account bests.
-    if not accountBest.time or data.time < accountBest.time then
-        self:PrintPersonalBestMessage(data.playerName, data.raceID, data.time)
+    if data.reportNewPBs and (not accountBest.time or data.timeData.time < accountBest.time) then
+        self:PrintPersonalBestMessage(data.timeData.playerName, data.timeData.raceID, data.timeData.time)
     end
 end
 

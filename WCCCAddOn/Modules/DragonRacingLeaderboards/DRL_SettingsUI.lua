@@ -31,8 +31,7 @@ local DRL_SETTINGS_CONFIG =
                 {
                     type = "description",
                     fontSize = "medium",
-                    name = "When completing Dragon Races or talking to the ".. DRL.Locale["NPC_TIMEKEEPER_ASSISTANT"][1] .." your time is recorded on the guild leaderboard!\
-To populate the leaderboard with your times, speak to the ".. DRL.Locale["NPC_TIMEKEEPER_ASSISTANT"][1] .." at the start point of each race.",
+                    name = "Everyone's Dragon Races times are recorded on a guild leaderboard, so get racing and compete for the best overall score!",
                     order = 1.01
                 },
 

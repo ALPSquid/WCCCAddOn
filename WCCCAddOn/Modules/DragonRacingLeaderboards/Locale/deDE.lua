@@ -4,17 +4,6 @@ if not L then
     return
 end
 
-L["NPC_TIMEKEEPER"] = {"Bronzezeithüterin", "Bronzezeithüter"}
-L["NPC_TIMEKEEPER_ASSISTANT"] = {"Bronzezeithüterassistant", "Bronzezeithüterassistent"}
-
--- Search pattern for parsing times in strings.
-L["TIME_PATTERN"] = "(%d+,%d+)"
--- Timekeeper Assistant gossip string time search pattern for each race type.
--- Number in the key must be the same ID as DRL.RACE_TYPE
-L["ASSISTANT_TIME_PATTERN_0"] = "für diese Strecke (%d+,%d+)"
-L["ASSISTANT_TIME_PATTERN_1"] = "fortgeschrittene[%D]+(%d+,%d+)"
-L["ASSISTANT_TIME_PATTERN_2"] = "umgekehrte[%D]+(%d+,%d+)"
-
 -- UI Strings
 L["OVERALL_LEADERBOARD_INFO_DESC"] = "The overall leaderboard combines players' times across all races to give an overall time.\nIf a race has not been completed, a penalty time of 5 mins is used."
 L["LEADERBOARD_INFO_DESC"] = "Your best times are automatically logged when completing a race.\nTo log existing times, complete the race again or speak to the Bronze Timekeeper Assistant at the race start point."
