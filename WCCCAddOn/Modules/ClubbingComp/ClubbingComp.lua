@@ -31,6 +31,16 @@ local RESTRICTED_ZONES =
     [1673] = true,
     -- Valdrakken
     [2112] = true,
+    -- Stormwind
+    [84] = true,
+    -- Ironforge
+    [87] = true,
+    -- Darnassus
+    [89] = true,
+    -- The Exodar
+    [103] = true,
+    -- Boralus
+    [1161] = true,
 }
 
 --- 
