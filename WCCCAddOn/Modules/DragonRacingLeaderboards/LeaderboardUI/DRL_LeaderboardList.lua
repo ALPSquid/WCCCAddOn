@@ -145,31 +145,35 @@ function DRL_LeaderboardListMixin:Refresh()
                         name = leaderboardEntry.playerName
                     }
                 end
-                entryIdx = leaderboardGUIDIdx[playerMainData.GUID]
-                processedMains[playerMainData.GUID] = true
-                if not entryIdx then
-                    tinsert(leaderboard, {
-                        GUID = playerMainData.GUID,
-                        playerName = playerMainData.name,
-                        time = 0,
-                        achievedTimestamp = 0,
-                        numRacesLogged = 0
-                    })
-                    entryIdx = #leaderboard
-                    leaderboardGUIDIdx[playerMainData.GUID] = entryIdx
-                end
-                local accountBest = DRL:GetPlayerAccountBest(playerMainData.GUID, raceID)
-                if accountBest.time > 0 then
-                    leaderboard[entryIdx].time = leaderboard[entryIdx].time + accountBest.time
-                    -- Lower achieved timestamp is used as the tie-breaker.
-                    leaderboard[entryIdx].achievedTimestamp = leaderboard[entryIdx].achievedTimestamp + accountBest.achievedTimestamp
-                    leaderboard[entryIdx].numRacesLogged = leaderboard[entryIdx].numRacesLogged + 1
+                if not processedMains[playerMainData.GUID] then
+                    entryIdx = leaderboardGUIDIdx[playerMainData.GUID]
+                    processedMains[playerMainData.GUID] = true
+                    if not entryIdx then
+                        tinsert(leaderboard, {
+                            GUID = playerMainData.GUID,
+                            playerName = playerMainData.name,
+                            time = 0,
+                            achievedTimestamp = 0,
+                            numRacesLogged = 0
+                        })
+                        entryIdx = #leaderboard
+                        leaderboardGUIDIdx[playerMainData.GUID] = entryIdx
+                    end
+                    local accountBest = DRL:GetPlayerAccountBest(playerMainData.GUID, raceID)
+                    if accountBest.time > 0 then
+                        leaderboard[entryIdx].time = leaderboard[entryIdx].time + accountBest.time
+                        -- Lower achieved timestamp is used as the tie-breaker.
+                        leaderboard[entryIdx].achievedTimestamp = leaderboard[entryIdx].achievedTimestamp + accountBest.achievedTimestamp
+                        leaderboard[entryIdx].numRacesLogged = leaderboard[entryIdx].numRacesLogged + 1
+                    end
                 end
             end
         end
         -- Add default times of 5 mins for each skipped race.
         for _, leaderboardEntry in pairs(leaderboard) do
-            leaderboardEntry.time = leaderboardEntry.time + (300 * (numRaces - leaderboardEntry.numRacesLogged))
+            if leaderboardEntry.numRacesLogged < numRaces then
+                leaderboardEntry.time = leaderboardEntry.time + (300 * (numRaces - leaderboardEntry.numRacesLogged))
+            end
         end
     end
 
