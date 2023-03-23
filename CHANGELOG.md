@@ -1,3 +1,6 @@
+# v1.5.6
+* Fixed issue displaying overall leaderboard times.
+
 # v1.5.5
 * Updated for patch 10.0.7
 * Added new Forbidden Reach races to the Dragon Racing Leaderboard.
