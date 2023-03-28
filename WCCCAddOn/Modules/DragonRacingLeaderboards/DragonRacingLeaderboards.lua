@@ -329,7 +329,24 @@ function DRL:ValidateData()
     for raceID in pairs(DRL.races) do
         local leaderboardData = self.moduleDB.leaderboardData[raceID]
         for GUID, leaderboardEntry in pairs(leaderboardData) do
-            if not leaderboardEntry.GUID then
+            -- Validate GUIDs. We've seen GUIDs with missing chunks, possibly due to syncs being interrupted and/or client errors.
+            local GUIDKeyIsValid = ns.utils.isValidPlayerGUID(GUID)
+            local GUIDValueIsValid = ns.utils.isValidPlayerGUID(leaderboardEntry.GUID)
+
+            if GUIDKeyIsValid and GUIDValueIsValid then
+                -- If both GUIDs are valid but don't match, take the key.
+                if GUID ~= leaderboardEntry.GUID then
+                    leaderboardEntry.GUID = GUID
+                end
+            elseif GUIDKeyIsValid then
+                -- If only the key is valid, update the value to match.
+                leaderboardEntry.GUID = GUID
+            elseif GUIDValueIsValid then
+                -- If only the value is valid, update the key to match.
+                leaderboardData[leaderboardEntry.GUID] = leaderboardEntry
+                leaderboardData[GUID] = nil
+            else
+                -- Neither are valid, delete this entry.
                 leaderboardData[GUID] = nil
             end
         end

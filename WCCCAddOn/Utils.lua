@@ -183,6 +183,15 @@ ns.utils.GetLastServerResetTimestamp = function()
     return currentTimestamp - secondsPastReset
 end
 
+--- Returns true if the specified player GUID is in a valid format.
+ns.utils.isValidPlayerGUID = function(GUID)
+    if GUID == nil then
+        return false
+    end
+    local pattern = "^Player%-[0-9A-Z]+%-[0-9A-Z]+$"
+    return GUID:match(pattern) ~= nil
+end
+
 --- Returns the max value of an attribute across all objects in a table.
 --- @param attributeGetter fun(table):number @Function that returns the attribute value for the specified object.
 ns.utils.MaxAttribute = function(table, attributeGetter)
