@@ -1,3 +1,6 @@
+# v1.5.7
+* Fixed overall leaderboard not displaying due to mangled data.
+
 # v1.5.6
 * Fixed issue displaying overall leaderboard times.
 

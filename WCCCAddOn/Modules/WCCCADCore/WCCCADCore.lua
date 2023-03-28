@@ -6,8 +6,8 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1506
-WCCCAD.versionString = "1.5.6"
+WCCCAD.version = 1507
+WCCCAD.versionString = "1.5.7"
 WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 --WCCCAD.versionType = ns.consts.VERSION_TYPE.BETA
 WCCCAD.newVersionAvailable = false
