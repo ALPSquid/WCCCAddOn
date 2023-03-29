@@ -194,12 +194,72 @@ local RACES =
         pluralName = "Worgen",
 		score = 3,
 	},
+
+    ["Orc"] =
+    {
+        type = "Orc",
+        name = "Orc",
+        pluralName = "Orcs",
+        score = 1,
+    },
+
+    ["Scourge"] =
+    {
+        type = "Scourge",
+        name = "Undead",
+        pluralName = "Undead",
+        score = 1,
+    },
+
+    ["Tauren"] =
+    {
+        type = "Tauren",
+        name = "Tauren",
+        pluralName = "Tauren",
+        score = 1,
+    },
+
+    ["Troll"] =
+    {
+        type = "Troll",
+        name = "Troll",
+        pluralName = "Trolls",
+        score = 1,
+    },
+
+    ["Goblin"] =
+    {
+        type = "Goblin",
+        name = "Goblin",
+        pluralName = "Goblins",
+        score = 2,
+    },
+
+    ["Vulpera"] =
+    {
+        type = "Vulpera",
+        name = "Vulpera",
+        pluralName = "Vulpera",
+        score = 2,
+    },
+
+    ["BloodElf"] =
+    {
+        type = "BloodElf",
+        name = "Blood Elf",
+        pluralName = "Blood Elves",
+        score = 2,
+    }
 }
 RACES["LightforgedDraenei"] = RACES["Draenei"]
 RACES["VoidElf"] = RACES["NightElf"]
 RACES["KulTiran"] = RACES["Human"]
 RACES["DarkIronDwarf"] = RACES["Dwarf"]
 RACES["Mechagnome"] = RACES["Gnome"]
+RACES["Nightborne"] = RACES["BloodElf"]
+RACES["MagharOrc"] = RACES["Orc"]
+RACES["HighmountainTauren"] = RACES["Tauren"]
+RACES["ZandalariTroll"] = RACES["Troll"]
 
 ---@type number[]
 local HIT_SOUNDS =
@@ -310,6 +370,9 @@ function ClubbingComp:OnEnable()
 
     self:InitiateSync()
     self:UpdateActiveFrenzy()
+    if self:IsGuildFrenzyActive() then
+        WCCCAD.UI:PrintAddOnMessage("Guild Frenzy active, nowhere is safe! Club your fellow guildies for points!")
+    end
 
     for zoneID, _ in pairs(RESTRICTED_ZONES) do
         self:CheckZoneState(zoneID)
@@ -328,6 +391,11 @@ end
 
 function ClubbingComp:GetRaceScoreDataTable()
     return RACES
+end
+
+function ClubbingComp:IsGuildFrenzyActive()
+    -- April Fools? UTC month & day check.
+    return date("!%m") == 4 and date("!%d") == 1
 end
 
 ---
@@ -372,6 +440,7 @@ function ClubbingComp:ClubCommand(args)
     local _, targetRaceEn = UnitRace("target")
     local _, targetFactionEn = UnitFactionGroup("target")
     local targetName = UnitName("target")
+    local targetGuild = GetGuildInfo("target")
 
     local raceScoreData = RACES[targetRaceEn]
 
@@ -383,7 +452,8 @@ function ClubbingComp:ClubCommand(args)
 
     elseif self:IsTargetInRange() then
         -- If there was a valid target, then it's a success hit!
-        if targetFactionEn == "Alliance" and raceScoreData ~= nil and self:IsRaceClubbable(targetRaceEn) then
+        print(targetGuild)
+        if (targetGuild ~= ns.utils.WCCC_GUILD_NAME and raceScoreData ~= nil and self:IsRaceClubbable(targetRaceEn)) or (targetGuild == ns.utils.WCCC_GUILD_NAME and self:IsGuildFrenzyActive()) then
             self:PlayEmote("very forcefully clubs %t with " .. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club].",
             SUCCESS_HIT_MESSAGES[math.random(1, #SUCCESS_HIT_MESSAGES)])
             PlaySoundFile(SUCCESS_HIT_SOUND, "SFX")
@@ -423,13 +493,13 @@ end
 --- Saves a hit on the specified target to the hit table.
 ---
 function ClubbingComp:RegisterHit(targetName, targetRaceEn)
-    local raceScoreType = RACES[targetRaceEn].type
+    local hitTableKey = RACES[targetRaceEn].type
 
-    if self.moduleDB.hitTable[raceScoreType] == nil then
-        self.moduleDB.hitTable[raceScoreType] = {}
+    if self.moduleDB.hitTable[hitTableKey] == nil then
+        self.moduleDB.hitTable[hitTableKey] = {}
     end
 
-    local targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
+    local targetHitData = self.moduleDB.hitTable[hitTableKey][targetName]
     if targetHitData == nil or targetHitData.race ~= targetRaceEn then
         targetHitData =
         {
@@ -440,7 +510,7 @@ function ClubbingComp:RegisterHit(targetName, targetRaceEn)
 
     table.insert(targetHitData.hits, GetServerTime())
 
-    self.moduleDB.hitTable[raceScoreType][targetName] = targetHitData
+    self.moduleDB.hitTable[hitTableKey][targetName] = targetHitData
 end
 
 ---
@@ -467,14 +537,14 @@ function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
     if RACES[targetRaceEn] == nil then
         return false
     end
-    local raceScoreType = RACES[targetRaceEn].type
+    local hitTableKey = RACES[targetRaceEn].type
 
     -- If there's no entry, then it's a valid target!
-    if self.moduleDB.hitTable[raceScoreType] == nil then
+    if self.moduleDB.hitTable[hitTableKey] == nil then
         return false
     end
 
-    local targetHitData = self.moduleDB.hitTable[raceScoreType][targetName]
+    local targetHitData = self.moduleDB.hitTable[hitTableKey][targetName]
     if targetHitData == nil or targetHitData.hits == nil or #targetHitData.hits == 0 then
         return false
     end

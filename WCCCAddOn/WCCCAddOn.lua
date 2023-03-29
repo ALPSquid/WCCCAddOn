@@ -85,7 +85,7 @@ end
 ---
 function WCCCAD:CheckAddonActive(printMsg)
     local guildName = IsInGuild() and GetGuildInfo("player") or nil
-    self.addonActive = guildName == "Worgen Cub Clubbing Club";
+    self.addonActive = guildName == ns.utils.WCCC_GUILD_NAME
 
     if printMsg and not self.addonActive then
         self.UI:PrintAddonDisabledMessage() 

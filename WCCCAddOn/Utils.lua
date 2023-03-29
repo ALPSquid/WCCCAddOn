@@ -7,6 +7,8 @@ local _, ns = ...
 ns.consts = {}
 ns.utils = {}
 
+ns.utils.WCCC_GUILD_NAME = "Worgen Cub Clubbing Club"
+
 ns.consts.VERSION_TYPE =
 {
     ALPHA = 
