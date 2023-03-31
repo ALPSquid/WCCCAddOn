@@ -395,7 +395,7 @@ end
 
 function ClubbingComp:IsGuildFrenzyActive()
     -- April Fools? UTC month & day check.
-    return date("!%m") == 4 and date("!%d") == 1
+    return date("!%m", GetServerTime()) == 4 and date("!%d", GetServerTime()) == 1
 end
 
 ---
@@ -452,7 +452,6 @@ function ClubbingComp:ClubCommand(args)
 
     elseif self:IsTargetInRange() then
         -- If there was a valid target, then it's a success hit!
-        print(targetGuild)
         if (targetGuild ~= ns.utils.WCCC_GUILD_NAME and raceScoreData ~= nil and self:IsRaceClubbable(targetRaceEn)) or (targetGuild == ns.utils.WCCC_GUILD_NAME and self:IsGuildFrenzyActive()) then
             self:PlayEmote("very forcefully clubs %t with " .. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club].",
             SUCCESS_HIT_MESSAGES[math.random(1, #SUCCESS_HIT_MESSAGES)])
