@@ -395,7 +395,7 @@ end
 
 function ClubbingComp:IsGuildFrenzyActive()
     -- April Fools? UTC month & day check.
-    return date("!%m", GetServerTime()) == 4 and date("!%d", GetServerTime()) == 1
+    return tonumber(date("%m", GetServerTime())) == 4 and tonumber(date("%d", GetServerTime())) == 1
 end
 
 ---
