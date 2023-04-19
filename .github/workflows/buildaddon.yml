@@ -3,7 +3,7 @@ name: Build WoW Addon
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -23,17 +23,11 @@ jobs:
         mkdir -p Builds/${{ env.version_num }}
         zip -r Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip WCCCAddOn -x "*.git*"
 
-    - name: Add extra files to the archive
-      run: |
-        for extra_file in CHANGELOG.md LICENSE.txt; do
-          zip -u Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip $extra_file -j
-        done
-
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ env.version_num }}
         release_name: Release v${{ env.version_num }}
@@ -43,7 +37,7 @@ jobs:
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip
