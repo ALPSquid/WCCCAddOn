@@ -13,10 +13,39 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.x
+    - name: Extract version number
+      run: |
+        version_num=$(grep "## Version:" WCCCAddOn/WCCCAddOn.toc | awk '{print $3}')
+        echo "version_num=$version_num" >> $GITHUB_ENV
 
-    - name: Build addon
-      run: python build.py
+    - name: Create release folder and zip archive
+      run: |
+        mkdir -p Builds/${{ env.version_num }}
+        zip -r Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip WCCCAddOn -x "*.git*"
+
+    - name: Add extra files to the archive
+      run: |
+        for extra_file in CHANGELOG.md LICENSE.txt; do
+          zip -u Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip $extra_file -j
+        done
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.version_num }}
+        release_name: Release v${{ env.version_num }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip
+        asset_name: WCCCAddOn_${{ env.version_num }}.zip
+        asset_content_type: application/zip
