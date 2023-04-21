@@ -1,0 +1,45 @@
+name: Build WoW Addon
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Extract version number
+      run: |
+        version_num=$(grep "## Version:" WCCCAddOn/WCCCAddOn.toc | awk '{print $3}')
+        echo "version_num=$version_num" >> $GITHUB_ENV
+
+    - name: Create release folder and zip archive
+      run: |
+        mkdir -p Builds/${{ env.version_num }}
+        zip -r Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip WCCCAddOn -x "*.git*"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      with:
+        tag_name: v${{ env.version_num }}
+        release_name: Release v${{ env.version_num }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip
+        asset_name: WCCCAddOn_${{ env.version_num }}.zip
+        asset_content_type: application/zip
