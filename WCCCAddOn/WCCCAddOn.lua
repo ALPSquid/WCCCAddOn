@@ -20,7 +20,7 @@ local dataDefaults =
 
 function WCCCAD:OnInitialize()
         -- Addon is deactivated if the player is not in the WCCC.
-        self.addonActive = true;
+        self.addonActive = true
 
         -- Custom root commands set by modules. Any args parsed to /wccc command are checked against this table.
         self.moduleCommands = {}
@@ -35,10 +35,12 @@ end
 
 function WCCCAD:OnEnable()
     self:RegisterChatCommand("wccc", "WCCCCommand")
+    ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
 end
 
 function WCCCAD:OnDisable()
     self:UnregisterChatCommand("wccc")
+    ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
 end
 
 ---
@@ -130,6 +132,13 @@ function WCCCAD:RegisterModuleComm(moduleObj, moduleName, messageKey, func)
     self.moduleCommBindings[moduleName][messageKey] = function(data) func(moduleObj, data) end
 end
 
+--- Dict of target players to the time the last message was sent.
+--- Used for filtering no player online messages.
+WCCCAD.RecentCommTargets = {}
+--- Duration to filter "No player named <name > is currently playing" messages when sending comms.
+--- This covers latency and throttling.
+WCCCAD.CommErrorFilterDurationSecs = 180
+
 ---
 --- Send a module comms message. 
 --- Data can be an object and will be automatically  serialized on send and deserialized on receive.
@@ -142,6 +151,9 @@ function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlay
     local serialisedData = self:Serialize(data)
     serialisedData = modulePrefix..serialisedData
 
+    if targetPlayer then
+        WCCCAD.RecentCommTargets[targetPlayer] = GetServerTime()
+    end
     self:SendCommMessage("WCCCAD", serialisedData, channel, targetPlayer)
 end
 
@@ -163,4 +175,26 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
 
     local _, deserialisedData = self:Deserialize(messageData)
     self.moduleCommBindings[moduleName][messageKey](deserialisedData)    
+end
+
+-- When we send a large comm message, the chunks get throttled which means the target can log out during the transmission.
+-- Sending a comm message to an offline player results in the client showing the "No player named <player> is currently playing." message.
+-- With large data sets, this can cause a lot of spam.
+-- Unfortunately, there's no straight forward way to check the target is online before sending a comm, especially wit AceComm & ChatThrottleLib in the pipeline.
+-- This workaround filters error messages to targets of our comm messages during the transmission period (an arbitrary duration).
+local ERR_CHAT_PLAYER_NOT_FOUND_S_FILTER_PATTERN = string.format(ERR_CHAT_PLAYER_NOT_FOUND_S, "(.+)")
+WCCCAD.SystemChatFilter = function(frame, event, msg, ...)
+    local errorTargetPlayer = msg:match(ERR_CHAT_PLAYER_NOT_FOUND_S_FILTER_PATTERN)
+    if errorTargetPlayer then
+        local lastMsgTime = WCCCAD.RecentCommTargets[errorTargetPlayer]
+        if lastMsgTime then
+            if  GetServerTime() - lastMsgTime <= WCCCAD.CommErrorFilterDurationSecs then
+                return true
+            else
+                -- Filter duration expired.
+                WCCCAD.RecentCommTargets[errorTargetPlayer] = nil
+            end
+        end
+    end
+    return false
 end
