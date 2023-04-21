@@ -1,3 +1,6 @@
+# v1.5.11
+* Fixed "No player named <name> is currently playing." spam when a sync is interrupted.
+
 # v1.5.7
 * Fixed overall leaderboard not displaying due to mangled data.
 
