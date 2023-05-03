@@ -6,8 +6,8 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1511
-WCCCAD.versionString = "1.5.11"
+WCCCAD.version = 1512
+WCCCAD.versionString = "1.5.12"
 WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 --WCCCAD.versionType = ns.consts.VERSION_TYPE.BETA
 WCCCAD.newVersionAvailable = false
@@ -21,6 +21,7 @@ local wcccCoreData =
     profile =
     {
         firstTimeUser = true,
+        lastCharactersDataWipeVersion = 0,
 
         ---@class WCCCAD_CharacterDataEntry
         ---@field GUID string
@@ -48,13 +49,17 @@ local wcccCoreData =
 local WCCCADCore = WCCCAD:CreateModule("WCCC_Core", wcccCoreData)
 -- TODO: Possibly bake this pattern into the ModuleBase?
 LibStub("AceEvent-3.0"):Embed(WCCCADCore) 
-LibStub("AceHook-3.0"):Embed(WCCCADCore) 
+LibStub("AceHook-3.0"):Embed(WCCCADCore)
 
 -- Array of player GUIDs
 WCCCADCore.knownAddonUsers = 
 {
     -- [guid] = guid
 }
+
+-- Last AddOn version a data wipe was requests to fix bad data issues.
+-- This is checked against self.moduleDB.lastCharactersDataWipeVersion and other player's data.
+WCCCADCore.charactersDataWipeVersion = 1512
 
 
 function WCCCADCore:InitializeModule()
@@ -76,6 +81,11 @@ function WCCCADCore:OnEnable()
 
     local playerGUID = UnitGUID("player")
     self.knownAddonUsers[playerGUID] = playerGUID
+    -- Check data wipe requests.
+    if self.moduleDB.lastCharactersDataWipeVersion < WCCCADCore.charactersDataWipeVersion then
+        self.moduleDB.guildPlayerCharacters = {}
+        self.moduleDB.lastCharactersDataWipeVersion = WCCCADCore.charactersDataWipeVersion
+    end
     self:RegisterLocalPlayerCharacter(playerGUID, UnitName("player"))
     self:BuildPlayerCharactersLookup()
     self:InitiateSync()
@@ -153,6 +163,7 @@ function WCCCADCore:RegisterLocalPlayerCharacter(GUID, playerName)
             for characterGUID, character in pairs(charactersData.characters) do
                 if self.moduleDB.localPlayerCharacters.characters[characterGUID] then
                     entryFound = true
+                    break
                 end
             end
         end
@@ -189,6 +200,8 @@ function WCCCADCore:BuildPlayerCharactersLookup()
                         existingCharactersData.mainUpdateTimestamp = charactersData.mainUpdateTimestamp
                     end
                 end
+                -- As we already have a table for this character, this is a duplicate entry so delete it.
+                charactersData.characters[GUID] = nil
             else
                 WCCCAD.guildPlayerCharactersLookup[GUID] = charactersData
             end
@@ -229,8 +242,8 @@ function WCCCADCore:OnGuildPlayerCharactersDataReceived(otherGuildPlayerCharacte
         -- Find table in our data that has a matching character.
         local tableFound = false
         for searchCharacterGUID, _ in pairs(otherCharactersData.characters) do
-            if WCCCAD.guildPlayerCharactersLookup[searchCharacterGUID] then
-                local localTable = WCCCAD.guildPlayerCharactersLookup[searchCharacterGUID]
+            local localTable = WCCCAD.guildPlayerCharactersLookup[searchCharacterGUID]
+            if localTable then
                 tableFound = true
                 -- Update main
                 if (otherCharactersData.mainUpdateTimestamp or 0) > (localTable.mainUpdateTimestamp or 0) then
@@ -251,6 +264,7 @@ function WCCCADCore:OnGuildPlayerCharactersDataReceived(otherGuildPlayerCharacte
         -- If no existing table was found for this set of characters, insert it as new.
         if not tableFound then
             tinsert(self.moduleDB.guildPlayerCharacters, otherCharactersData)
+            self:BuildPlayerCharactersLookup()
         end
     end
     -- Reconsolidate tables and rebuild the lookup.
@@ -436,8 +450,9 @@ function WCCCADCore:OnSyncDataReceived(data)
     self.knownAddonUsers[data.playerGuid] = data.playerGuid
     self:UpdateGuildRosterAddonIndicators()
 
-    -- Ats
-    if data.guildPlayerCharacters then
+    -- Alts
+    -- Don't sync alt data from anyone who has a version before the last wipe.
+    if data.version >= self.charactersDataWipeVersion then
         self:OnGuildPlayerCharactersDataReceived(data.guildPlayerCharacters)
     end
 end

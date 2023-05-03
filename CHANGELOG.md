@@ -1,3 +1,7 @@
+# v1.5.12
+* Updated for 10.1, including new races.
+* Fixed some sync errors.
+
 # v1.5.11
 * Fixed "No player named <name> is currently playing." spam when a sync is interrupted.
 
