@@ -194,6 +194,40 @@ ns.utils.isValidPlayerGUID = function(GUID)
     return GUID:match(pattern) ~= nil
 end
 
+---
+--- Checks table for valid GUID keys. If invalid keys are found, the entry is removed from the table.
+--- If each table value is a table with a .GUID attribute, these can also be checked against the key.
+--- @param validateEntryGUID boolean @Whether to check .GUID attribute of each entry.
+---
+ns.utils.validateGUIDKeyValues = function(table, validateEntryGUID)
+    for GUID, entry in pairs(table) do
+        -- Validate GUIDs. We've seen GUIDs with missing chunks, possibly due to syncs being interrupted and/or client errors.
+        local GUIDKeyIsValid = ns.utils.isValidPlayerGUID(GUID)
+        if validateEntryGUID and entry ~= nil then
+            local GUIDValueIsValid = ns.utils.isValidPlayerGUID(entry.GUID)
+
+            if GUIDKeyIsValid and GUIDValueIsValid then
+                -- If both GUIDs are valid but don't match, take the key.
+                if GUID ~= entry.GUID then
+                    entry.GUID = GUID
+                end
+            elseif GUIDKeyIsValid then
+                -- If only the key is valid, update the value to match.
+                entry.GUID = GUID
+            elseif GUIDValueIsValid then
+                -- If only the value is valid, update the key to match.
+                table[entry.GUID] = entry
+                table[GUID] = nil
+            else
+                -- Neither are valid, delete this entry.
+                table[GUID] = nil
+            end
+        elseif not GUIDKeyIsValid then
+            table[GUID] = nil
+        end
+    end
+end
+
 --- Returns the max value of an attribute across all objects in a table.
 --- @param attributeGetter fun(table):number @Function that returns the attribute value for the specified object.
 ns.utils.MaxAttribute = function(table, attributeGetter)

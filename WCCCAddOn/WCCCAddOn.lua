@@ -137,7 +137,7 @@ end
 WCCCAD.RecentCommTargets = {}
 --- Duration to filter "No player named <name > is currently playing" messages when sending comms.
 --- This covers latency and throttling.
-WCCCAD.CommErrorFilterDurationSecs = 180
+WCCCAD.CommErrorFilterDurationSecs = 600
 
 ---
 --- Send a module comms message. 

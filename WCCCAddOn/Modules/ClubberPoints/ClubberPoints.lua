@@ -65,6 +65,7 @@ function ClubberPoints:InitializeModule()
 end
 
 function ClubberPoints:OnEnable()
+    self:ValidateData()
     self:InitiateSync()
     self.UI:OnEnable()
 end
@@ -223,6 +224,11 @@ end
 
 --region Sync functions
 
+function ClubberPoints:ValidateData()
+    ns.utils.validateGUIDKeyValues(self.moduleDB.leaderboardData, true)
+    ns.utils.validateGUIDKeyValues(self.moduleDB.queuedRewards, false)
+end
+
 function ClubberPoints:GetSyncData()
     local syncData =
     {
@@ -311,6 +317,7 @@ function ClubberPoints:OnSyncDataReceived(data)
     end
     self:UpdateLeaderboard(data.leaderboardData)
     self:UpdateQueuedRewards(data.queuedRewards)
+    self:ValidateData()
 end
 
 function ClubberPoints:UpdateQueuedRewards(otherQueuedRewards)
