@@ -7,6 +7,7 @@ local _, ns = ...
 local WCCCAD = ns.WCCCAD
 local DRL = WCCCAD:GetModule("WCCC_DragonRacingLeaderboards")
 DRL.races = {}
+DRL.numRaces = 0
 
 DRL.RACE_TYPE = {
     NORMAL = 0,
@@ -43,6 +44,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
         coordY = timekeeperY,
         raceType = DRL.RACE_TYPE.NORMAL
     }
+    DRL.numRaces = DRL.numRaces + 1
 
     -- Advanced
     if advancedQuestID then
@@ -55,6 +57,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
             coordY = timekeeperY,
             raceType = DRL.RACE_TYPE.ADVANCED
         }
+        DRL.numRaces = DRL.numRaces + 1
     end
 
     -- REVERSE
@@ -68,6 +71,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
             coordY = timekeeperY,
             raceType = DRL.RACE_TYPE.REVERSE
         }
+        DRL.numRaces = DRL.numRaces + 1
     end
 end
 
@@ -157,3 +161,17 @@ DRL:RegisterRace(73020, 2202, 73023, 2208, 73024, 2214, 2151, 0.313, 0.656)
 DRL:RegisterRace(73029, 2204, 73030, 2210, 73032, 2216, 2151, 0.636, 0.840)
 -- Stormsunder Crater Circuit
 DRL:RegisterRace(73017, 2201, 73018, 2207, 73019, 2213, 2151, 0.760, 0.657)
+
+-- Zaralek Cavern
+-- Brimstone Scramble
+DRL:RegisterRace(74939, 2248, 74943, 2254, 74944, 2260, 2133, 0.545, 0.237)
+-- Caldera Cruise
+DRL:RegisterRace(74889, 2247, 74899, 2253, 74925, 2259, 2133, 0.390, 0.499)
+-- Crystal Circuit
+DRL:RegisterRace(74839, 2246, 74842, 2252, 74882, 2258, 2133, 0.387, 0.606)
+-- Loamm Roamm
+DRL:RegisterRace(74972, 2250, 74975, 2256, 74977, 2262, 2133, 0.581, 0.576)
+-- Shimmering Slalom
+DRL:RegisterRace(74951, 2249, 74954, 2255, 74956, 2261, 2133, 0.586, 0.450)
+-- Sulfur Sprint
+DRL:RegisterRace(75035, 2251, 75042, 2257, 75043, 2263, 2133, 0.512, 0.466)

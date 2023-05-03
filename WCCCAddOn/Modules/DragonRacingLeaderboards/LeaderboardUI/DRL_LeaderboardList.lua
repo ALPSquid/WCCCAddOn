@@ -41,6 +41,14 @@ function DRL_LeaderboardCellMixin:Populate(rowData, dataIndex)
     else
         self.text:SetText(rowData[self.dataProviderKey])
     end
+    -- Completed all races flag.
+    if self.dataProviderKey == "time" and (rowData.numRacesLogged or 0) >= DRL.numRaces then
+        print(rowData.numRacesLogged, DRL.numRaces)
+        self.allRacesCompletedIcon:SetShown(true)
+    else
+        self.allRacesCompletedIcon:SetShown(false)
+    end
+
     local colour = CreateColor(1, 1, 1)
     if rank == 1 then colour = CreateColor(0.94, 0.91, 0.16)
     elseif rank == 2 then colour = CreateColor(0.66, 0.78, 0.80)
@@ -133,9 +141,7 @@ function DRL_LeaderboardListMixin:Refresh()
         -- Look up of a player's GUID to the index of their entry in the overall leaderboard.
         local leaderboardGUIDIdx = {}
         local entryIdx = nil
-        local numRaces = 0
         for raceID in pairs(DRL.races) do
-            numRaces = numRaces + 1
             local processedMains = {}
             for _, leaderboardEntry in pairs(DRL:GetRaceLeaderboardData(raceID)) do
                 local playerMainData = WCCCAD:GetPlayerMain(leaderboardEntry.GUID)
@@ -171,8 +177,8 @@ function DRL_LeaderboardListMixin:Refresh()
         end
         -- Add default times of 5 mins for each skipped race.
         for _, leaderboardEntry in pairs(leaderboard) do
-            if leaderboardEntry.numRacesLogged < numRaces then
-                leaderboardEntry.time = leaderboardEntry.time + (300 * (numRaces - leaderboardEntry.numRacesLogged))
+            if leaderboardEntry.numRacesLogged < DRL.numRaces then
+                leaderboardEntry.time = leaderboardEntry.time + (300 * (DRL.numRaces - leaderboardEntry.numRacesLogged))
             end
         end
     end

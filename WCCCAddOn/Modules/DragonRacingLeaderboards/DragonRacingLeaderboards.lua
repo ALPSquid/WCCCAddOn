@@ -109,7 +109,7 @@ function DRL:GetPlayerAccountBest(characterGUID, raceID)
     local characters = WCCCAD:GetPlayerCharacters(characterGUID)
     if characters then
         for GUID, characterData in pairs(characters) do
-            if leaderboardData[GUID] and (bestRaceData == nil or leaderboardData[GUID].time < bestRaceData.time) then
+            if leaderboardData[GUID] and leaderboardData[GUID].time and (bestRaceData == nil or leaderboardData[GUID].time < bestRaceData.time) then
                 bestRaceData = leaderboardData[GUID]
             end
         end
@@ -327,7 +327,7 @@ end
 --- Removes bad data from the leaderboard table.
 function DRL:ValidateData()
     for raceID in pairs(DRL.races) do
-        local leaderboardData = self.moduleDB.leaderboardData[raceID]
+        local leaderboardData = self.moduleDB.leaderboardData[raceID] or {}
         for GUID, leaderboardEntry in pairs(leaderboardData) do
             -- Validate GUIDs. We've seen GUIDs with missing chunks, possibly due to syncs being interrupted and/or client errors.
             local GUIDKeyIsValid = ns.utils.isValidPlayerGUID(GUID)
