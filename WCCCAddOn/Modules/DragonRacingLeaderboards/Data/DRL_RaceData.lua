@@ -7,6 +7,7 @@ local _, ns = ...
 local WCCCAD = ns.WCCCAD
 local DRL = WCCCAD:GetModule("WCCC_DragonRacingLeaderboards")
 DRL.races = {}
+DRL.numRaces = 0
 
 DRL.RACE_TYPE = {
     NORMAL = 0,
@@ -43,6 +44,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
         coordY = timekeeperY,
         raceType = DRL.RACE_TYPE.NORMAL
     }
+    DRL.numRaces = DRL.numRaces + 1
 
     -- Advanced
     if advancedQuestID then
@@ -55,6 +57,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
             coordY = timekeeperY,
             raceType = DRL.RACE_TYPE.ADVANCED
         }
+        DRL.numRaces = DRL.numRaces + 1
     end
 
     -- REVERSE
@@ -68,6 +71,7 @@ function DRL:RegisterRace(questID, currencyID, advancedQuestID, advancedCurrency
             coordY = timekeeperY,
             raceType = DRL.RACE_TYPE.REVERSE
         }
+        DRL.numRaces = DRL.numRaces + 1
     end
 end
 
