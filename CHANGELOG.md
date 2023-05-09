@@ -1,3 +1,6 @@
+# v1.5.13
+* Improved data sync speed.
+
 # v1.5.12
 * Updated for 10.1, including new races.
 * Fixed some sync errors.
