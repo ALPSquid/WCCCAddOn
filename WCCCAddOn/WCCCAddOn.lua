@@ -6,6 +6,7 @@
 local _, ns = ...
 
 local WCCCAD = LibStub("AceAddon-3.0"):NewAddon("WCCC Clubbing Companion", "AceConsole-3.0", "AceEvent-3.0", "AceSerializer-3.0", "AceComm-3.0", "AceTimer-3.0")
+local LibDeflate = LibStub:GetLibrary("LibDeflate")
 
 ns.WCCCAD = WCCCAD
 ns.modules = {}
@@ -90,7 +91,7 @@ function WCCCAD:CheckAddonActive(printMsg)
     self.addonActive = guildName == ns.utils.WCCC_GUILD_NAME
 
     if printMsg and not self.addonActive then
-        self.UI:PrintAddonDisabledMessage() 
+        self.UI:PrintAddonDisabledMessage()
     end
 
     return self.addonActive
@@ -148,13 +149,18 @@ function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlay
     if channel == ns.consts.CHAT_CHANNEL.GUILD and not IsInGuild() then return end
     local modulePrefix = format("%s[WCCCMOD]%s[WCCCKEY]", moduleName, messageKey)
 
-    local serialisedData = self:Serialize(data)
-    serialisedData = modulePrefix..serialisedData
+    local packagedData = {
+        version = self.version,
+        moduleData = data
+    }
+    packagedData = self:Serialize(packagedData)
+    packagedData = modulePrefix..packagedData
+    packagedData = LibDeflate:CompressDeflate(packagedData)
 
     if targetPlayer then
         WCCCAD.RecentCommTargets[targetPlayer] = GetServerTime()
     end
-    self:SendCommMessage("WCCCAD", serialisedData, channel, targetPlayer)
+    self:SendCommMessage("WCCCAD", packagedData, channel, targetPlayer)
 end
 
 function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
@@ -162,11 +168,15 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
         return
     end
 
-    local moduleName, messageKey, messageData = string.match(message, "(.-)%[WCCCMOD%](.-)%[WCCCKEY%](.+)")
+    local decompressedMessage = LibDeflate:DecompressDeflate(message)
+    if not decompressedMessage then
+        return
+    end
+    local moduleName, messageKey, messageData = string.match(decompressedMessage, "(.-)%[WCCCMOD%](.-)%[WCCCKEY%](.+)")
 
     -- If no module attributes were found it's a core message so just use the original data.
     if messageData == nil then
-        messageData = message
+        messageData = decompressedMessage
     end    
 
     if self.moduleCommBindings[moduleName] == nil or self.moduleCommBindings[moduleName][messageKey] == nil then
@@ -174,7 +184,11 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
     end
 
     local _, deserialisedData = self:Deserialize(messageData)
-    self.moduleCommBindings[moduleName][messageKey](deserialisedData)    
+    -- Old version checks.
+    if not deserialisedData.version then
+        return
+    end
+    self.moduleCommBindings[moduleName][messageKey](deserialisedData.moduleData, deserialisedData.version)
 end
 
 -- When we send a large comm message, the chunks get throttled which means the target can log out during the transmission.
