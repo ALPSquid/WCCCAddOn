@@ -155,7 +155,7 @@ function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlay
     }
     packagedData = self:Serialize(packagedData)
     packagedData = modulePrefix..packagedData
-    packagedData = LibDeflate:CompressDeflate(packagedData)
+    packagedData = LibDeflate:EncodeForWoWAddonChannel(LibDeflate:CompressDeflate(packagedData))
 
     if targetPlayer then
         WCCCAD.RecentCommTargets[targetPlayer] = GetServerTime()
@@ -168,9 +168,9 @@ function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
         return
     end
 
-    local decompressedMessage = LibDeflate:DecompressDeflate(message)
+    local decompressedMessage = LibDeflate:DecompressDeflate(LibDeflate:DecodeForWoWAddonChannel(message))
     if not decompressedMessage then
-        return
+        decompressedMessage = message
     end
     local moduleName, messageKey, messageData = string.match(decompressedMessage, "(.-)%[WCCCMOD%](.-)%[WCCCKEY%](.+)")
 

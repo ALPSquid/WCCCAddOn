@@ -1,3 +1,6 @@
+# v1.5.15
+* Fixed data not syncing.
+
 # v1.5.13
 * Improved data sync speed.
 
