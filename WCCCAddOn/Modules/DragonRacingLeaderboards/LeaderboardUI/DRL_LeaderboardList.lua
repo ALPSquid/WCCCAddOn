@@ -43,7 +43,6 @@ function DRL_LeaderboardCellMixin:Populate(rowData, dataIndex)
     end
     -- Completed all races flag.
     if self.dataProviderKey == "time" and (rowData.numRacesLogged or 0) >= DRL.numRaces then
-        print(rowData.numRacesLogged, DRL.numRaces)
         self.allRacesCompletedIcon:SetShown(true)
     else
         self.allRacesCompletedIcon:SetShown(false)
