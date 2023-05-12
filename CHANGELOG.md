@@ -1,3 +1,6 @@
+# v1.5.16
+* Disabled Release Spirit Confirmation module to avoid weird dialogue taint.
+
 # v1.5.15
 * Fixed data not syncing.
 

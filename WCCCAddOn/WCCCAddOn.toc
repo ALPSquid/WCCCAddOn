@@ -3,7 +3,7 @@
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
 ## IconTexture: Interface\AddOns\WCCCAddOn\assets\wccc-logo
-## Version: 1.5.15
+## Version: 1.5.16
 ## SavedVariables: WCCCDB
 ## Dependencies: Blizzard_Communities
 
@@ -39,8 +39,8 @@ Modules\MythicPlus\MythicPlusUI.xml
 #--endmodule
 
 #--Module - Release Spirit Confirmation
-Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmation.lua
-Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmationUI.lua
+#Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmation.lua
+#Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmationUI.lua
 #--endmodule
 
 Modules\DragonRacingLeaderboards\Locale\DRL_Locales.xml
