@@ -1,4 +1,55 @@
 ------------------------------------------------------------------------
+r1308 | nevcairiel | 2023-07-12 10:15:09 +0000 (Wed, 12 Jul 2023) | 1 line
+Changed paths:
+   M /trunk
+   M /trunk/changelog.txt
+
+Update changelog
+------------------------------------------------------------------------
+r1307 | funkehdude | 2023-07-12 02:24:07 +0000 (Wed, 12 Jul 2023) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+bump toc
+------------------------------------------------------------------------
+r1306 | nevcairiel | 2023-06-23 14:55:09 +0000 (Fri, 23 Jun 2023) | 9 lines
+Changed paths:
+   M /trunk
+   M /trunk/.luacheckrc
+   M /trunk/AceDB-3.0/AceDB-3.0.lua
+
+AceDB-3.0: Add fallbacks for region names
+
+PTRs now return region 72, instead of extending the table fallback to
+GetCurrentRegionName(), and an absolute fallback if even that fails, so
+AceDB does not error out on loading.
+
+GetCurrentRegionName() could be used as the primary source, instead of
+the look-up table, however we need to confirm first that the region keys
+would remain stable.
+------------------------------------------------------------------------
+r1305 | funkehdude | 2023-06-21 11:59:15 +0000 (Wed, 21 Jun 2023) | 1 line
+Changed paths:
+   M /trunk/Ace3_Wrath.toc
+
+bump wrath toc
+------------------------------------------------------------------------
+r1304 | nevcairiel | 2023-05-19 19:50:10 +0000 (Fri, 19 May 2023) | 1 line
+Changed paths:
+   M /trunk
+   M /trunk/AceDBOptions-3.0/AceDBOptions-3.0.lua
+
+AceDBOptions-3.0: Minor locale fixes for russian
+------------------------------------------------------------------------
+r1303 | nevcairiel | 2023-05-16 15:05:10 +0000 (Tue, 16 May 2023) | 3 lines
+Changed paths:
+   M /trunk
+   M /trunk/AceDBOptions-3.0/AceDBOptions-3.0.lua
+
+AceDBOptions-3.0: Update locale strings
+
+Fixes WoWAce #629
+------------------------------------------------------------------------
 r1302 | nevcairiel | 2023-05-03 07:00:09 +0000 (Wed, 03 May 2023) | 1 line
 Changed paths:
    M /trunk

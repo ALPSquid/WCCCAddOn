@@ -1,3 +1,6 @@
+# v1.5.17
+* Updated for 10.1.5.
+
 # v1.5.16
 * Disabled Release Spirit Confirmation module to avoid weird dialogue taint.
 
