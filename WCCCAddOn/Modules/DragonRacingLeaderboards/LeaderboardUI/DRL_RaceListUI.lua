@@ -217,7 +217,7 @@ end
 --- Builds the list of races for the currently selected tab.
 ---
 function DRL_RaceListMixin:BuildRaceList()
-    local dataProvider = CreateTreeListDataProvider()
+    local dataProvider = CreateTreeDataProvider()
 
     -- Removes a leading "the" from a string.
     local function StripLeadingThe(str)

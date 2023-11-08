@@ -1,3 +1,6 @@
+# v1.5.18
+* Updated for 10.2.0.
+
 # v1.5.17
 * Updated for 10.1.5.
 
