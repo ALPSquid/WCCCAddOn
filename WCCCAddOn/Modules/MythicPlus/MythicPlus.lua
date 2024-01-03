@@ -53,7 +53,7 @@ local mythicPlusData =
 }
 
 local MythicPlus = WCCCAD:CreateModule("WCCC_MythicPlus", mythicPlusData)
-LibStub("AceEvent-3.0"):Embed(MythicPlus) 
+LibStub("AceEvent-3.0"):Embed(MythicPlus)
 
 function MythicPlus:InitializeModule()
     self:RegisterModuleSlashCommand("mythics", self.MythicPlusCommand)
@@ -63,6 +63,17 @@ function MythicPlus:InitializeModule()
 
     self:RegisterModuleComm(COMM_KEY_GUILDY_RECEIVED_KEYSTONE, self.OnGuildyReceivedKeystoneCommReceived)
     self:RegisterModuleComm(COMM_KEY_GUILDY_COMPLETED_KEYSTONE, self.OnGuildyNewRecordCommReceived)
+
+    -- Create DB namespace for providers.
+    if not self.moduleDB.keystoneDataProviders then
+        self.moduleDB.keystoneDataProviders = {}
+    end
+    -- Initialise any providers that have been registered.
+    if self.keystoneDataProviders then
+        for _, provider in pairs(self.keystoneDataProviders) do
+            provider:OnInitialize()
+        end
+    end
 end
 
 function MythicPlus:OnEnable()
@@ -341,6 +352,7 @@ function MythicPlus:OnGuildyNewRecordCommReceived(data)
 
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)
 end
+
 
 ---
 --- A fun little bug. For some reason, we've seen lastUpdateTimestamps synced that are > GetServerTime() by a long margin.

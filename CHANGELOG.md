@@ -1,3 +1,6 @@
+# v1.6.0
+* Guild keystones list now also shows players without the guild addon who have OpenRaidLib, such as from Details Damage Meter.
+
 # v1.5.18
 * Updated for 10.2.0.
 

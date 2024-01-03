@@ -3,7 +3,7 @@
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
 ## IconTexture: Interface\AddOns\WCCCAddOn\assets\wccc-logo
-## Version: 1.5.18
+## Version: 1.6.0
 ## SavedVariables: WCCCDB
 ## Dependencies: Blizzard_Communities
 
@@ -36,6 +36,8 @@ Modules\InfoHUD\InfoHUDUI.lua
 Modules\MythicPlus\MythicPlus.lua
 Modules\MythicPlus\MythicPlusUI.lua
 Modules\MythicPlus\MythicPlusUI.xml
+Modules\MythicPlus\KeystoneDataProviders\BaseKeystoneDataProvider.lua
+Modules\MythicPlus\KeystoneDataProviders\OpenRaidLibProvider.lua
 #--endmodule
 
 #--Module - Release Spirit Confirmation

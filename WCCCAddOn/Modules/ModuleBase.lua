@@ -15,6 +15,7 @@ function WCCCAD:CreateModule(moduleName, dbDefaults)
     function wcccModule.OnInitialize(moduleSelf)
         moduleSelf:CreateModuleDB()
         moduleSelf:InitializeModule()
+        moduleSelf.initialized = true
     end
 
     function wcccModule.CreateModuleDB(moduleSelf) 

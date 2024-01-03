@@ -235,6 +235,7 @@ end
 function WCCC_MythicPlusFrameMixin:OpenSettings()
     MythicPlus_UI:Show()
 end
+
 ---
 --- Update frame with the MythicPlus guildKeys and leaderboardData tables
 --- @param guildKeys table<string, GuildKeyDataEntry>
@@ -243,14 +244,30 @@ end
 function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
     self.orderedGuildKeys = {}
 
+    -- Merge provider data.
+    local combinedKeyData = {}
+    for k, v in pairs(guildKeys) do
+        combinedKeyData[k] = v
+    end
+
+    local combinedLeaderboardData = {}
+    for k, v in pairs(leaderboardData) do
+        combinedLeaderboardData[k] = v
+    end
+
+    for _, provider in pairs(MythicPlus.keystoneDataProviders) do
+        provider:UpdateData(combinedKeyData, combinedLeaderboardData)
+    end
+
+    -- Format data.
     local idx = 1
-    for _, entryData in pairs(guildKeys) do        
+    for _, entryData in pairs(combinedKeyData) do
         if entryData then
-            local leaderboardEntry = leaderboardData[entryData.GUID]
+            local leaderboardEntry = combinedLeaderboardData[entryData.GUID]
 
             self.orderedGuildKeys[idx] =
             {
-                GUID = entryData.GUID,            
+                GUID = entryData.GUID,
                 playerName = entryData.playerName,
                 classID = entryData.classID,
                 mapID = entryData.mapID,
@@ -262,7 +279,7 @@ function WCCC_MythicPlusFrameMixin:UpdateData(guildKeys, leaderboardData)
 
             idx = idx + 1
         end
-    end    
+    end
 
     --- Extra iteration but easier to maintain.
     self:UpdateMemberPresence()
@@ -291,8 +308,9 @@ function WCCC_MythicPlusFrameMixin:UpdateMemberPresence()
         if entryData then
             local newPresence = Enum.ClubMemberPresence.Offline
             for i=1, numMembersOnline do
-                local _, _, _, _, _, _, _, _, isOnline, status, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
-                if memberGUID == entryData.GUID then
+                local name, _, _, _, _, _, _, _, isOnline, status, _, _, _, _, _, _, memberGUID = GetGuildRosterInfo(i)
+                --print(name, entryData.playerName, name:find(entryData.playerName))
+                if (name and name:find(entryData.playerName)) or memberGUID == entryData.GUID then
                     if status == 0 then
                         newPresence = Enum.ClubMemberPresence.Online
                     elseif status == 1 then
