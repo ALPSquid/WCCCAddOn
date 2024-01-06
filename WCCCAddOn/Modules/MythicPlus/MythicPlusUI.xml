@@ -3,9 +3,10 @@
 <!-- Entry Template -->
     <Button name="WCCC_MythicPlusEntryTemplate" registerForClicks="LeftButtonUp, RightButtonUp" virtual="true" mixin="WCCC_MythicPlusEntryMixin">
         <Size x="560" y="20"/>
-        <Frames>      
-            <Frame parentKey="RightClickDropdown" inherits="UIDropDownMenuTemplate" hidden="true"/>
-        </Frames>
+<!-- Right click menu removed to avoid taint. We could use LibUIDropDownMenu, but no one uses this menu anyway. -->
+<!--        <Frames>      -->
+<!--            <Frame parentKey="RightClickDropdown" inherits="UIDropDownMenuTemplate" hidden="true"/>-->
+<!--        </Frames>-->
         <Layers>
             <Layer level="OVERLAY">
                 <FontString parentKey="NameLabel" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">

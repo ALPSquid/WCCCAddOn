@@ -1,3 +1,6 @@
+# v1.6.1
+* Removed M+ UI right-click menu to avoid UI taint caused by using UIDropDownMenu functions.
+
 # v1.6.0
 * Guild keystones list now also shows players without the guild addon who have OpenRaidLib, such as from Details Damage Meter.
 

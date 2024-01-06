@@ -206,7 +206,7 @@ function MythicPlus_UI:OnGuildRosterUpdate()
     WCCC_MythicPlus_Frame:OnGuildRosterUpdate()
 end
 
-WCCCAD.UI:AddGuildControlButton("Guild Keystones", "View Guild Mythic+ Keystones", MythicPlus_UI.ShowWindow) 
+WCCCAD.UI:AddGuildControlButton("Guild Keystones", "View Guild Mythic+ Keystones", MythicPlus_UI.ShowWindow)
 
 
 --region Mythic Plus Frame Mixin
@@ -461,36 +461,36 @@ WCCC_MythicPlusEntryMixin = {}
 WCCC_MythicPlusEntryMixin.Data = nil -- { GUID, playerName, classID, mapID, level, bestLevel, updateTimestamp}
 
 
-function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(level)
-    local info = UIDropDownMenu_CreateInfo()
-
-    info.text = self:GetParent():GetPlayerName()
-    info.isTitle = true
-    info.notCheckable = true
-    UIDropDownMenu_AddButton(info, level)
-
-    info.text = WHISPER
-    info.colorCode = HIGHLIGHT_FONT_COLOR_CODE
-    info.isTitle = false
-    info.notCheckable = true
-    info.disabled = nil
-    info.func = function () ChatFrame_SendTell(self:GetParent():GetPlayerName()) end
-    UIDropDownMenu_AddButton(info, level)
-
-    info.text = INVITE
-    info.colorCode = HIGHLIGHT_FONT_COLOR_CODE
-    info.isTitle = false
-    info.notCheckable = true
-    info.disabled = nil
-    info.func = function () InviteUnit(self:GetParent():GetPlayerName()) end
-    UIDropDownMenu_AddButton(info, level)
-end
+--function WCCC_MythicPlusEntryMixin:PlayerEntryRightClickOptionsMenuInitialise(level)
+--    local info = UIDropDownMenu_CreateInfo()
+--
+--    info.text = self:GetParent():GetPlayerName()
+--    info.isTitle = true
+--    info.notCheckable = true
+--    UIDropDownMenu_AddButton(info, level)
+--
+--    info.text = WHISPER
+--    info.colorCode = HIGHLIGHT_FONT_COLOR_CODE
+--    info.isTitle = false
+--    info.notCheckable = true
+--    info.disabled = nil
+--    info.func = function () ChatFrame_SendTell(self:GetParent():GetPlayerName()) end
+--    UIDropDownMenu_AddButton(info, level)
+--
+--    info.text = INVITE
+--    info.colorCode = HIGHLIGHT_FONT_COLOR_CODE
+--    info.isTitle = false
+--    info.notCheckable = true
+--    info.disabled = nil
+--    info.func = function () InviteUnit(self:GetParent():GetPlayerName()) end
+--    UIDropDownMenu_AddButton(info, level)
+--end
 
 function WCCC_MythicPlusEntryMixin:OnMouseDown(button)
-    if button == "RightButton" and self.Data ~= nil and self.Data.presence ~= Enum.ClubMemberPresence.Offline then
-		ToggleDropDownMenu(1, nil, self.RightClickDropdown, self, 100, 0)
-		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
-	end
+    --if button == "RightButton" and self.Data ~= nil and self.Data.presence ~= Enum.ClubMemberPresence.Offline then
+	--	securecall(ToggleDropDownMenu, 1, nil, self.RightClickDropdown, self, 100, 0)
+	--	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+	--end
 end 
 
 function WCCC_MythicPlusEntryMixin:GetPlayerName()
@@ -532,6 +532,6 @@ function WCCC_MythicPlusEntryMixin:UpdateData(keyData)
     self.UpdatedLabel:SetText(ns.utils.GetTimeSinceString(self.Data.updateTimestamp))
     self.UpdatedLabel:SetTextColor(textColour.r, textColour.g, textColour.b)
 
-    UIDropDownMenu_Initialize(self.RightClickDropdown, self.PlayerEntryRightClickOptionsMenuInitialise, "MENU")
+    --securecall(UIDropDownMenu_Initialize, self.RightClickDropdown, self.PlayerEntryRightClickOptionsMenuInitialise, "MENU")
 end
 --endregion
