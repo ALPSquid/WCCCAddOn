@@ -1,24 +1,10 @@
-tag d8bbbcd23449a55ab5cadfef239e6da7860b1f61 v10.2.0.116
+tag 197c9c9fc0b2a2a1740845c172c959a0153a5605 v10.2.0.118
 Author:	Tercio Jose <terciob19@hotmail.com>
-Date:	Thu Dec 14 15:01:48 2023 -0300
+Date:	Tue Dec 26 11:02:46 2023 -0300
 
-commit 371d7bd4b43088946e2ebbc49dd6793b01d78c97
+commit 25f7078453c536e9453ea2c1c8cb7b91cf6ab586
 Author: Tercio Jose <terciob19@hotmail.com>
-Date:   Thu Dec 14 15:01:30 2023 -0300
+Date:   Tue Dec 26 11:02:35 2023 -0300
 
-    Ensure the player have a cooldown list before proceeding to add or remove cooldowns from the list
-
-commit e32897f3b4c6ce7a9a25bbd11265152ec4d4d7a0
-Author: Tercio Jose <terciob19@hotmail.com>
-Date:   Sat Dec 9 20:42:20 2023 -0300
-
-    Implemented a cooldown usage callback, which triggers at the moment the cooldown is used
-    
-    With this change, the user sees the cooldown usage in the moment it is used.
-    Aura duration isn't available at this point.
-    At a point in the future (100ms to 2000ms), the lib receives the data from the player as usual.
-    
-    Created a comm scheduler, throttling comm messages to one per second.
-    
-    Modified event timers; instead of cancelling the timer and creating a new with an interval of 2 to 8 seconds, it will now create a timer with an interval of approximately 20 seconds that cannot be cancelled.
+    Quick send mythic keystone data for people in the party
 
