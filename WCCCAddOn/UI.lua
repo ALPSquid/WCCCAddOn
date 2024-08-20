@@ -138,7 +138,7 @@ function WCCCAD_UI:LoadModuleUI(wcccModule, moduleDisplayName, moduleUIConfig)
 end
 
 function WCCCAD_UI:Show() 
-    InterfaceOptionsFrame_OpenToCategory(self.optionsFrameRoot)
+    Settings.OpenToCategory(self.optionsFrameRoot.name)
 end
 
 function WCCCAD_UI:PrintAddOnMessage(msg, type)

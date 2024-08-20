@@ -1,5 +1,8 @@
+# v1.7
+* Updated for 11.0
+
 # v1.6.2
-* Updates for 10.2.5
+* Updated for 10.2.5
 
 # v1.6.1
 * Removed M+ UI right-click menu to avoid UI taint caused by using UIDropDownMenu functions.

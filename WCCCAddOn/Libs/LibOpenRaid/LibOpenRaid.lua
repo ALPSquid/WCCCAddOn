@@ -43,7 +43,8 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and not isExpansion_Dragonflight()) t
 end
 
 local major = "LibOpenRaid-1.0"
-local CONST_LIB_VERSION = 118
+
+local CONST_LIB_VERSION = 138
 
 if (LIB_OPEN_RAID_MAX_VERSION) then
     if (CONST_LIB_VERSION <= LIB_OPEN_RAID_MAX_VERSION) then
@@ -71,6 +72,8 @@ end
 --default values
     openRaidLib.inGroup = false
     openRaidLib.UnitIDCache = {}
+
+    openRaidLib.Util = openRaidLib.Util or {}
 
     local CONST_CVAR_TEMPCACHE = "LibOpenRaidTempCache"
     local CONST_CVAR_TEMPCACHE_DEBUG = "LibOpenRaidTempCacheDebug"
@@ -131,6 +134,9 @@ end
     local CONST_COOLDOWN_INFO_SIZE = 6
 
     local CONST_USE_DEFAULT_SCHEDULE_TIME = true
+
+    -- Real throttle is 10 messages per 1 second, but we want to be safe due to fact we dont know when it actually resets
+    local CONST_COMM_BURST_BUFFER_COUNT = 9
 
     local GetContainerNumSlots = GetContainerNumSlots or C_Container.GetContainerNumSlots
     local GetContainerItemID = GetContainerItemID or C_Container.GetContainerItemID
@@ -485,25 +491,33 @@ end
     ---@field channel string
 
     ---@type {}[]
-    local commScheduler = {}
+    local commScheduler = {};
 
+    local commBurstBufferCount = CONST_COMM_BURST_BUFFER_COUNT;
+    local commServerTimeLastThrottleUpdate = GetServerTime();
+    
     do
         --if there's an old version that already registered the comm ticker, cancel it
         if (LIB_OPEN_RAID_COMM_SCHEDULER) then
-            LIB_OPEN_RAID_COMM_SCHEDULER:Cancel()
+            LIB_OPEN_RAID_COMM_SCHEDULER:Cancel();
         end
 
-        --make the lib throttle the comms to one per second
-        local newTickerHandle = C_Timer.NewTicker(1, function()
-            for i = #commScheduler, 1, -1 do
-                local commData = commScheduler[i]
-                if (commData) then
-                    sendData(commData.data, commData.channel)
-                    table.remove(commScheduler, i)
-                    return
-                end
+        local newTickerHandle = C_Timer.NewTicker(0.05, function()
+            local serverTime = GetServerTime();
+
+            -- Replenish the counter if last server time is not the same as the last throttle update
+            -- Clamp it to CONST_COMM_BURST_BUFFER_COUNT
+            commBurstBufferCount = math.min((serverTime ~= commServerTimeLastThrottleUpdate) and commBurstBufferCount + 1 or commBurstBufferCount, CONST_COMM_BURST_BUFFER_COUNT);
+            commServerTimeLastThrottleUpdate = serverTime;
+
+            -- while (anything in queue) and (throttle allows it)
+            while(#commScheduler > 0 and commBurstBufferCount > 0) do
+                -- FIFO queue
+                local commData = table.remove(commScheduler, 1);
+                sendData(commData.data, commData.channel);
+                commBurstBufferCount = commBurstBufferCount - 1;
             end
-        end)
+        end);
 
         LIB_OPEN_RAID_COMM_SCHEDULER = newTickerHandle
     end
@@ -531,8 +545,8 @@ end
 
             if (bit.band(flags, CONST_COMM_SENDTO_GUILD)) then --send to guild
                 if (IsInGuild()) then
-                    local commData = {data = dataEncoded, channel = "GUILD"}
-                    table.insert(commScheduler, commData)
+                    --Guild has no 10 msg restriction so send it directly
+                    sendData(dataEncoded, "GUILD");
                 end
             end
         else
@@ -563,18 +577,25 @@ end
         ["sendPvPTalent_Schedule"] = 14,
         ["leaveCombat_Schedule"] = 18,
         ["encounterEndCooldownsCheck_Schedule"] = 24,
-        ["sendKeystoneInfoToParty_Schedule"] = 7,
-        ["sendKeystoneInfoToGuild_Schedule"] = 7,
+        --["sendKeystoneInfoToParty_Schedule"] = 2,
+        --["sendKeystoneInfoToGuild_Schedule"] = 2,
     }
 
     openRaidLib.Schedules = {
         registeredUniqueTimers = {}
     }
 
+    local timersCanRunWithoutGroup = {
+        ["mainControl"] = {
+            ["updatePlayerData_Schedule"] = true
+        }
+    }
+
     --run a scheduled function with its payload
     local triggerScheduledTick = function(tickerObject)
         local payload = tickerObject.payload
         local callback = tickerObject.callback
+        local bCanRunWithoutGroup = tickerObject.bCanRunWithoutGroup
 
         if (tickerObject.isUnique) then
             local namespace = tickerObject.namespace
@@ -584,44 +605,49 @@ end
 
         --check if the player is still in group
         if (not openRaidLib.IsInGroup()) then
-            return
+            if (not bCanRunWithoutGroup) then
+                return
+            end
         end
 
         local result, errortext = xpcall(callback, geterrorhandler(), unpack(payload))
-        if (not result) then
-            sendChatMessage("openRaidLib: error on scheduler:", tickerObject.scheduleName, tickerObject.stack)
-        end
+        --if (not result) then
+        --    sendChatMessage("openRaidLib: error on scheduler:", tickerObject.scheduleName, tickerObject.stack)
+        --end
 
         return result
     end
 
     --create a new schedule
-    function openRaidLib.Schedules.NewTimer(time, callback, ...)
+    function openRaidLib.Schedules.NewTimer(time, callback, bCanRunWithoutGroup, ...)
         local payload = {...}
         local newTimer = C_Timer.NewTimer(time, triggerScheduledTick)
+        newTimer.bCanRunWithoutGroup = bCanRunWithoutGroup
         newTimer.payload = payload
         newTimer.callback = callback
-        newTimer.stack = debugstack()
+        --newTimer.stack = debugstack()
         return newTimer
     end
 
     --create an unique schedule
-    --if a schedule already exists, cancels it and make a new
+    --if a schedule already exists, cancels it and make a new ~unique
     function openRaidLib.Schedules.NewUniqueTimer(time, callback, namespace, scheduleName, ...)
         --the the schedule uses a default time, get it from the table, if the timer already exists, quit
         if (time == CONST_USE_DEFAULT_SCHEDULE_TIME) then
             if (openRaidLib.Schedules.IsUniqueTimerOnCooldown(namespace, scheduleName)) then
                 return
             end
-            time = defaultScheduleCooldownTimeByScheduleName[scheduleName]
+            time = defaultScheduleCooldownTimeByScheduleName[scheduleName] or time
         else
             openRaidLib.Schedules.CancelUniqueTimer(namespace, scheduleName)
         end
 
-        local newTimer = openRaidLib.Schedules.NewTimer(time, callback, ...)
+        local bCanRunWithoutGroup = timersCanRunWithoutGroup[namespace] and timersCanRunWithoutGroup[namespace][scheduleName]
+
+        local newTimer = openRaidLib.Schedules.NewTimer(time, callback, bCanRunWithoutGroup, ...)
         newTimer.namespace = namespace
         newTimer.scheduleName = scheduleName
-        newTimer.stack = debugstack()
+        --newTimer.stack = debugstack()
         newTimer.isUnique = true
 
         local registeredUniqueTimers = openRaidLib.Schedules.registeredUniqueTimers
@@ -2526,6 +2552,74 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
 
 --------------------------------------------------------------------------------------------------------------------------------
 --~keystones
+
+    ---@class keystoneinfo
+    ---@field level number
+    ---@field mapID number
+    ---@field challengeMapID number
+    ---@field classID number
+    ---@field rating number
+    ---@field mythicPlusMapID number
+
+    --manager constructor
+    openRaidLib.KeystoneInfoManager = {
+        --structure:
+        --[playerName] = keystoneinfo
+        ---@type table<string, keystoneinfo>
+        KeystoneData = {},
+    }
+
+    --search the player backpack to find a mythic keystone
+    --with the keystone object, it'll attempt to get the mythicPlusMapID to be used with C_ChallengeMode.GetMapUIInfo(mythicPlusMapID)
+    --ATM we are obligated to do this due to C_MythicPlus.GetOwnedKeystoneMapID() return the same mapID for the two Tazavesh dungeons
+    local getMythicPlusMapID = function()
+        for backpackId = 0, 4 do
+            for slotId = 1, GetContainerNumSlots(backpackId) do
+                local itemId = GetContainerItemID(backpackId, slotId)
+                if (itemId == LIB_OPEN_RAID_MYTHICKEYSTONE_ITEMID) then
+                    local itemLink = GetContainerItemLink(backpackId, slotId)
+                    local destroyedItemLink = itemLink:gsub("|", "")
+                    local color, itemID, mythicPlusMapID = strsplit(":", destroyedItemLink)
+                    return tonumber(mythicPlusMapID)
+                end
+            end
+        end
+    end
+
+    local checkForKeystoneChange = function()
+        --clear the timer reference
+        openRaidLib.KeystoneInfoManager.KeystoneChangedTimer = nil
+
+        --check if the player has a keystone in the backpack by quering the keystone level
+        local level = C_MythicPlus.GetOwnedKeystoneLevel()
+        if (not level) then
+            return
+        end
+        local mapID = C_MythicPlus.GetOwnedKeystoneMapID()
+
+        --get the current player keystone info and then compare with the keystone info from the bag, if there is differences update the player keystone info
+        local unitName = UnitName("player")
+        ---@type keystoneinfo
+        local keystoneInfo = openRaidLib.KeystoneInfoManager.GetKeystoneInfo(unitName, true)
+
+        if (keystoneInfo.level ~= level or keystoneInfo.mapID ~= mapID) then
+            openRaidLib.KeystoneInfoManager.UpdatePlayerKeystoneInfo(keystoneInfo)
+            --hack: trigger a received data request to send data to party and guild when logging in
+            openRaidLib.KeystoneInfoManager.OnReceiveRequestData()
+        end
+    end
+
+    local bagUpdateEventFrame = _G["OpenRaidBagUpdateFrame"] or CreateFrame("frame", "OpenRaidBagUpdateFrame")
+    bagUpdateEventFrame:RegisterEvent("BAG_UPDATE")
+    bagUpdateEventFrame:RegisterEvent("ITEM_CHANGED")
+    bagUpdateEventFrame:SetScript("OnEvent", function(bagUpdateEventFrame, event, ...)
+        if (openRaidLib.KeystoneInfoManager.KeystoneChangedTimer) then
+            return
+        else
+            openRaidLib.KeystoneInfoManager.KeystoneChangedTimer = C_Timer.NewTimer(2, checkForKeystoneChange)
+        end
+    end)
+
     --public callback does not check if the keystone has changed from the previous callback
 
     --API calls
@@ -2593,13 +2687,9 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
             return true
         end
 
-    --manager constructor
-        openRaidLib.KeystoneInfoManager = {
-            --structure:
-            --[playerName] = {level = 2, mapID = 222}
-            KeystoneData = {},
-        }
+    --privite stuff, these function can still be called, but not advised
 
+        ---@type keystoneinfo
         local keystoneTablePrototype = {
             level = 0,
             mapID = 0,
@@ -2609,26 +2699,9 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
             mythicPlusMapID = 0,
         }
 
-    --search the player backpack to find a mythic keystone
-    --with the keystone object, it'll attempt to get the mythicPlusMapID to be used with C_ChallengeMode.GetMapUIInfo(mythicPlusMapID)
-    --ATM we are obligated to do this due to C_MythicPlus.GetOwnedKeystoneMapID() return the same mapID for the two Tazavesh dungeons
-    local getMythicPlusMapID = function()
-        for backpackId = 0, 4 do
-            for slotId = 1, GetContainerNumSlots(backpackId) do
-                local itemId = GetContainerItemID(backpackId, slotId)
-                if (itemId == LIB_OPEN_RAID_MYTHICKEYSTONE_ITEMID) then
-                    local itemLink = GetContainerItemLink(backpackId, slotId)
-                    local destroyedItemLink = itemLink:gsub("|", "")
-                    local color, itemID, mythicPlusMapID = strsplit(":", destroyedItemLink)
-                    return tonumber(mythicPlusMapID)
-                end
-            end
-        end
-    end
-
     function openRaidLib.KeystoneInfoManager.UpdatePlayerKeystoneInfo(keystoneInfo)
         keystoneInfo.level = C_MythicPlus.GetOwnedKeystoneLevel() or 0
-        keystoneInfo.mapID = C_MythicPlus.GetOwnedKeystoneMapID() or 0
+        keystoneInfo.mapID = C_MythicPlus.GetOwnedKeystoneMapID() or 0 --returning nil?
         keystoneInfo.mythicPlusMapID = getMythicPlusMapID() or 0
         keystoneInfo.challengeMapID = C_MythicPlus.GetOwnedKeystoneChallengeMapID() or 0
 
@@ -2689,11 +2762,17 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
 
         local _, instanceType = GetInstanceInfo()
         if (instanceType == "party") then
-            openRaidLib.Schedules.NewUniqueTimer(0.01, openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
+            openRaidLib.Schedules.NewUniqueTimer(math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
+
+        elseif (instanceType == "raid" or instanceType == "pvp") then
+            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 30) + math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
+
+        else
+            openRaidLib.Schedules.NewUniqueTimer(math.random(4), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
         end
 
         if (IsInGuild()) then
-            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 3) + math.random(), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild, "KeystoneInfoManager", "sendKeystoneInfoToGuild_Schedule")
+            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 6) + math.random(), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild, "KeystoneInfoManager", "sendKeystoneInfoToGuild_Schedule")
         end
     end
     openRaidLib.commHandler.RegisterComm(CONST_COMM_KEYSTONE_DATAREQUEST_PREFIX, openRaidLib.KeystoneInfoManager.OnReceiveRequestData)
@@ -2742,12 +2821,8 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
         end
     end
 
-    function openRaidLib.KeystoneInfoManager.OnPlayerEnterWorld()
-        --keystones are only available on retail
-        if (not checkClientVersion("retail")) then
-            return
-        end
-        --hack: on received data send data to party and guild
+    local keystoneManagerOnPlayerEnterWorld = function()
+        --hack: trigger a received data request to send data to party and guild when logging in
         openRaidLib.KeystoneInfoManager.OnReceiveRequestData()
 
         --trigger public callback
@@ -2756,6 +2831,18 @@ openRaidLib.commHandler.RegisterComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRaid
         openRaidLib.KeystoneInfoManager.UpdatePlayerKeystoneInfo(keystoneInfo)
 
         openRaidLib.publicCallback.TriggerCallback("KeystoneUpdate", unitName, keystoneInfo, openRaidLib.KeystoneInfoManager.KeystoneData)
+    end
+
+    function openRaidLib.KeystoneInfoManager.OnPlayerEnterWorld()
+        --keystones are only available on retail
+        if (not checkClientVersion("retail")) then
+            return
+        end
+
+        --attempt to load keystone item link as reports indicate it can be nil
+        getMythicPlusMapID()
+
+        C_Timer.After(2, keystoneManagerOnPlayerEnterWorld)
     end
 
     function openRaidLib.KeystoneInfoManager.OnMythicDungeonFinished()

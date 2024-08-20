@@ -1,37 +1,38 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-	
-	<Button name="GameMenuButtonWCCC" parent="GameMenuFrame" inherits="GameMenuButtonTemplate" text="WCCC Companion">
-		<Layers>
-            <Layer level="MEDIUM" textureSubLevel="-1">
-                <Texture name="$parentIcon" file="Interface\AddOns\WCCCAddOn\assets\wccc-logo.tga">
-                <Size x="16" y="16"/>
-                <Anchors>
-                    <Anchor point="LEFT" x="-2" y="0"/>
-                </Anchors>
-                </Texture>
-            </Layer>
-        </Layers>
 
-		<Scripts>
-			<OnLoad>
-				if GameMenuFrame_UpdateVisibleButtons then
-					hooksecurefunc("GameMenuFrame_UpdateVisibleButtons", function()
-						GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + 25)
-					end)
-				end
+<!--	The main menu got changed in 11.0, but since everything is accessible from the Guild UI this isn't really useful anymore. -->
+<!--	<Button name="GameMenuButtonWCCC" parent="GameMenuFrame" inherits="GameMenuButtonTemplate" text="WCCC Companion">-->
+<!--		<Layers>-->
+<!--            <Layer level="MEDIUM" textureSubLevel="-1">-->
+<!--                <Texture name="$parentIcon" file="Interface\AddOns\WCCCAddOn\assets\wccc-logo.tga">-->
+<!--                <Size x="16" y="16"/>-->
+<!--                <Anchors>-->
+<!--                    <Anchor point="LEFT" x="-2" y="0"/>-->
+<!--                </Anchors>-->
+<!--                </Texture>-->
+<!--            </Layer>-->
+<!--        </Layers>-->
 
-				local point, relativeTo, relativePoint, x, y = GameMenuButtonMacros:GetPoint(1)
-				if relativeTo and relativeTo ~= self then
-					self:SetPoint(point, relativeTo, relativePoint, x, y)
-				end
+<!--		<Scripts>-->
+<!--			<OnLoad>-->
+<!--				if GameMenuFrame_UpdateVisibleButtons then-->
+<!--					hooksecurefunc("GameMenuFrame_UpdateVisibleButtons", function()-->
+<!--						GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + 25)-->
+<!--					end)-->
+<!--				end-->
 
-				GameMenuButtonMacros:ClearAllPoints()
-				GameMenuButtonMacros:SetPoint("TOP", self, "BOTTOM", 0, -1)
-			</OnLoad>
-			<OnClick>
-				InterfaceOptionsFrame_OpenToCategory("WCCC Clubbing Companion")
-				HideUIPanel(GameMenuFrame)
-			</OnClick>
-		</Scripts>
-	</Button>
+<!--				local point, relativeTo, relativePoint, x, y = GameMenuButtonMacros:GetPoint(1)-->
+<!--				if relativeTo and relativeTo ~= self then-->
+<!--					self:SetPoint(point, relativeTo, relativePoint, x, y)-->
+<!--				end-->
+
+<!--				GameMenuButtonMacros:ClearAllPoints()-->
+<!--				GameMenuButtonMacros:SetPoint("TOP", self, "BOTTOM", 0, -1)-->
+<!--			</OnLoad>-->
+<!--			<OnClick>-->
+<!--				InterfaceOptionsFrame_OpenToCategory("WCCC Clubbing Companion")-->
+<!--				HideUIPanel(GameMenuFrame)-->
+<!--			</OnClick>-->
+<!--		</Scripts>-->
+<!--	</Button>-->
 </Ui>
