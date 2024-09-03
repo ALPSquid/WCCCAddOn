@@ -1,3 +1,6 @@
+# v1.7.1
+* Included Earthen in Clubbing Competition
+
 # v1.7
 * Updated for 11.0
 
