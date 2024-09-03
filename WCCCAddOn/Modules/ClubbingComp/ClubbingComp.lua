@@ -41,6 +41,8 @@ local RESTRICTED_ZONES =
     [103] = true,
     -- Boralus
     [1161] = true,
+    -- Dornagol
+    [14771] = true
 }
 
 --- 
@@ -255,6 +257,7 @@ RACES["LightforgedDraenei"] = RACES["Draenei"]
 RACES["VoidElf"] = RACES["NightElf"]
 RACES["KulTiran"] = RACES["Human"]
 RACES["DarkIronDwarf"] = RACES["Dwarf"]
+RACES["Earthen"] = RACES["Dwarf"]
 RACES["Mechagnome"] = RACES["Gnome"]
 RACES["Nightborne"] = RACES["BloodElf"]
 RACES["MagharOrc"] = RACES["Orc"]
