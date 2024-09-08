@@ -143,9 +143,10 @@ WCCCAD.CommErrorFilterDurationSecs = 600
 ---
 --- Send a module comms message. 
 --- Data can be an object and will be automatically  serialized on send and deserialized on receive.
--- @param targetplayer only used for whisper channel.
+--- @param targetPlayer: only used for whisper channel.
+--- @param prio: ChatThrottleLib priority, or null for normal.
 ---
-function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlayer)
+function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlayer, prio)
     if channel == ns.consts.CHAT_CHANNEL.GUILD and not IsInGuild() then return end
     local modulePrefix = format("%s[WCCCMOD]%s[WCCCKEY]", moduleName, messageKey)
 
@@ -160,7 +161,7 @@ function WCCCAD:SendModuleComm(moduleName, messageKey, data, channel, targetPlay
     if targetPlayer then
         WCCCAD.RecentCommTargets[targetPlayer] = GetServerTime()
     end
-    self:SendCommMessage("WCCCAD", packagedData, channel, targetPlayer)
+    self:SendCommMessage("WCCCAD", packagedData, channel, targetPlayer, prio)
 end
 
 function WCCCAD:OnCommReceived(prefix, message, distribution, sender)
