@@ -867,7 +867,7 @@ function ClubbingComp_UI:PostScoreTo(channel)
 
     local scoreMessages =
     {
-        [1] = "I've clubbed %i points worth of Alliance scum! I am the mightiest clubber of them all!",
+        [1] = "I've clubbed %i points worth of Worgen sympathisers! I am the mightiest clubber of them all!",
         [2] = "I've scored %i points this clubbing season!",
     }
 

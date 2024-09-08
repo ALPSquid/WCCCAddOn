@@ -1,3 +1,7 @@
+# v1.7.2
+* Fixed Dornogal clubbing competition CD.
+* Tweaked clubbing point announcement messages to be more friendly to Alliance, now that we're all buds.
+
 # v1.7.1
 * Included Earthen in Clubbing Competition
 

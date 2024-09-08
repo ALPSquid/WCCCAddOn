@@ -42,7 +42,7 @@ local RESTRICTED_ZONES =
     -- Boralus
     [1161] = true,
     -- Dornagol
-    [14771] = true
+    [2339] = true
 }
 
 --- 
