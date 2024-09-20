@@ -1,3 +1,6 @@
+# v1.7.3
+* Fixed expired keystones from OpenRaidLib showing on the M+ UI.
+
 # v1.7.2
 * Fixed Dornogal clubbing competition CD.
 * Tweaked clubbing point announcement messages to be more friendly to Alliance, now that we're all buds.

@@ -49,7 +49,7 @@ function MythicPlus:CreateKeystoneDataProvider(providerName)
     end
 
     function provider.PrintDebugMessage(providerSelf, msg)
-        WCCCAD.UI:PrintDebugMessage(format("[%s] %s", providerSelf.providerName, msg), providerSelf.debugMode)
+        MythicPlus:PrintDebugMessage(format("[%s] %s", providerSelf.providerName, msg), providerSelf.debugMode)
     end
 
     return provider

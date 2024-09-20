@@ -65,14 +65,19 @@ function orlProvider:UpdateData(guildKeys, leaderboardData)
     end
 
     -- Add ORL data if we don't have guild addon data for that player.
+    local lastResetTimestamp = ns.utils.GetLastServerResetTimestamp()
     for orlPlayerName, orlKeystoneInfo in pairs(self.providerDB.keyData) do
         if orlKeystoneInfo.challengeMapID ~= 0 then
             local addPlayer = true
-            for _, entryData in pairs(guildKeys) do
-                if entryData.playerName == orlPlayerName then
-                    self:PrintDebugMessage(orlPlayerName.." has guild addon data. Skipping.")
-                    addPlayer = false
-                    break
+            if orlKeystoneInfo.lastUpdateTimestamp < lastResetTimestamp then
+                addPlayer = false
+            else
+                for _, entryData in pairs(guildKeys) do
+                    if entryData.playerName == orlPlayerName then
+                        self:PrintDebugMessage(orlPlayerName.." has guild addon data. Skipping.")
+                        addPlayer = false
+                        break
+                    end
                 end
             end
             if addPlayer then
