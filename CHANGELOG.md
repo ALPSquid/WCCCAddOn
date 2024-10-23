@@ -1,3 +1,6 @@
+# v1.7.4
+* Updated for 11.0.5
+
 # v1.7.3
 * Fixed expired keystones from OpenRaidLib showing on the M+ UI.
 
