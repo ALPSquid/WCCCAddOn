@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Extract version number
       run: |
@@ -22,21 +22,12 @@ jobs:
       run: |
         mkdir -p Builds/${{ env.version_num }}
         zip -r Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip WCCCAddOn -x "*.git*"
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create release
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: v${{ env.version_num }}
-        release_name: Release v${{ env.version_num }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v1
-      with:
-        files: Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: true
+        tag: v${{ env.version_num }}
+        prerelease: ${{ contains(env.version_num, 'alpha') ||  contains(env.version_num, 'beta') }}
+        artifacts: "Builds/${{ env.version_num }}/WCCCAddOn_${{ env.version_num }}.zip"
+        bodyFile: "CHANGELOG.md"
