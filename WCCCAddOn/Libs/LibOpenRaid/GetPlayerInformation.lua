@@ -215,6 +215,52 @@ local getDragonflightTalentsAsIndexTable = function()
     return allTalents
 end
 
+function openRaidLib.GetSpellIdsFromTalentString(talentString)
+    C_AddOns.LoadAddOn("Blizzard_PlayerSpells")
+    local talentsFrame = PlayerSpellsFrame.TalentsFrame
+    talentsFrame:Show()
+
+    local spellIds = {}
+
+    local importStream = ExportUtil.MakeImportDataStream(talentString)
+    local headerValid, serializationVersion, specID, treeHash = talentsFrame:ReadLoadoutHeader(importStream)
+
+    local currentSerializationVersion = C_Traits.GetLoadoutSerializationVersion()
+    if (not headerValid or serializationVersion ~= currentSerializationVersion) then
+        return spellIds
+    end
+
+    local treeInfo = talentsFrame:GetTreeInfo()
+    local configID = talentsFrame:GetConfigID()
+    local treeID = treeInfo.ID
+
+    if (treeInfo and configID) then
+        local loadoutContent = talentsFrame:ReadLoadoutContent(importStream, treeInfo.ID)
+        local loadoutEntryInfo = talentsFrame:ConvertToImportLoadoutEntryInfo(configID, treeInfo.ID, loadoutContent)
+
+        if (loadoutContent and loadoutEntryInfo) then
+            for i = 1, #loadoutEntryInfo do
+                local thisTrait = loadoutEntryInfo[i]
+                local entryID = thisTrait.selectionEntryID
+                if (entryID and entryID > 0) then
+                    local traitEntryInfo = C_Traits.GetEntryInfo(configID, entryID)
+                    if (traitEntryInfo) then
+                        local definitionID = traitEntryInfo.definitionID
+                        if (definitionID) then
+                            local traitDefinitionInfo = C_Traits.GetDefinitionInfo(definitionID)
+                            if (traitDefinitionInfo) then
+                                spellIds[traitDefinitionInfo.spellID] = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return spellIds
+end
+
 function openRaidLib.GetDragonFlightTalentsAsString()
     local talents = getDragonlightTalentAsString()
 
@@ -435,7 +481,7 @@ function openRaidLib.GearManager.GetPlayerGemsAndEnchantInfo()
         local itemLink = GetInventoryItemLink("player", equipmentSlotId)
         if (itemLink) then
             --get the information from the item
-            local _, itemId, enchantId, gemId1, gemId2, gemId3, gemId4, suffixId, uniqueId, levelOfTheItem, specId, upgradeInfo, instanceDifficultyId, numBonusIds, restLink = strsplit(":", itemLink)
+            local itemQuality, hyperlinkType, itemId, enchantId, gemId1, gemId2, gemId3, gemId4, suffixId, uniqueId, levelOfTheItem, specId, upgradeInfo, instanceDifficultyId, numBonusIds, restLink = strsplit(":", itemLink)
             local gemsIds = {gemId1, gemId2, gemId3, gemId4}
 
             --enchant
@@ -493,7 +539,7 @@ function openRaidLib.GearManager.BuildPlayerEquipmentList()
         local itemLink = GetInventoryItemLink("player", equipmentSlotId)
         if (itemLink) then
             --local itemStatsTable = {}
-            local itemID, enchantID, gemID1, gemID2, gemID3, gemID4, suffixID, uniqueID, linkLevel, specializationID, modifiersMask, itemContext = select(2, strsplit(":", itemLink))
+            local itemID, enchantID, gemID1, gemID2, gemID3, gemID4, suffixID, uniqueID, linkLevel, specializationID, modifiersMask, itemContext = select(3, strsplit(":", itemLink))
             itemID = tonumber(itemID)
 
             local effectiveILvl, isPreview, baseILvl = GetDetailedItemLevelInfo(itemLink)
