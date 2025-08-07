@@ -1,4 +1,44 @@
 ------------------------------------------------------------------------
+r1365 | funkehdude | 2025-07-11 17:08:49 +0000 (Fri, 11 Jul 2025) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
+r1364 | nevcairiel | 2025-07-05 16:01:08 +0000 (Sat, 05 Jul 2025) | 1 line
+Changed paths:
+   M /trunk
+   M /trunk/AceDB-3.0/AceDB-3.0.lua
+
+AceDB-3.0: Avoid hitting the metatable when looking up the keys
+------------------------------------------------------------------------
+r1363 | nevcairiel | 2025-07-05 15:42:11 +0000 (Sat, 05 Jul 2025) | 3 lines
+Changed paths:
+   M /trunk
+   M /trunk/AceDB-3.0/AceDB-3.0.lua
+
+AceDB-3.0: Aggressively cleanout empty profiles tables inside namespace on logout
+
+This should help cleanup unloaded empty namespaces
+------------------------------------------------------------------------
+r1362 | funkehdude | 2025-06-19 17:08:39 +0000 (Thu, 19 Jun 2025) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
+r1361 | nevcairiel | 2025-05-17 12:20:39 +0000 (Sat, 17 May 2025) | 6 lines
+Changed paths:
+   M /trunk
+   M /trunk/AceDB-3.0/AceDB-3.0.lua
+
+AceDB-3.0: Cleanup empty namespace tables
+
+Some addons use a large amount of namespaces which rarely get used, and
+empty tables can clutter the SV. Cleaning up empty tables is consistent
+with the other cleanup tasks done at logout, as they'll be re-created if
+needed.
+------------------------------------------------------------------------
 r1360 | funkehdude | 2025-05-01 22:54:00 +0000 (Thu, 01 May 2025) | 1 line
 Changed paths:
    M /trunk/Ace3.toc

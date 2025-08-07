@@ -44,6 +44,7 @@ function ClubberPoints_UI:OnEnable()
         return
     end
 
+    -- TODO: Dropdown button needs refactoring to use the new dropdown system.
     if ClubberPoints_UI.dropDownList1WCCCFrame == nil then
         --region Guild Member Tooltip
         ClubberPoints_UI.awardPointsDialogKey = ClubberPoints.moduleName .. "AwardPointsDialog"

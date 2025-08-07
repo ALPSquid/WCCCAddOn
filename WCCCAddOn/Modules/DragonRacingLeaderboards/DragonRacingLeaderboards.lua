@@ -52,8 +52,8 @@ function DRL:OnEnable()
 end
 
 function DRL:OnDisable()
-    self:RegisterEvent("QUEST_ACCEPTED")
-    self:RegisterEvent("QUEST_REMOVED")
+    self:UnregisterEvent("QUEST_ACCEPTED")
+    self:UnregisterEvent("QUEST_REMOVED")
 end
 
 ---
