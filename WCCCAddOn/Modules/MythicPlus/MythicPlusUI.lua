@@ -474,7 +474,7 @@ WCCC_MythicPlusEntryMixin.Data = nil -- { GUID, playerName, classID, mapID, leve
 --    info.isTitle = false
 --    info.notCheckable = true
 --    info.disabled = nil
---    info.func = function () ChatFrame_SendTell(self:GetParent():GetPlayerName()) end
+--    info.func = function () ChatFrameUtil.SendTell(self:GetParent():GetPlayerName()) end
 --    UIDropDownMenu_AddButton(info, level)
 --
 --    info.text = INVITE

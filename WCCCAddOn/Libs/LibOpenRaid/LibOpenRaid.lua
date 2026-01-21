@@ -35,6 +35,22 @@ BUGS:
 
 --]=]
 
+local _, _, _, toc = GetBuildInfo()
+local canRegisterEvents = function()
+    return toc <= 119999
+end
+
+local canSendCommNow = function()
+    if toc <= 119999 then
+        return true
+    else
+        if InCombatLockdown() or UnitAffectingCombat("player") then
+            return false
+        end
+        return true
+    end
+end
+
 ---@alias castername string
 ---@alias castspellid string
 ---@alias schedulename string
@@ -59,7 +75,7 @@ end
 
 local major = "LibOpenRaid-1.0"
 
-local CONST_LIB_VERSION = 164
+local CONST_LIB_VERSION = 174
 
 if (LIB_OPEN_RAID_MAX_VERSION) then
     if (CONST_LIB_VERSION <= LIB_OPEN_RAID_MAX_VERSION) then
@@ -436,8 +452,10 @@ end
         end
     end
 
-    openRaidLib.commHandler.eventFrame:RegisterEvent("CHAT_MSG_ADDON_LOGGED")
-    openRaidLib.commHandler.eventFrame:SetScript("OnEvent", openRaidLib.commHandler.OnReceiveSafeComm)
+    if canRegisterEvents() then
+        openRaidLib.commHandler.eventFrame:RegisterEvent("CHAT_MSG_ADDON_LOGGED")
+        openRaidLib.commHandler.eventFrame:SetScript("OnEvent", openRaidLib.commHandler.OnReceiveSafeComm)
+    end
 
     function openRaidLib.commHandler.aceComm.OnReceiveComm(event, prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID, bIsSafe)
         --check if the data belong to us
@@ -447,7 +465,7 @@ end
             --don't receive comms from the player it self
             local playerName = UnitName("player")
             if (playerName == sender) then
-                --return
+                return
             end
 
             --if this received data is not a safe comm, then decode it
@@ -478,15 +496,7 @@ end
             end
 
             --if this is isn't a keystone data comm, check if the lib can receive comms
-            if (dataTypePrefix ~= CONST_COMM_KEYSTONE_DATA_PREFIX and dataTypePrefix ~= CONST_COMM_KEYSTONE_DATAREQUEST_PREFIX) then
-                if (not openRaidLib.IsCommAllowed()) then
-                    openRaidLib.DiagnosticError("comm not allowed.")
-                    return
-                end
-            end
-
-            --if this is isn't a rating data comm, check if the lib can receive comms
-            if (dataTypePrefix ~= CONST_COMM_RATING_DATA_PREFIX and dataTypePrefix ~= CONST_COMM_RATING_DATAREQUEST_PREFIX) then
+            if (dataTypePrefix ~= CONST_COMM_KEYSTONE_DATA_PREFIX and dataTypePrefix ~= CONST_COMM_KEYSTONE_DATAREQUEST_PREFIX and dataTypePrefix ~= CONST_COMM_RATING_DATA_PREFIX and dataTypePrefix ~= CONST_COMM_RATING_DATAREQUEST_PREFIX) then
                 if (not openRaidLib.IsCommAllowed()) then
                     openRaidLib.DiagnosticError("comm not allowed.")
                     return
@@ -553,7 +563,10 @@ end
     local receivingMsgInParts = {}
 
     local debugCommReception = CreateFrame("frame")
-    debugCommReception:RegisterEvent("CHAT_MSG_ADDON_LOGGED")
+    if canRegisterEvents() then
+        debugCommReception:RegisterEvent("CHAT_MSG_ADDON_LOGGED")
+    end
+
     debugCommReception:SetScript("OnEvent", function(self, event, prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID)
         if (prefix == CONST_COMM_PREFIX_LOGGED) then
             local chunkNumber, totalChunks, data = text:match("^%$(%d+)%$(%d+)(.*)")
@@ -613,6 +626,10 @@ end
     --0x2: to raid
     --0x4: to guild
     local sendData = function(dataEncoded, channel, bIsSafe, plainText)
+        if not canSendCommNow() then
+            return
+        end
+
         local aceComm = LibStub:GetLibrary("AceComm-3.0", true)
         if (aceComm) then
             if (bIsSafe) then
@@ -687,6 +704,10 @@ end
     end
 
     function openRaidLib.commHandler.SendCommData(data, flags, bIsSafe)
+        if not canSendCommNow() then
+            return
+        end
+
         local LibDeflate = LibStub:GetLibrary("LibDeflate")
         local dataCompressed = LibDeflate:CompressDeflate(data, {level = 9})
         local dataEncoded = LibDeflate:EncodeForWoWAddonChannel(dataCompressed)
@@ -992,6 +1013,7 @@ end
         ["pvpTalentUpdate"] = {},
         ["onPlayerDeath"] = {},
         ["onPlayerRess"] = {},
+        ["raidEncounterStart"] = {},
         ["raidEncounterEnd"] = {},
         ["mythicDungeonStart"] = {},
         ["playerPetChange"] = {},
@@ -1114,8 +1136,10 @@ end
 
                         end
 
-                        detailsEventListener:RegisterEvent("UNIT_SPEC", "UnitSpecFound")
-                        detailsEventListener:RegisterEvent("UNIT_TALENTS", "UnitTalentsFound")
+                        if canRegisterEvents() then
+                            detailsEventListener:RegisterEvent("UNIT_SPEC", "UnitSpecFound")
+                            detailsEventListener:RegisterEvent("UNIT_TALENTS", "UnitTalentsFound")
+                        end
                     end
 
                 openRaidLib.bHasEnteredWorld = true
@@ -1174,6 +1198,13 @@ end
             openRaidLib.Schedules.NewUniqueTimer(4 + math.random(0, 5), openRaidLib.GearManager.SendAllGearInfo, "GearManager", "sendAllGearInfo_Schedule")
         end,
 
+        ["ENCOUNTER_START"] = function()
+            if (IsInRaid() or IsInGroup()) then
+                openRaidLib.UpdateUnitIDCache()
+                openRaidLib.internalCallback.TriggerEvent("raidEncounterStart")
+            end
+        end,
+
         ["ENCOUNTER_END"] = function()
             if (IsInRaid()) then
                 openRaidLib.internalCallback.TriggerEvent("raidEncounterEnd")
@@ -1212,7 +1243,9 @@ end
     }
     openRaidLib.eventFunctions = eventFunctions
 
-    eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    if canRegisterEvents() then
+        eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    end
 
     eventFrame:SetScript("OnEvent", function(self, event, ...)
         local eventCallbackFunc = eventFunctions[event]
@@ -1221,27 +1254,30 @@ end
 
     --run when PLAYER_ENTERING_WORLD triggers, this avoid any attempt of getting information without the game has completed the load process
     function openRaidLib.OnEnterWorldRegisterEvents()
-        eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-        eventFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "pet")
-        eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-        eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        eventFrame:RegisterEvent("UPDATE_INVENTORY_DURABILITY")
-        eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-        eventFrame:RegisterEvent("UNIT_PET")
-        eventFrame:RegisterEvent("PLAYER_DEAD")
-        eventFrame:RegisterEvent("PLAYER_ALIVE")
-        eventFrame:RegisterEvent("PLAYER_UNGHOST")
-        eventFrame:RegisterEvent("PLAYER_LOGOUT")
+        if canRegisterEvents() then
+            eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+            eventFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "pet")
+            eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+            eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+            eventFrame:RegisterEvent("UPDATE_INVENTORY_DURABILITY")
+            eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+            eventFrame:RegisterEvent("UNIT_PET")
+            eventFrame:RegisterEvent("PLAYER_DEAD")
+            eventFrame:RegisterEvent("PLAYER_ALIVE")
+            eventFrame:RegisterEvent("PLAYER_UNGHOST")
+            eventFrame:RegisterEvent("PLAYER_LOGOUT")
 
-        if (checkClientVersion("retail")) then
-            eventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
-            eventFrame:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
-            eventFrame:RegisterEvent("ENCOUNTER_END")
-            eventFrame:RegisterEvent("CHALLENGE_MODE_START")
-            eventFrame:RegisterEvent("CHALLENGE_MODE_COMPLETED")
-            eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-            eventFrame:RegisterEvent("TRAIT_TREE_CURRENCY_INFO_UPDATED")
-            eventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+            if (checkClientVersion("retail")) then
+                eventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+                eventFrame:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
+                eventFrame:RegisterEvent("ENCOUNTER_END")
+                eventFrame:RegisterEvent("CHALLENGE_MODE_START")
+                eventFrame:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+                eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+                eventFrame:RegisterEvent("TRAIT_TREE_CURRENCY_INFO_UPDATED")
+                eventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+                eventFrame:RegisterEvent("ENCOUNTER_START")
+            end
         end
     end
 
@@ -2542,6 +2578,11 @@ end
         --run on next frame
         openRaidLib.Schedules.NewUniqueTimer(0.1, openRaidLib.CooldownManager.CheckCooldownsAfterEncounterEnd, "CooldownManager", "encounterEndCooldownsCheck_Schedule")
     end
+    function openRaidLib.CooldownManager.OnEncounterStart()
+        openRaidLib.Schedules.CancelUniqueTimer("CooldownManager", "sendAllPlayerCooldowns_Schedule")
+        openRaidLib.Schedules.CancelUniqueTimer("CooldownManager", "sendAllPlayerCooldownsFromTalentChange_Schedule")
+        openRaidLib.CooldownManager.SendAllPlayerCooldowns()
+    end
 
     function openRaidLib.CooldownManager.OnMythicPlusStart()
         openRaidLib.Schedules.NewUniqueTimer(0.5, openRaidLib.CooldownManager.SendAllPlayerCooldowns, "CooldownManager", "sendAllPlayerCooldowns_Schedule")
@@ -2584,6 +2625,7 @@ end
     openRaidLib.internalCallback.RegisterCallback("playerCast", openRaidLib.CooldownManager.OnPlayerCast)
     openRaidLib.internalCallback.RegisterCallback("onPlayerRess", openRaidLib.CooldownManager.OnPlayerRess)
     openRaidLib.internalCallback.RegisterCallback("talentUpdate", openRaidLib.CooldownManager.OnPlayerTalentChanged)
+    openRaidLib.internalCallback.RegisterCallback("raidEncounterStart", openRaidLib.CooldownManager.OnEncounterStart)
     openRaidLib.internalCallback.RegisterCallback("raidEncounterEnd", openRaidLib.CooldownManager.OnEncounterEnd)
     openRaidLib.internalCallback.RegisterCallback("onLeaveCombat", openRaidLib.CooldownManager.OnEncounterEnd)
     openRaidLib.internalCallback.RegisterCallback("mythicDungeonStart", openRaidLib.CooldownManager.OnMythicPlusStart)
@@ -2932,6 +2974,7 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
     ---@field classID number
     ---@field rating number
     ---@field mythicPlusMapID number
+    ---@field specID number
 
     --manager constructor
     openRaidLib.KeystoneInfoManager = {
@@ -2982,8 +3025,11 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
     end
 
     local bagUpdateEventFrame = _G["OpenRaidBagUpdateFrame"] or CreateFrame("frame", "OpenRaidBagUpdateFrame")
-    bagUpdateEventFrame:RegisterEvent("BAG_UPDATE")
-    bagUpdateEventFrame:RegisterEvent("ITEM_CHANGED")
+    --if canRegisterEvents() then
+        bagUpdateEventFrame:RegisterEvent("BAG_UPDATE")
+        bagUpdateEventFrame:RegisterEvent("ITEM_CHANGED")
+    --end
+
     bagUpdateEventFrame:SetScript("OnEvent", function(bagUpdateEventFrame, event, ...)
         if (openRaidLib.KeystoneInfoManager.KeystoneChangedTimer) then
             return
@@ -3069,6 +3115,7 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
             classID = 0,
             rating = 0,
             mythicPlusMapID = 0,
+            specID = 0,
         }
 
     function openRaidLib.KeystoneInfoManager.UpdatePlayerKeystoneInfo(keystoneInfo)
@@ -3082,6 +3129,9 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
 
         local ratingSummary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary("player")
         keystoneInfo.rating = ratingSummary and ratingSummary.currentSeasonScore or 0
+
+        local specID = GetSpecializationInfo(GetSpecialization()) or 0
+        keystoneInfo.specID = specID
     end
 
     function openRaidLib.KeystoneInfoManager.GetAllKeystonesInfo()
@@ -3104,7 +3154,7 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
         local keystoneInfo = openRaidLib.KeystoneInfoManager.GetKeystoneInfo(playerName, true)
         openRaidLib.KeystoneInfoManager.UpdatePlayerKeystoneInfo(keystoneInfo)
 
-        local dataToSend = CONST_COMM_KEYSTONE_DATA_PREFIX .. "," .. keystoneInfo.level .. "," .. keystoneInfo.mapID .. "," .. keystoneInfo.challengeMapID .. "," .. keystoneInfo.classID .. "," .. keystoneInfo.rating .. "," .. keystoneInfo.mythicPlusMapID
+        local dataToSend = CONST_COMM_KEYSTONE_DATA_PREFIX .. "," .. keystoneInfo.level .. "," .. keystoneInfo.mapID .. "," .. keystoneInfo.challengeMapID .. "," .. keystoneInfo.classID .. "," .. keystoneInfo.rating .. "," .. keystoneInfo.mythicPlusMapID .. "," .. keystoneInfo.specID
         return dataToSend
     end
 
@@ -3115,10 +3165,15 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
     end
 
     function openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild()
+        if (LIB_OPEN_RAID_MYTHIC_PLUS_DND) then
+            return
+        end
         local dataToSend = getKeystoneInfoToComm()
         openRaidLib.commHandler.SendCommData(dataToSend, CONST_COMM_SENDTO_GUILD)
         diagnosticComm("SendPlayerKeystoneInfoToGuild| " .. dataToSend) --debug
     end
+
+    local latestSend = 0
 
     --when a request data is received, only send the data to party and guild
     --sending stuff to raid need to be called my the application with 'openRaidLib.RequestKeystoneDataFromRaid()'
@@ -3126,6 +3181,11 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
         if (not checkClientVersion("retail")) then
             return
         end
+
+        if (latestSend+1 > GetTime()) then
+            return
+        end
+        latestSend = GetTime()
 
         --update the information about the key stone the player has
         local keystoneInfo = openRaidLib.KeystoneInfoManager.GetKeystoneInfo(UnitName("player"), true)
@@ -3136,14 +3196,16 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
             openRaidLib.Schedules.NewUniqueTimer(math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
 
         elseif (instanceType == "raid" or instanceType == "pvp") then
-            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 30) + math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
+            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 10) + math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
 
         else
-            openRaidLib.Schedules.NewUniqueTimer(math.random(4), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
+            openRaidLib.Schedules.NewUniqueTimer(math.random(1), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToParty, "KeystoneInfoManager", "sendKeystoneInfoToParty_Schedule")
         end
 
         if (IsInGuild()) then
-            openRaidLib.Schedules.NewUniqueTimer(math.random(0, 6) + math.random(), openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild, "KeystoneInfoManager", "sendKeystoneInfoToGuild_Schedule")
+            local delay = math.random(0, 2) + math.random()
+            C_Timer.After(delay, openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild)
+            --openRaidLib.Schedules.NewUniqueTimer(delay, openRaidLib.KeystoneInfoManager.SendPlayerKeystoneInfoToGuild, "KeystoneInfoManager", "sendKeystoneInfoToGuild_Schedule")
         end
     end
     openRaidLib.commHandler.RegisterORComm(CONST_COMM_KEYSTONE_DATAREQUEST_PREFIX, openRaidLib.KeystoneInfoManager.OnReceiveRequestData)
@@ -3159,8 +3221,9 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
         local classID = tonumber(data[4])
         local rating = tonumber(data[5])
         local mythicPlusMapID = tonumber(data[6])
+        local specID = tonumber(data[7]) or 0
 
-        if (level and mapID and challengeMapID and classID and rating and mythicPlusMapID) then
+        if (level and mapID and challengeMapID and classID and rating and mythicPlusMapID and specID) then
             local keystoneInfo = openRaidLib.KeystoneInfoManager.GetKeystoneInfo(unitName, true)
             keystoneInfo.level = level
             keystoneInfo.mapID = mapID
@@ -3168,6 +3231,7 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
             keystoneInfo.challengeMapID = challengeMapID
             keystoneInfo.classID = classID
             keystoneInfo.rating = rating
+            keystoneInfo.specID = specID
 
             --trigger public callback
             openRaidLib.publicCallback.TriggerCallback("KeystoneUpdate", unitName, keystoneInfo, openRaidLib.KeystoneInfoManager.KeystoneData)
@@ -3519,7 +3583,9 @@ openRaidLib.commHandler.RegisterORComm(CONST_COMM_COOLDOWNREQUEST_PREFIX, openRa
 
 local createLocalCooldownTracker = function()
     local cdTrackerFrame = CreateFrame("frame")
-    cdTrackerFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    if canRegisterEvents() then
+        cdTrackerFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    end
     local allCooldownsFromLib = LIB_OPEN_RAID_COOLDOWNS_INFO
 
     ---@type table<castername, table<castspellid, number>>

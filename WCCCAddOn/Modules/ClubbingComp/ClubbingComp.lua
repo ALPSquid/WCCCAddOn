@@ -589,12 +589,12 @@ end
 --endregion
 
 function ClubbingComp:PlayEmote(emote, chatMsg)
-    SendChatMessage(emote, ns.consts.CHAT_CHANNEL.EMOTE)
+    C_ChatInfo.SendChatMessage(emote, ns.consts.CHAT_CHANNEL.EMOTE)
 
     -- Random chance to /say something.
     if chatMsg ~= nil and self.moduleDB.sayEmotesEnabled == true then
         if random() <= 0.5 then
-            SendChatMessage(chatMsg, ns.consts.CHAT_CHANNEL.SAY)
+            C_ChatInfo.SendChatMessage(chatMsg, ns.consts.CHAT_CHANNEL.SAY)
         end
     end
 end
@@ -655,7 +655,7 @@ function ClubbingComp:CheckZoneState(zoneID)
 
     if windowStartTimestamp == nil or windowStartTimestamp == 0 or currentTime >= cooldownEndTimestamp then
         -- No window active or window has ended, clear data and exit.
-        self:PrintDebugMessage("Cooldown reset for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"))
+        --self:PrintDebugMessage("Cooldown reset for zone: "..zoneID.. " - player zone = "..C_Map.GetBestMapForUnit("player"))
 
         if currentZoneState ~= RESTRICTED_ZONE_STATE.AVAILABLE 
         and zoneID == C_Map.GetBestMapForUnit("player") 

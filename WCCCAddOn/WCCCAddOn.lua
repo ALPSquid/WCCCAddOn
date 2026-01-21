@@ -36,12 +36,12 @@ end
 
 function WCCCAD:OnEnable()
     self:RegisterChatCommand("wccc", "WCCCCommand")
-    ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
+    ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
 end
 
 function WCCCAD:OnDisable()
     self:UnregisterChatCommand("wccc")
-    ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
+    ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_SYSTEM", WCCCAD.SystemChatFilter)
 end
 
 ---

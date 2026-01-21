@@ -859,7 +859,7 @@ function ClubbingComp_UI:PostSeasonTo(channel)
         [2] = "I'm ready for %s Clubbing Season! ",
     }
 
-    SendChatMessage(format(seasonMessages[math.random(1, #seasonMessages)], raceData.name), channel)
+    C_ChatInfo.SendChatMessage(format(seasonMessages[math.random(1, #seasonMessages)], raceData.name), channel)
 end
 
 function ClubbingComp_UI:PostScoreTo(channel)
@@ -871,7 +871,7 @@ function ClubbingComp_UI:PostScoreTo(channel)
         [2] = "I've scored %i points this clubbing season!",
     }
 
-    SendChatMessage(format(scoreMessages[math.random(1, #scoreMessages)], score), channel)
+    C_ChatInfo.SendChatMessage(format(scoreMessages[math.random(1, #scoreMessages)], score), channel)
 end
 
 function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)

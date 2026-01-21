@@ -35,7 +35,7 @@ function DRL_LeaderboardCellMixin:Init(dataProviderKey, textAlignment, scrollBox
 end
 
 function DRL_LeaderboardCellMixin:Populate(rowData, dataIndex)
-    local rank = self.scrollBox:FindIndex(rowData)
+    local rank = self.scrollBox:FindElementDataIndex(rowData)
     if self.dataProviderKey == "rank" then
         self.text:SetText(rank)
     else
@@ -62,7 +62,7 @@ DRL_LeaderboardListMixin = {}
 function DRL_LeaderboardListMixin:OnLoad()
     local view = CreateScrollBoxListLinearView()
     view:SetElementInitializer("DRL_LeaderboardRowTemplate", function(button, elementData)
-        button:Init(self.Container.ScrollBox:FindIndex(elementData))
+        button:Init(self.Container.ScrollBox:FindElementDataIndex(elementData))
     end)
     ScrollUtil.InitScrollBoxListWithScrollBar(self.Container.ScrollBox, self.Container.ScrollBar, view)
 
