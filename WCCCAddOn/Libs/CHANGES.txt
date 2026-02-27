@@ -1,4 +1,17 @@
 ------------------------------------------------------------------------
+r1389 | nevcairiel | 2026-02-03 18:39:11 +0000 (Tue, 03 Feb 2026) | 1 line
+Changed paths:
+   M /trunk/changelog.txt
+
+Update changelog
+------------------------------------------------------------------------
+r1388 | funkehdude | 2026-01-22 23:05:57 +0000 (Thu, 22 Jan 2026) | 1 line
+Changed paths:
+   M /trunk/.luacheckrc
+   M /trunk/AceTab-3.0/AceTab-3.0.lua
+
+AceTab-3.0/AceTab-3.0: `NUM_CHAT_WINDOWS` was replaced by `Constants.ChatFrameConstants.MaxChatWindows`
+------------------------------------------------------------------------
 r1387 | funkehdude | 2026-01-13 16:57:21 +0000 (Tue, 13 Jan 2026) | 1 line
 Changed paths:
    M /trunk/Ace3.toc
