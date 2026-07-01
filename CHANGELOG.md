@@ -1,3 +1,6 @@
+# v1.7.14
+* Updated for 12.1.0
+
 # v1.7.13
 * Updated for 12.0.5
 
