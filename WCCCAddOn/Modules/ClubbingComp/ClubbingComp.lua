@@ -19,31 +19,7 @@ local RESTRICTED_ZONE_STATE =
 	IN_COOLDOWN = 3
 }
 
----@type table<number, boolean> @Table of restricted zones.
-local RESTRICTED_ZONES =
-{
-	-- Chamber of Heart
-	[1473] = true,
-    -- Oribos (all floors)
-    [1670] = true,
-    [1671] = true,
-    [1672] = true,
-    [1673] = true,
-    -- Valdrakken
-    [2112] = true,
-    -- Stormwind
-    [84] = true,
-    -- Ironforge
-    [87] = true,
-    -- Darnassus
-    [89] = true,
-    -- The Exodar
-    [103] = true,
-    -- Boralus
-    [1161] = true,
-    -- Dornagol
-    [2339] = true
-}
+
 
 --- 
 ---@class RestrictedZoneEventMessage
@@ -124,146 +100,6 @@ local ActiveRestrictedZoneTimers =
 	-- [zoneID] = {zoneState, timerHandle}
 }
 
----@class RaceData
----@field type string @Race type to register hits under
----@field name string @Front-facing singular name
----@field pluralName string @Front-facing plural name
----@field score number @Number of points to award when clubbed
-
----@type table<string, RaceData> @Table of in-game race IDs to RaceData.
-local RACES =
-{
-	["Human"] =
-	{
-        type = "Human",
-        name = "Human",
-        pluralName = "Humans",
-		score = 1
-	},
-
-	["Draenei"] =
-	{
-        type = "Draenei",
-        name = "Draenei",
-        pluralName = "Draenei",
-		score = 1
-	},
-
-	["Dwarf"] =
-	{
-        type = "Dwarf",
-        name = "Dwarf",
-        pluralName = "Dwarves",
-		score = 1
-	},
-
-	["NightElf"] =
-	{
-        type = "NightElf",
-        name = "Elf",
-        pluralName = "Elves",
-		score = 1
-	},
-
-    ["Dracthyr"] =
-    {
-        type = "Dracthyr",
-        name = "Dracthyr",
-        pluralName = "Dracthyr",
-        score = 1,
-    },
-
-	["Gnome"] =
-	{
-        type = "Gnome",
-        name = "Gnome",
-        pluralName = "Gnomes",
-		score = 2
-	},
-
-	["Pandaren"] =
-	{
-        type = "Pandaren",
-        name = "Pandaren",
-        pluralName = "Pandaren",
-		score = 2
-	},
-
-	["Worgen"] =
-	{
-        type = "Worgen",
-        name = "Worgen",
-        pluralName = "Worgen",
-		score = 3,
-	},
-
-    ["Orc"] =
-    {
-        type = "Orc",
-        name = "Orc",
-        pluralName = "Orcs",
-        score = 1,
-    },
-
-    ["Scourge"] =
-    {
-        type = "Scourge",
-        name = "Undead",
-        pluralName = "Undead",
-        score = 1,
-    },
-
-    ["Tauren"] =
-    {
-        type = "Tauren",
-        name = "Tauren",
-        pluralName = "Tauren",
-        score = 1,
-    },
-
-    ["Troll"] =
-    {
-        type = "Troll",
-        name = "Troll",
-        pluralName = "Trolls",
-        score = 1,
-    },
-
-    ["Goblin"] =
-    {
-        type = "Goblin",
-        name = "Goblin",
-        pluralName = "Goblins",
-        score = 2,
-    },
-
-    ["Vulpera"] =
-    {
-        type = "Vulpera",
-        name = "Vulpera",
-        pluralName = "Vulpera",
-        score = 2,
-    },
-
-    ["BloodElf"] =
-    {
-        type = "BloodElf",
-        name = "Blood Elf",
-        pluralName = "Blood Elves",
-        score = 2,
-    }
-}
-RACES["LightforgedDraenei"] = RACES["Draenei"]
-RACES["VoidElf"] = RACES["NightElf"]
-RACES["KulTiran"] = RACES["Human"]
-RACES["DarkIronDwarf"] = RACES["Dwarf"]
-RACES["Earthen"] = RACES["Dwarf"]
-RACES["Mechagnome"] = RACES["Gnome"]
-RACES["Nightborne"] = RACES["BloodElf"]
-RACES["MagharOrc"] = RACES["Orc"]
-RACES["HighmountainTauren"] = RACES["Tauren"]
-RACES["ZandalariTroll"] = RACES["Troll"]
-
 ---@type number[]
 local HIT_SOUNDS =
 {
@@ -291,10 +127,10 @@ local SUCCESS_HIT_MESSAGES =
 ---@type string[]
 local GUILDY_CLUBBED_MESSAGES =
 {
-    [1] = "{playerName} just clubbed {worgenName} the Worgen in {playerLoc}!",
-    [2] = "{worgenName} the Worgen has been driven from {playerLoc} by {playerName}!",
-    [3] = "Another Worgen clubbed by {playerName}!",
-    [4] = "{playerName} just showed {worgenName} the Worgen what it means to be in the <WCCC>!",
+    [1] = "{playerName} just clubbed {targetName} the {targetRace} in {playerLoc}!",
+    [2] = "{targetName} the {targetRace} has been driven from {playerLoc} by {playerName}!",
+    [3] = "Another {targetRace} clubbed by {playerName}!",
+    [4] = "{playerName} just showed {targetName} the {targetRace} what it means to be in the <WCCC>!",
 }
 
 local COMM_KEY_GUILDY_CLUBBED_WORGEN = "guildyClubbedWorgen"
@@ -377,7 +213,7 @@ function ClubbingComp:OnEnable()
         WCCCAD.UI:PrintAddOnMessage("Guild Frenzy active, nowhere is safe! Club your fellow guildies for points!")
     end
 
-    for zoneID, _ in pairs(RESTRICTED_ZONES) do
+    for zoneID, _ in pairs(self.RESTRICTED_ZONES) do
         self:CheckZoneState(zoneID)
     end
 
@@ -389,11 +225,11 @@ function ClubbingComp:OnDisable()
 end
 
 function ClubbingComp:GetRaceScoreData(race)
-    return RACES[race]
+    return self.RACES[race]
 end
 
 function ClubbingComp:GetRaceScoreDataTable()
-    return RACES
+    return self.RACES
 end
 
 function ClubbingComp:IsGuildFrenzyActive()
@@ -445,7 +281,7 @@ function ClubbingComp:ClubCommand(args)
     local targetName = UnitName("target")
     local targetGuild = GetGuildInfo("target")
 
-    local raceScoreData = RACES[targetRaceEn]
+    local raceScoreData = self.RACES[targetRaceEn]
 
     if targetName == nil then
         self:PlayEmote(format("swings %s [Worgen Cub Clubbing Club] wildly around in front of %s.",
@@ -470,8 +306,8 @@ function ClubbingComp:ClubCommand(args)
                 self:RegisterHit(targetName, targetRaceEn)
                 self.UI:UpdateHUD()
 
-                if raceScoreData.type == "Worgen" then
-                    self:SendGuildyClubbedWorgenComm(targetName)
+                if raceScoreData.type == self.PRIMARY_RACE.type then
+                    self:SendGuildyClubbedWorgenComm(targetName, raceScoreData.name)
                 end
             else
                 WCCCAD.UI:PrintAddOnMessage("You've already clubbed "..targetName.." recently, so won't earn any points.")
@@ -495,7 +331,7 @@ end
 --- Saves a hit on the specified target to the hit table.
 ---
 function ClubbingComp:RegisterHit(targetName, targetRaceEn)
-    local hitTableKey = RACES[targetRaceEn].type
+    local hitTableKey = self.RACES[targetRaceEn].type
 
     if self.moduleDB.hitTable[hitTableKey] == nil then
         self.moduleDB.hitTable[hitTableKey] = {}
@@ -536,10 +372,10 @@ end
 --- Checks to see if the target has been recently hit.
 ---
 function ClubbingComp:HasRecentlyHit(targetName, targetRaceEn)
-    if RACES[targetRaceEn] == nil then
+    if self.RACES[targetRaceEn] == nil then
         return false
     end
-    local hitTableKey = RACES[targetRaceEn].type
+    local hitTableKey = self.RACES[targetRaceEn].type
 
     -- If there's no entry, then it's a valid target!
     if self.moduleDB.hitTable[hitTableKey] == nil then
@@ -566,7 +402,7 @@ function ClubbingComp:IsRaceClubbable(targetRaceEn)
         return false
     end
 
-    if raceData.type == "Worgen"
+    if raceData.type == self.PRIMARY_RACE.type
         or raceData.type == ClubbingComp.moduleDB.seasonData.currentSeasonRace
         or raceData.type == ClubbingComp.moduleDB.frenzyData.race
     then
@@ -602,14 +438,15 @@ end
 ---
 --- Guildy clubbed notification
 ---
-function ClubbingComp:SendGuildyClubbedWorgenComm(worgenName)
+function ClubbingComp:SendGuildyClubbedWorgenComm(targetName, targetRaceName)
     local playerName = UnitName("player")
     local playerLoc = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")).name
     local messageIndex = random(1, #GUILDY_CLUBBED_MESSAGES)
     local data =
     {
         messageIndex = messageIndex,
-        worgenName = worgenName,
+        targetRaceName = targetRaceName,
+        targetName = targetName,
         playerName = playerName,
         playerLoc = playerLoc
     }
@@ -624,7 +461,8 @@ function ClubbingComp:OnGuildyClubbedWorgenCommReceived(data)
 
     local message = GUILDY_CLUBBED_MESSAGES[data.messageIndex]
     message = message:gsub("{playerName}", data.playerName)
-    message = message:gsub("{worgenName}", data.worgenName)
+    message = message:gsub("{targetRace}", data.targetRaceName)
+    message = message:gsub("{targetName}", data.targetName)
     message = message:gsub("{playerLoc}", data.playerLoc)
 
     WCCCAD.UI:PrintAddOnMessage(message, ns.consts.MSG_TYPE.GUILD)
@@ -642,7 +480,7 @@ end
 --- @return number number corresponding to a RESTRICTED_ZONE_STATE.
 ---
 function ClubbingComp:CheckZoneState(zoneID)
-	if RESTRICTED_ZONES[zoneID] == nil then
+	if self.RESTRICTED_ZONES[zoneID] == nil then
 		return RESTRICTED_ZONE_STATE.AVAILABLE
 	end
 
@@ -707,7 +545,7 @@ function ClubbingComp:CheckZoneState(zoneID)
 end
 
 function ClubbingComp:OnClubUsedInZone(zoneID)
-	if RESTRICTED_ZONES[zoneID] == nil then
+	if self.RESTRICTED_ZONES[zoneID] == nil then
 		return
 	end
 

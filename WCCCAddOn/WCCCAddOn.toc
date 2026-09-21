@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 16001, 120100
 ## Title: WCCC Clubbing Companion
 ## Author: Andy Palmer (Aerthok - Defias Brotherhood EU)
 ## Notes: AddOn of the WCCC. Participate in Clubbing Competitions, view event/broadcast windows and more!
@@ -24,6 +24,8 @@ Modules\ClubberPoints\ClubberPointsUI.lua
 
 #-- Module - Clubbing Competition
 Modules\ClubbingComp\ClubbingComp.lua
+Modules\ClubbingComp\Data\ClubbingCompData_Retail.lua [AllowLoadGameType standard]
+Modules\ClubbingComp\Data\ClubbingCompData_Forever.lua [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]
 Modules\ClubbingComp\ClubbingCompUI.lua
 #--endmodule
 
@@ -32,12 +34,12 @@ Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua
 #--endmodule
 
-#-- Module - Mythic+
-Modules\MythicPlus\MythicPlus.lua
-Modules\MythicPlus\MythicPlusUI.lua
-Modules\MythicPlus\MythicPlusUI.xml
-Modules\MythicPlus\KeystoneDataProviders\BaseKeystoneDataProvider.lua
-Modules\MythicPlus\KeystoneDataProviders\OpenRaidLibProvider.lua
+#-- Module - Mythic+ (Retail only)
+Modules\MythicPlus\MythicPlus.lua [AllowLoadGameType standard]
+Modules\MythicPlus\MythicPlusUI.lua [AllowLoadGameType standard]
+Modules\MythicPlus\MythicPlusUI.xml [AllowLoadGameType standard]
+Modules\MythicPlus\KeystoneDataProviders\BaseKeystoneDataProvider.lua [AllowLoadGameType standard]
+Modules\MythicPlus\KeystoneDataProviders\OpenRaidLibProvider.lua [AllowLoadGameType standard]
 #--endmodule
 
 #--Module - Release Spirit Confirmation
@@ -45,14 +47,15 @@ Modules\MythicPlus\KeystoneDataProviders\OpenRaidLibProvider.lua
 #Modules\ReleaseSpiritConfirmation\ReleaseSpiritConfirmationUI.lua
 #--endmodule
 
-Modules\DragonRacingLeaderboards\Locale\DRL_Locales.xml
-Modules\DragonRacingLeaderboards\DragonRacingLeaderboards.lua
-Modules\DragonRacingLeaderboards\DRL_SettingsUI.lua
-Modules\DragonRacingLeaderboards\Data\DRL_RaceData.lua
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.lua
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.lua
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.xml
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.lua
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.xml
-Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.xml
+#-- Module - Dragon Racing Leaderboards (Retail only)
+Modules\DragonRacingLeaderboards\Locale\DRL_Locales.xml [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\DragonRacingLeaderboards.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\DRL_SettingsUI.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\Data\DRL_RaceData.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_RaceListUI.xml [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.lua [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardList.xml [AllowLoadGameType standard]
+Modules\DragonRacingLeaderboards\LeaderboardUI\DRL_LeaderboardUI.xml [AllowLoadGameType standard]
 #--endmodule

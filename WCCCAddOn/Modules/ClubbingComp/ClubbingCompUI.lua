@@ -117,61 +117,21 @@ local CLUBBINGCOMP_UI_CONFIG =
                             order = 1.01
                         },     
 
-                        hitCountWorgen =
+                        hitCountPrimary =
                         {
                             type = "description",
                             fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Worgen") end,
+                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString(ClubbingComp.PRIMARY_RACE.type) end,
                             order = 1.02
                         },
-                        hitCountHuman =
+                        hitCountSeason =
                         {
                             type = "description",
                             fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Human") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Human" end,
+                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString(ClubbingComp.moduleDB.seasonData.currentSeasonRace) end,
+                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace == nil end,
                             order = 1.03
                         },
-                        hitCountDraenei =
-                        {
-                            type = "description",
-                            fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Draenei") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Draenei" end,
-                            order = 1.04
-                        },
-                        hitCountDwarf =
-                        {
-                            type = "description",
-                            fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Dwarf") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Dwarf" end,
-                            order = 1.05
-                        },
-                        hitCountElves =
-                        {
-                            type = "description",
-                            fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("NightElf") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "NightElf" end,
-                            order = 1.06
-                        },
-                        hitCountGnome =
-                        {
-                            type = "description",
-                            fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Gnome") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Gnome" end,
-                            order = 1.07
-                        },
-                        hitCountPandaren =
-                        {
-                            type = "description",
-                            fontSize = "medium",
-                            name = function() return ClubbingComp.UI:GetRaceClubbedCountDisplayString("Pandaren") end,
-                            hidden = function() return ClubbingComp.moduleDB.seasonData.currentSeasonRace ~= "Pandaren" end,
-                            order = 1.08
-                        },    
 
                         hitCountDescription =
                         {
@@ -553,7 +513,7 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                             values = function()
                                 local raceOptions = {}
                                 for k,v in pairs(ClubbingComp:GetRaceScoreDataTable()) do
-                                    if raceOptions[v.type] == nil  and v.type ~= "Worgen" then
+                                    if raceOptions[v.type] == nil  and v.type ~= ClubbingComp.PRIMARY_RACE.type then
                                         raceOptions[v.type] = v.name
                                     end
                                 end
@@ -822,8 +782,8 @@ local ClubbingComp_UI = WCCCAD.UI:LoadModuleUI(ClubbingComp, "Clubbing Competiti
 WCCCAD.UI:AddGuildControlButton("Clubbing Competition", "View your score, current season, toggle the HUD and more", ClubbingComp_UI.Show)
 
 -- Officer control vars
-ClubbingComp_UI.OC_SelectedSeason = "Worgen"
-ClubbingComp_UI.OC_FrenzySelectedRace = "Worgen"
+ClubbingComp_UI.OC_SelectedSeason = ClubbingComp.PRIMARY_RACE.type
+ClubbingComp_UI.OC_FrenzySelectedRace = ClubbingComp.PRIMARY_RACE.type
 ClubbingComp_UI.OC_FrenzySelectedMultiplier = 1
 ClubbingComp_UI.OC_FrenzySelectedDuration = 2
 
@@ -875,6 +835,7 @@ function ClubbingComp_UI:PostScoreTo(channel)
 end
 
 function ClubbingComp_UI:GetRaceClubbedCountDisplayString(race)
+    if race == nil then return "" end
     local raceScoreData = ClubbingComp:GetRaceScoreData(race)
     local hitCount = ClubbingComp:GetRaceHitCount(raceScoreData.type)
     local raceScore = ClubbingComp:GetRaceScore(race)
