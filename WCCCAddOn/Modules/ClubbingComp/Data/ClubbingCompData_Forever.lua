@@ -2,6 +2,8 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
+local _, ns = ...
+local WCCCAD = ns.WCCCAD
 local ClubbingComp = WCCCAD:GetModule("WCCC_ClubbingCompetition")
 
 ---@type table<number, boolean> @Table of restricted zones.
