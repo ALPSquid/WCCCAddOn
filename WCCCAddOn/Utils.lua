@@ -185,6 +185,15 @@ ns.utils.GetLastServerResetTimestamp = function()
     return currentTimestamp - secondsPastReset
 end
 
+--- Removes a leading word from a string.
+ns.utils.StripLeadingWord = function(word, str)
+    local firstWord = str:match("(%w+%s+)")
+    if firstWord and firstWord:gsub("%s", ""):lower() == word then
+        str = str:gsub(firstWord, "", 1)
+    end
+    return str
+end
+
 --- Returns true if the specified player GUID is in a valid format.
 ns.utils.isValidPlayerGUID = function(GUID)
     if GUID == nil then
@@ -262,6 +271,20 @@ ns.utils.TableContains = function(table, search_value)
         end
     end
     return false
+end
+
+--- Returns the ID of the target unit if available.
+ns.utils.GetUnitID = function(unit)
+    local guid = UnitGUID(unit)
+    if guid == nil then
+        return nil
+    end
+    local _, _, _, _, _, npcID = strsplit("-", guid)
+    if npcID ~= nil then
+        print(npcID)
+        return tonumber(npcID)
+    end
+    return nil
 end
 
 --- Format special sequences in a string, such as {skull} and |cblue word |r

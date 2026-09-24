@@ -1,0 +1,65 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\..\FrameXML\UI.xsd">
+    <Script file="CC_CollectionUI.lua"/>
+
+    <Frame name="CC_COLLECTION_UI_FRAME" mixin="CC_CollectionUIMixin" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" inherits="PortraitFrameTemplate">
+        <Size x="700" y="480"/>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        <Layers>
+            <Layer level="OVERLAY">
+            </Layer>
+        </Layers>
+        <Frames>
+            <Frame parentKey="IconOverlay" frameLevel="300" setAllPoints="true">
+                <Layers>
+                    <Layer level="BACKGROUND" textureSubLevel="1">
+                        <Texture parentKey="FrameIcon" file="Interface\Icons\INV_HOLIDAY_BEERFEST_BEERFESTTROPHY">
+                            <Size x="58" y="58"/>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" x="-5" y="7"/>
+                            </Anchors>
+                        </Texture>
+                        <MaskTexture parentKey="CircleMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeKey="$parent.FrameIcon"/>
+                                <Anchor point="BOTTOMRIGHT" relativeKey="$parent.FrameIcon"/>
+                            </Anchors>
+                            <MaskedTextures>
+                                <MaskedTexture childKey="FrameIcon"/>
+                            </MaskedTextures>
+                        </MaskTexture>
+                    </Layer>
+                </Layers>
+            </Frame>
+
+            <Frame parentKey="ZoneListFrame" inherits="CC_ZoneListTemplate">
+                <Size x="180"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="14" y="-56"/>
+                    <Anchor point="BOTTOMLEFT" x="14" y="12"/>
+                </Anchors>
+            </Frame>
+
+            <Frame parentKey="EntriesListFrame" inherits="CC_EntriesListTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.ZoneListFrame" relativePoint="TOPRIGHT" x="10" y="0"/>
+                    <Anchor point="BOTTOMRIGHT" x="-12" y="12"/>
+                </Anchors>
+            </Frame>
+
+            <Button parentKey="PostToGuildBtn" inherits="UIPanelButtonTemplate" text="Post to Guild">
+                <Size x="130" y="25" />
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" relativeKey="$parent.ZoneListFrame" relativePoint="TOPRIGHT" x="0" y="5"/>
+                </Anchors>
+            </Button>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnShow method="OnShow"/>
+            <OnDragStart>self:StartMoving()</OnDragStart>
+            <OnDragStop>self:StopMovingOrSizing()</OnDragStop>
+        </Scripts>
+    </Frame>
+</Ui>

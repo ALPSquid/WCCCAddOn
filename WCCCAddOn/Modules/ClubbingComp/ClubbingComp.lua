@@ -195,6 +195,7 @@ local clubbingCompData =
 
 local ClubbingComp = WCCCAD:CreateModule("WCCC_ClubbingCompetition", clubbingCompData)
 LibStub("AceEvent-3.0"):Embed(ClubbingComp)
+ClubbingComp.UNIT_CLUBBED_EVENT = ClubbingComp.moduleName .. "UNIT_CLUBBED_EVENT"
 ClubbingComp.activeFrenzyTimerID = nil
 
 function ClubbingComp:InitializeModule()
@@ -322,6 +323,7 @@ function ClubbingComp:ClubCommand(args)
             end
             PlaySoundFile(HIT_SOUNDS[math.random(1, #HIT_SOUNDS)])
         end
+        self:SendMessage(ClubbingComp.UNIT_CLUBBED_EVENT, "target")
     end
 end
 

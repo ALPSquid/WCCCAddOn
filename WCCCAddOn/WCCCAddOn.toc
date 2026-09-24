@@ -29,6 +29,19 @@ Modules\ClubbingComp\Data\ClubbingCompData_Forever.lua [AllowLoadGameType camelo
 Modules\ClubbingComp\ClubbingCompUI.lua
 #--endmodule
 
+#-- Module - Clubbing Collection
+Modules\ClubbingCollection\ClubbingCollection.lua
+Modules\ClubbingCollection\Data\ClubbingCollectionData_Retail.lua [AllowLoadGameType standard]
+Modules\ClubbingCollection\Data\ClubbingCollectionData_Forever.lua [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]
+Modules\ClubbingCollection\ClubbingCollectionSettingsUI.lua
+Modules\ClubbingCollection\CollectionUI\CC_ZoneListUI.lua
+Modules\ClubbingCollection\CollectionUI\CC_ZoneListUI.xml
+Modules\ClubbingCollection\CollectionUI\CC_EntriesUI.lua
+Modules\ClubbingCollection\CollectionUI\CC_EntriesUI.xml
+Modules\ClubbingCollection\CollectionUI\CC_CollectionUI.lua
+Modules\ClubbingCollection\CollectionUI\CC_CollectionUI.xml
+#--endmodule
+
 #-- Module - Info HUD
 Modules\InfoHUD\InfoHUD.lua
 Modules\InfoHUD\InfoHUDUI.lua

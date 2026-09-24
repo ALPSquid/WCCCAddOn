@@ -1,0 +1,4 @@
+--
+-- Part of the Worgen Cub Clubbing Club Official AddOn
+-- Author: Aerthok - Defias Brotherhood EU
+--
