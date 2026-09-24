@@ -116,6 +116,10 @@ ns.utils.LongDate = function(timeStamp)
     return day..suffix.." "..month
 end
 
+ns.utils.ShortDate = function(timeStamp)
+    return date("%d/%m/%y", timeStamp)
+end
+
 ns.utils.DaysSince = function(timeStamp)
     local timeDelta = GetServerTime() - timeStamp
 

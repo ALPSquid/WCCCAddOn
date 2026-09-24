@@ -8,8 +8,8 @@ local _, ns = ...
 local WCCCAD = ns.WCCCAD
 local ClubbingCollection = WCCCAD:GetModule("WCCC_ClubbingCollection")
 
-local UNCOLLECTED_FONT_COLOUR = CreateColor(230/255, 230/255, 230/255)
-local COLLECTED_FONT_COLOUR = CreateColor(255/255, 156/255, 21/255)
+local UNCOLLECTED_FONT_COLOUR = CreateColor(200/255, 200/255, 200/255)
+local COLLECTED_FONT_COLOUR = CreateColor(255/255, 197/255, 53/255)
 
 --region Collection Entry
 CC_EntryMixin = {}
@@ -21,29 +21,51 @@ end
 
 function CC_EntryMixin:Refresh()
     local isCollected = ClubbingCollection:IsCollected(self.collectionEntry.unitID)
-    self.ClueLabel:SetVertexColor(UNCOLLECTED_FONT_COLOUR:GetRGB())
     if isCollected then
+        local collectedEntryData = ClubbingCollection:GetCollectedEntryData(self.collectionEntry.unitID)
         self.NameLabel:SetText(self.collectionEntry.targetName)
         self.NameLabel:SetVertexColor(COLLECTED_FONT_COLOUR:GetRGB())
-        -- TODO: Replace with Achievement style short date.
-        --self.DescText:SetText(format("Collected %s", ns.utils.LongDate()))
+        self.DateCompletedLabel:Show()
+        self.DateCompletedLabel:SetText(ns.utils.ShortDate(collectedEntryData.collectedTimestamp))
         self.ClueLabel:SetText(self.collectionEntry.clue)
-        self.RestrictionsPrompt:SetShown(false)
-        self.Background:SetColorTexture(1, 0.82, 0, 0.10)
-        self.IconBorder:SetVertexColor(1, 0.82, 0)
-        self.Icon:SetTexture("Interface\\Icons\\INV_HOLIDAY_BEERFEST_BEERFESTTROPHY")
+        self.ClueLabel:SetTextColor(0, 0, 0, 1);
+        self.ClueLabel:SetShadowOffset(0, 0);
+        self.RestrictionsPrompt:SetShown(true)
+        -- BG
+        self.Background:SetTexture("Interface\\AchievementFrame\\UI-Achievement-Parchment-Horizontal");
+        self:SetBackdropBorderColor(1, 0.675, 0.125);
+        -- Title Bar
+        self.TitleBar:SetTexture("Interface\\AchievementFrame\\AccountLevel-AchievementHeader");
+        self.TitleBar:SetTexCoord(0, 1, 0, 0.375);
+        -- Icon
+        self.Icon.texture:SetTexture("Interface\\Icons\\INV_HOLIDAY_BEERFEST_BEERFESTTROPHY")
+        self.Icon.bling:SetVertexColor(1, 1, 1, 1);
+        self.Icon.frame:SetVertexColor(1, 1, 1, 1);
+        self.Icon.texture:SetVertexColor(1, 1, 1, 1);
     else
         self.NameLabel:SetText("???")
         self.NameLabel:SetVertexColor(UNCOLLECTED_FONT_COLOUR:GetRGB())
         self.ClueLabel:SetText(self.collectionEntry.clue)
+        self.ClueLabel:SetTextColor(1, 1, 1, 1);
+        self.ClueLabel:SetShadowOffset(1, -1);
         self.RestrictionsPrompt:SetShown(self.collectionEntry.restrictions ~= nil)
-        self.Background:SetColorTexture(0, 0, 0, 0.15)
-        self.IconBorder:SetVertexColor(0.4, 0.4, 0.4)
-        self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+        self.DateCompletedLabel:Hide()
+        -- BG
+        self.Background:SetTexture("Interface\\AchievementFrame\\UI-Achievement-Parchment-Horizontal-Desaturated");
+        self:SetBackdropBorderColor(.5, .5, .5);
+        -- Title Bar
+        self.TitleBar:SetTexture("Interface\\AchievementFrame\\UI-Achievement-Borders");
+        self.TitleBar:SetTexCoord(0, 1, 0.91796875, 0.99609375);
+        -- Icon
+        self.Icon.texture:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+        self.Icon.bling:SetVertexColor(.6, .6, .6, 1);
+        self.Icon.frame:SetVertexColor(.75, .75, .75, 1);
+        self.Icon.texture:SetVertexColor(.55, .55, .55, 1);
     end
 end
 
 function CC_EntryMixin:OnEnter()
+    self.Highlight:Show()
     GameTooltip:SetOwner(self, "ANCHOR_NONE")
     GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
     GameTooltip:SetText(ClubbingCollection:IsCollected(self.collectionEntry.unitID) and self.collectionEntry.targetName or "???")
@@ -70,6 +92,7 @@ function CC_EntryMixin:OnEnter()
 end
 
 function CC_EntryMixin:OnLeave()
+    self.Highlight:Hide()
     GameTooltip:Hide()
 end
 

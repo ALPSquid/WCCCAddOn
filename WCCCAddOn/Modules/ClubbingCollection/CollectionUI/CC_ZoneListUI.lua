@@ -19,6 +19,7 @@ CC_ZoneEntryMixin = {}
 
 function CC_ZoneEntryMixin:Init(elementData)
     self.data = elementData
+    self.CountLabel:SetJustifyH("RIGHT")
     self:Refresh()
 end
 
@@ -31,28 +32,34 @@ function CC_ZoneEntryMixin:Refresh()
         end
     end
     -- TODO: Add a right aligned text box for the collection count.
-    self.Label:SetText(format("%s (%d/%d)", self.data.zoneName, collectedCount, #entries))
+    self.Label:SetText(self.data.zoneName)
+    self.CountLabel:SetText(format("(%d/%d)", collectedCount, #entries))
     -- Colour based on complete
     self.isComplete = false
     if collectedCount >= #entries then
         self.isComplete = true
         self.Label:SetVertexColor(COMPLETE_FONT_COLOUR:GetRGB())
+        self.CountLabel:SetVertexColor(COMPLETE_FONT_COLOUR:GetRGB())
     else
         self.Label:SetVertexColor(INCOMPLETE_FONT_COLOUR:GetRGB())
+        self.CountLabel:SetVertexColor(INCOMPLETE_FONT_COLOUR:GetRGB())
     end
 end
 
 function CC_ZoneEntryMixin:SetSelected(selected)
-    self.SelectedOverlay:SetShown(selected)
-    self.HighlightOverlay:SetShown(not selected)
+    if selected then
+        self:LockHighlight()
+    else
+        self:UnlockHighlight()
+    end
 end
 
 function CC_ZoneEntryMixin:OnEnter()
-    self.HighlightOverlay:SetShown(true)
+    --self.HighlightOverlay:SetShown(true)
 end
 
 function CC_ZoneEntryMixin:OnLeave()
-    self.HighlightOverlay:SetShown(false)
+    --self.HighlightOverlay:SetShown(false)
 end
 
 --endregion

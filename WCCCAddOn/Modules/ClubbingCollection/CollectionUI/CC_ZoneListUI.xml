@@ -6,33 +6,37 @@
         <Size y="24"/>
         <Layers>
             <Layer level="BACKGROUND">
-                <Texture parentKey="SelectedTexture" setAllPoints="true" hidden="true">
-                    <Color r="1" g="0.82" b="0" a="0.15"/>
+                <Texture parentKey="Background" file="Interface\AchievementFrame\UI-Achievement-Category-Background">
+                    <Size x="170" y="32"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT"/>
+                        <Anchor point="TOPRIGHT"/>
+                    </Anchors>
+                    <TexCoords left="0" right="0.6640625" top="0" bottom="1"/>
                 </Texture>
             </Layer>
-            <Layer level="OVERLAY" textureSubLevel="1">>
-                <FontString parentKey="Label" inherits="GameFontNormal" justifyH="LEFT">
+            <Layer level="ARTWORK">
+                <FontString parentKey="Label" inherits="GameFontNormalLeftBottom" wordwrap="false">
                     <Anchors>
-                        <Anchor point="LEFT" x="8" y="0"/>
-                        <Anchor point="RIGHT" x="-4" y="0"/>
+                        <Anchor point="BOTTOMLEFT" x="16" y="4"/>
+                        <Anchor point="TOPRIGHT" x="-8" y="-4"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="CountLabel" inherits="GameFontNormalLeftBottom" wordwrap="false">
+                    <Anchors>
+                        <Anchor point="BOTTOMRIGHT" x="-14" y="4"/>
+                        <Anchor point="TOPLEFT" x="8" y="-4"/>
                     </Anchors>
                 </FontString>
             </Layer>
-            <Layer level="OVERLAY" textureSubLevel="2">
-                <Texture parentKey="SelectedOverlay" file="Interface\QuestFrame\UI-QuestTitleHighlight" useAtlasSize="true" hidden="true">
-                    <Anchors>
-                        <Anchor point="CENTER" x="0" y="0"/>
-                    </Anchors>
-                </Texture>
-            </Layer>
-            <Layer level="HIGHLIGHT">
-                <Texture parentKey="HighlightOverlay" file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD" setAllPoints="true">
-                    <Anchors>
-                        <Anchor point="CENTER" x="0" y="0"/>
-                    </Anchors>
-                </Texture>
-            </Layer>
         </Layers>
+        <HighlightTexture file="Interface\AchievementFrame\UI-Achievement-Category-Highlight" alphaMode="ADD">
+            <Anchors>
+                <Anchor point="TOPLEFT" x="0" y="0"/>
+                <Anchor point="BOTTOMRIGHT" x="-1" y="-7"/>
+            </Anchors>
+            <TexCoords left="0" right="0.6640625" top="0" bottom="1"/>
+        </HighlightTexture>
         <Scripts>
             <OnEnter method="OnEnter"/>
             <OnLeave method="OnLeave"/>
@@ -42,26 +46,26 @@
     <!-- Zone list -->
     <Frame name="CC_ZoneListTemplate" mixin="CC_ZoneListMixin" virtual="true">
         <Frames>
-            <Frame parentKey="Container" inherits="TooltipBackdropTemplate">
+            <Frame parentKey="Container" inherits="TooltipBackdropTemplate" virtual="true">
+                <KeyValues>
+                    <KeyValue key="backdropColorAlpha" value="0" type="number"/>
+                    <KeyValue key="backdropBorderColor" value="CLUBBINGCOLLECTION_GOLD_BORDER_COLOR" type="global"/>
+                </KeyValues>
                 <Anchors>
                     <Anchor point="TOPLEFT"/>
                     <Anchor point="BOTTOMRIGHT"/>
                 </Anchors>
-                <KeyValues>
-                    <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
-                    <KeyValue key="backdropColorAlpha" value="0.9" type="number"/>
-                </KeyValues>
                 <Frames>
                     <Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
                         <Anchors>
-                            <Anchor point="TOPLEFT" x="4" y="-6"/>
-                            <Anchor point="BOTTOMRIGHT" x="-20" y="6"/>
+                            <Anchor point="TOPLEFT" x="2" y="-5"/>
+                            <Anchor point="BOTTOMRIGHT" x="2" y="5"/>
                         </Anchors>
                     </Frame>
                     <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
                         <Anchors>
-                            <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="5" y="0"/>
-                            <Anchor point="BOTTOM" relativeKey="$parent.ScrollBox" relativePoint="BOTTOM" y="0"/>
+                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="4" y="-8"/>
+                            <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="6" y="6"/>
                         </Anchors>
                     </EventFrame>
                 </Frames>

@@ -4,9 +4,12 @@
 -- Part of the Worgen Cub Clubbing Club Official AddOn
 -- Author: Aerthok - Defias Brotherhood EU
 --
+CLUBBINGCOLLECTION_GOLD_BORDER_COLOR = CreateColor(1, 0.675, 0.125)
+
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 local ClubbingComp = WCCCAD:GetModule("WCCC_ClubbingCompetition")
+
 
 local COMM_KEY_GUILDY_COLLECTED_ENTRY = "guildyCollectedNPC"
 
