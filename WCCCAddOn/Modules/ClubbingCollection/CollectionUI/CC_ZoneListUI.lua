@@ -31,7 +31,6 @@ function CC_ZoneEntryMixin:Refresh()
             collectedCount = collectedCount + 1
         end
     end
-    -- TODO: Add a right aligned text box for the collection count.
     self.Label:SetText(self.data.zoneName)
     self.CountLabel:SetText(format("(%d/%d)", collectedCount, #entries))
     -- Colour based on complete

@@ -60,12 +60,33 @@ function ClubbingCollection.CollectionUI:Refresh()
     end
 end
 
+function ClubbingCollection.CollectionUI:PostCollectionTo(channel)
+    local totalEntries = 0
+    local collectedEntries = 0
+    for _, collectionEntry in pairs(ClubbingCollection:GetCollectionEntries()) do
+        totalEntries = totalEntries + 1
+        if ClubbingCollection:IsCollected(collectionEntry.unitID) then
+            collectedEntries = collectedEntries + 1
+        end
+    end
+
+    if collectedEntries >= totalEntries then
+        C_ChatInfo.SendChatMessage(format("I've clubbed all %i targets in my Clubbing Collection! I am the mightiest clubber of them all!", totalEntries), channel)
+    else
+        C_ChatInfo.SendChatMessage(format("I've clubbed %i/%i targets in my Clubbing Collection!", collectedEntries, totalEntries), channel)
+    end
+end
+
 CC_CollectionUIMixin = {}
 
 function CC_CollectionUIMixin:OnLoad()
     self.TitleContainer.TitleText:SetText("Clubbing Collection")
     self:RegisterForDrag("LeftButton")
     tinsert(UISpecialFrames, self:GetName())
+
+    self.PostToGuildBtn:SetScript("OnClick", function()
+        ClubbingCollection.CollectionUI:PostCollectionTo(ns.consts.CHAT_CHANNEL.GUILD)
+    end)
 end
 
 function CC_CollectionUIMixin:OnShow()
