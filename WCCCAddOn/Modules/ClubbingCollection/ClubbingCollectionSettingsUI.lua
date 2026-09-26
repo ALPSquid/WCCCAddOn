@@ -72,6 +72,15 @@ Can you find and club them all?",
                     get = function() return ClubbingCollection.moduleDB.debugMode end,
                     order = 10.0
                 },
+
+                wipeCollectionBtn =
+                {
+                    type = "execute",
+                    name = "Wipe Collection",
+                    desc = "Wipe your earned collection.",
+                    func = function() ClubbingCollection.moduleDB.collection = {} end,
+                    order = 10.1
+                },
             }
         }
     }

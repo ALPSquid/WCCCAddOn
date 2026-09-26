@@ -38,7 +38,7 @@ function CC_EntryMixin:Refresh()
         self.TitleBar:SetTexture("Interface\\AchievementFrame\\AccountLevel-AchievementHeader");
         self.TitleBar:SetTexCoord(0, 1, 0, 0.375);
         -- Icon
-        self.Icon.texture:SetTexture("Interface\\Icons\\INV_HOLIDAY_BEERFEST_BEERFESTTROPHY")
+        self.Icon.texture:SetTexture(ClubbingCollection.CollectionUI.DEFAULT_ICON)
         self.Icon.bling:SetVertexColor(1, 1, 1, 1);
         self.Icon.frame:SetVertexColor(1, 1, 1, 1);
         self.Icon.texture:SetVertexColor(1, 1, 1, 1);
@@ -115,6 +115,28 @@ end
 
 function CC_EntriesListMixin:OnShow()
     self:Refresh()
+end
+
+---
+--- @return table @Scroll list element data for the specified unitID, if it exists.
+---
+function CC_ZoneListMixin:GetElementDataForUnit(unitID)
+    local nodeIndex, entryElementData = self.Container.ScrollBox:FindByPredicate(function(elementData)
+        return elementData.unitID == unitID
+    end)
+    return entryElementData
+end
+
+---
+--- Scrolls to a specific collection entry in the UI if visible.
+---
+function CC_EntriesListMixin:ScrollToEntry(unitID)
+    local dataProvider = self.Container.ScrollBox:GetDataProvider()
+    if not dataProvider then return end
+
+    local elementData = self:GetElementDataForUnit(unitID)
+    if not elementData then return end
+    self.Container.ScrollBox:ScrollToElementData(elementData, ScrollBoxConstants.AlignCenter)
 end
 
 ---

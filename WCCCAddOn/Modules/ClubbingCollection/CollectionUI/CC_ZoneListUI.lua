@@ -114,12 +114,12 @@ function CC_ZoneListMixin:Refresh()
         self:BuildZoneList()
     end
     -- Update selected state.
-    local zoneNode = self:GetNodeForZone(self.ClubbingCollection.CollectionUI.selectedZoneID)
-    if zoneNode == nil then
+    local zoneElementData = self:GetElementDataForZone(self.ClubbingCollection.CollectionUI.selectedZoneID)
+    if zoneElementData == nil then
         self.selectionBehavior:DeselectSelectedElements()
         return
     end
-    self.selectionBehavior:SelectElementData(zoneNode)
+    self.selectionBehavior:SelectElementData(zoneElementData)
     -- Update each entry
     self.view:ForEachFrame(function(frame)
         frame:Refresh()
@@ -127,13 +127,13 @@ function CC_ZoneListMixin:Refresh()
 end
 
 ---
---- @return table @Scroll list element node for the specified zoneID, if it exists.
+--- @return table @Scroll list element data for the specified zoneID, if it exists.
 ---
-function CC_ZoneListMixin:GetNodeForZone(zoneID)
-    local nodeIndex, zoneNode = self.Container.ScrollBox:FindByPredicate(function(elementData)
+function CC_ZoneListMixin:GetElementDataForZone(zoneID)
+    local _, zoneElementData = self.Container.ScrollBox:FindByPredicate(function(elementData)
         return elementData.zoneID == zoneID
     end)
-    return zoneNode
+    return zoneElementData
 end
 
 ---
@@ -178,7 +178,7 @@ function CC_ZoneListMixin:BuildZoneList()
     dataProvider:SetSortComparator(SortComparator, addSortToChildren, skipSort)
     self.Container.ScrollBox:SetDataProvider(dataProvider)
 
-    local selectedNode = self:GetNodeForZone(ClubbingCollection.CollectionUI.selectedZoneID)
+    local selectedNode = self:GetElementDataForZone(ClubbingCollection.CollectionUI.selectedZoneID)
     self.Container.ScrollBox:ScrollToElementData(selectedNode)
     self.selectionBehavior:SelectElementData(selectedNode)
     self.initialLoadComplete = true

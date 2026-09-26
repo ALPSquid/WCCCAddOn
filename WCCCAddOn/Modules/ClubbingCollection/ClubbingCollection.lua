@@ -71,6 +71,8 @@ end
 --- @returns CollectionEntry|nil collection entry for the unit if one exists.
 ---
 function ClubbingCollection:GetCollectionEntryForUnit(unit)
+    local entry = self:GetCollectionEntries()[unit]
+    if entry then return entry end
     return self:GetCollectionEntries()[ns.utils.GetUnitID(unit)]
 end
 
@@ -139,7 +141,6 @@ function ClubbingCollection:SetEntryCollected(collectionEntry)
         collectedTimestamp = GetServerTime()
     }
 
-    -- TODO: SFX
     WCCCAD.UI:PrintAddOnMessage(format("Congratulations! You've added %s to your collection!", collectionEntry.targetName))
     local data =
     {
@@ -148,7 +149,8 @@ function ClubbingCollection:SetEntryCollected(collectionEntry)
     }
     self:SendMessage(self.COLLECTION_UPDATED_EVENT)
     self:SendModuleComm(COMM_KEY_GUILDY_COLLECTED_ENTRY, data, ns.consts.CHAT_CHANNEL.GUILD)
-    -- TODO: Queue toast
+    PlaySound(12891)
+    ClubbingCollectionAlertSystem:AddAlert(collectionEntry.unitID)
     self.CollectionUI:Refresh()
 end
 

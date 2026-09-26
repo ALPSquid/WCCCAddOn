@@ -10,9 +10,15 @@ local ClubbingCollection = WCCCAD:GetModule("WCCC_ClubbingCollection")
 ClubbingCollection.CollectionUI = {}
 ClubbingCollection.CollectionUI.selectedZoneID = nil
 
+ClubbingCollection.CollectionUI.DEFAULT_ICON = "Interface\\Icons\\INV_HOLIDAY_BEERFEST_BEERFESTTROPHY"
+
 
 function ClubbingCollection.CollectionUI:Show()
     CC_COLLECTION_UI_FRAME:Show()
+end
+
+function ClubbingCollection.CollectionUI:IsShown()
+    return CC_COLLECTION_UI_FRAME:IsShown()
 end
 
 ---
@@ -22,6 +28,29 @@ end
 function ClubbingCollection.CollectionUI:SelectZone(zoneID)
     self.selectedZoneID = zoneID
     self:Refresh()
+end
+
+---
+--- Scrolls to a specific collection entry in the UI.
+---
+function ClubbingCollection.CollectionUI:ScrollToEntry(unitID)
+    if not self:IsShown() then
+        return
+    end
+
+    local collectionEntry = ClubbingCollection:GetCollectionEntryForUnit(unitID)
+    -- Disable the current filter if the achievement is hidden.
+    if self.selectedZoneID ~= nil then
+        if collectionEntry.restrictions == nil or #collectionEntry.restrictions.zones <= 0 then
+            self:SelectZone(nil)
+        else
+            if not ns.utils.TableContains(collectionEntry.restrictions.zones, self.selectedZoneID) then
+                self.SelectZone(nil)
+            end
+        end
+    end
+    -- Scroll to the entry.
+    CC_COLLECTION_UI_FRAME.EntriesListFrame:ScrollToEntry(unitID)
 end
 
 function ClubbingCollection.CollectionUI:Refresh()

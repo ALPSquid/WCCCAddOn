@@ -40,6 +40,8 @@ Modules\ClubbingCollection\CollectionUI\CC_EntriesUI.lua
 Modules\ClubbingCollection\CollectionUI\CC_EntriesUI.xml
 Modules\ClubbingCollection\CollectionUI\CC_CollectionUI.lua
 Modules\ClubbingCollection\CollectionUI\CC_CollectionUI.xml
+Modules\ClubbingCollection\CollectionUI\CC_AlertFrame.lua
+Modules\ClubbingCollection\CollectionUI\CC_AlertFrame.xml
 #--endmodule
 
 #-- Module - Info HUD
