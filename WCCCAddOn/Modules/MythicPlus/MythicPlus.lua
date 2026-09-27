@@ -132,7 +132,7 @@ function MythicPlus:OnNewWeeklyRecord(mapChallengeModeID, completionMilliseconds
         self.moduleDB.leaderboardData[GUID] =
         {
             GUID = GUID,
-            playerName = UnitName("player"),
+            playerName = ns.utils.GetPlayerFacingName("player"),
             classID = classID,
             mapID = mapID,
             level = keystoneLevel,
@@ -224,7 +224,7 @@ function MythicPlus:UpdateOwnKeystone(skipIfMythicInProgress)
     self.moduleDB.guildKeys[GUID] = 
     {
         GUID = GUID,
-        playerName = UnitName("player"),
+        playerName = ns.utils.GetPlayerFacingName("player"),
         classID = classID,
         mapID = mapID,
         level = keystoneLevel,
@@ -261,7 +261,7 @@ function MythicPlus:UpdateOwnWeeklyBest()
     -- Using the level from the reward as, for whatever reason, the weekly best data can get corrupted(?) and won't contain the correct reward level or map.
     local weekBestLevel = C_MythicPlus.GetWeeklyChestRewardLevel()
     local highestMapID = nil
-    local playerName = UnitName("player")
+    local playerName = ns.utils.GetPlayerFacingName("player")
 
     self:PrintDebugMessage("Weekly Chest Level: " .. weekBestLevel)
 

@@ -278,7 +278,7 @@ function ClubbingComp:ClubCommand(args)
 
     local _, targetRaceEn = UnitRace("target")
     local _, targetFactionEn = UnitFactionGroup("target")
-    local targetName = UnitName("target")
+    local targetName = ns.utils.GetPlayerFacingName("target")
     local targetGuild = GetGuildInfo("target")
 
     local raceScoreData = self.RACES[targetRaceEn]
@@ -315,7 +315,7 @@ function ClubbingComp:ClubCommand(args)
 
          -- Otherwise, if there wasn't a valid target but the target is in range, then it's a bog standard emote hit.
         else
-            if targetName == UnitName("player") then
+            if targetName == ns.utils.GetPlayerFacingName("player") then
                 self:PlayEmote("flails ".. ns.utils.Pronoun(ns.consts.TENSE.POS)  .." [Worgen Cub Clubbing Club] around and hits ".. ns.utils.Pronoun(ns.consts.TENSE.OBJ) .. "self. It makes the most satisfying 'thwack'.")
             else
                 self:PlayEmote("clubs %t with ".. ns.utils.Pronoun(ns.consts.TENSE.POS) .. " [Worgen Cub Clubbing Club]. It makes the most satisfying 'thwack'.")
@@ -439,7 +439,7 @@ end
 --- Guildy clubbed notification
 ---
 function ClubbingComp:SendGuildyClubbedWorgenComm(targetName, targetRaceName)
-    local playerName = UnitName("player")
+    local playerName = ns.utils.GetPlayerFacingName("player")
     local playerLoc = C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")).name
     local messageIndex = random(1, #GUILDY_CLUBBED_MESSAGES)
     local data =
