@@ -86,7 +86,7 @@ function ClubberPoints:AddPoints(numPoints)
         self.moduleDB.leaderboardData[GUID] =
         {
             GUID = GUID,
-            playerName = UnitName("player"),
+            playerName = ns.utils.GetPlayerFacingName("player"),
             classID = classID
         }
     end

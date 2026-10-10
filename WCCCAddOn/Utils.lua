@@ -78,6 +78,18 @@ ns.utils.GetPlayerNameRealmString = function()
     return name.."-"..realm
 end
 
+---
+--- Returns a name for the specified unit to show to other players for comms, UI etc.
+--- On Forever, this is name + surname. On Retail, it's just name.
+---
+ns.utils.GetPlayerFacingName = function(unit)
+    local name, surname = UnitNameUnmodified(unit)
+    if RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() then
+        return name .. " " .. surname
+    end
+    return name
+end
+
 ns.utils.Pronoun = function(tense, upper)
     local pronouns = 
     {
