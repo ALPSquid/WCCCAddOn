@@ -1,3 +1,7 @@
+# v1.7.16
+* Updated for Forever
+* Added Clubbing Collection (coming soon)
+
 # v1.7.14
 * Updated for 12.1.0
 
