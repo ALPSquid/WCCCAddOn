@@ -23,22 +23,15 @@ local ClubbingCollection = WCCCAD:GetModule("WCCC_ClubbingCollection")
 ---@type table<number, CollectionEntry>
 ClubbingCollection.CollectionEntries =
 {
-    [3248] =
+    [0] =
     {
-        unitID = 3248,
-        targetName = "Barrens Giraffe",
-        clue = "Towers in the heat.",
-        restrictions =
-        {
-            maxLevel = 20,
-            zones = { 10 },
-        }
+        unitID = 0,
+        targetName = "Coming Soon!",
+        clue = "Clubbing Collection is coming soon!",
+        --restrictions =
+        --{
+        --    maxLevel = 20,
+        --    zones = { 10 },
+        --}
     },
-
-    [111] =
-    {
-        unitID = 111,
-        targetName = "Test Entry",
-        clue = "Towers in the heat.",
-    }
 }

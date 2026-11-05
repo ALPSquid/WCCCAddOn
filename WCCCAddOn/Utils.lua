@@ -84,7 +84,7 @@ end
 ---
 ns.utils.GetPlayerFacingName = function(unit)
     local name, surname = UnitNameUnmodified(unit)
-    if RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() then
+    if surname and RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() then
         return name .. " " .. surname
     end
     return name
@@ -297,7 +297,6 @@ ns.utils.GetUnitID = function(unit)
     end
     local _, _, _, _, _, npcID = strsplit("-", guid)
     if npcID ~= nil then
-        print(npcID)
         return tonumber(npcID)
     end
     return nil
