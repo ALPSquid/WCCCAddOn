@@ -78,6 +78,18 @@ ns.utils.GetPlayerNameRealmString = function()
     return name.."-"..realm
 end
 
+---
+--- Returns a name for the specified unit to show to other players for comms, UI etc.
+--- On Forever, this is name + surname. On Retail, it's just name.
+---
+ns.utils.GetPlayerFacingName = function(unit)
+    local name, surname = UnitNameUnmodified(unit)
+    if surname and RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() then
+        return name .. " " .. surname
+    end
+    return name
+end
+
 ns.utils.Pronoun = function(tense, upper)
     local pronouns = 
     {
@@ -114,6 +126,10 @@ ns.utils.LongDate = function(timeStamp)
     end
 
     return day..suffix.." "..month
+end
+
+ns.utils.ShortDate = function(timeStamp)
+    return date("%d/%m/%y", timeStamp)
 end
 
 ns.utils.DaysSince = function(timeStamp)
@@ -183,6 +199,15 @@ ns.utils.GetLastServerResetTimestamp = function()
     secondsPastReset = secondsPastReset +  serverOffset
 
     return currentTimestamp - secondsPastReset
+end
+
+--- Removes a leading word from a string.
+ns.utils.StripLeadingWord = function(word, str)
+    local firstWord = str:match("(%w+%s+)")
+    if firstWord and firstWord:gsub("%s", ""):lower() == word then
+        str = str:gsub(firstWord, "", 1)
+    end
+    return str
 end
 
 --- Returns true if the specified player GUID is in a valid format.
@@ -262,6 +287,19 @@ ns.utils.TableContains = function(table, search_value)
         end
     end
     return false
+end
+
+--- Returns the ID of the target unit if available.
+ns.utils.GetUnitID = function(unit)
+    local guid = UnitGUID(unit)
+    if guid == nil then
+        return nil
+    end
+    local _, _, _, _, _, npcID = strsplit("-", guid)
+    if npcID ~= nil then
+        return tonumber(npcID)
+    end
+    return nil
 end
 
 --- Format special sequences in a string, such as {skull} and |cblue word |r

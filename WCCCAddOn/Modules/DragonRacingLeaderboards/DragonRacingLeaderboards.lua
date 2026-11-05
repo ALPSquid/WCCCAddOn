@@ -192,7 +192,7 @@ function DRL:UpdateTime(raceID, time, reportNewPBs)
         {
             GUID = playerGUID,
             raceID = raceID,
-            playerName = UnitName("player"),
+            playerName = ns.utils.GetPlayerFacingName("player"),
             time = 0,
             achievedTimestamp = 0
         }

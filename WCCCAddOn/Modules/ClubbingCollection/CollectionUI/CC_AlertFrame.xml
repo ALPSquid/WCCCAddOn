@@ -1,0 +1,109 @@
+
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\..\FrameXML\UI.xsd">
+    <!-- Earned collection item popup, based on AchievementAlertFrameTemplate -->
+    <ContainedAlertFrame name="ClubbingCollectionAlertFrameTemplate" parent="UIParent" hidden="true" virtual="true" inherits="AlertFrameTemplate">
+        <Size x="300" y="101"/>
+        <Anchors>
+            <Anchor point="BOTTOM" x="0" y="128"/>
+        </Anchors>
+        <Animations>
+            <AnimationGroup parentKey="animIn">
+                <Alpha fromAlpha="1" toAlpha="0" duration="0" order="1"/>
+                <Alpha fromAlpha="0" toAlpha="1" duration="0.2" order="2"/>
+            </AnimationGroup>
+            <AnimationGroup parentKey="waitAndAnimOut">
+                <Alpha startDelay="4.05" fromAlpha="1" toAlpha="0" duration="1.5" parentKey="animOut">
+                    <Scripts>
+                        <OnFinished>
+                            self:GetRegionParent():Hide();
+                        </OnFinished>
+                    </Scripts>
+                </Alpha>
+            </AnimationGroup>
+        </Animations>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" atlas="ui-achievement-alert-background" useAtlasSize="true">
+                    <Anchors>
+                        <Anchor point="CENTER"/>
+                    </Anchors>
+                </Texture>
+                <FontString parentKey="Unlocked" inherits="GameFontBlackTiny" text="Added to Collection">
+                    <Size x="200" y="12"/>
+                    <Anchors>
+                        <Anchor point="TOP" x="27" y="-23"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="Name" inherits="GameFontHighlight" maxLines="2" justifyH="CENTER" justifyV="MIDDLE">
+                    <Size x="155" y="36"/>
+                    <Anchors>
+                        <Anchor point="TOP" relativeKey="$parent.Unlocked" relativePoint="BOTTOM"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="OVERLAY">
+                <Texture atlas="ui-achievement-alert-glow-glow" useAtlasSize="true" alphaMode="ADD" hidden="true" parentKey="glow">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="0"/>
+                    </Anchors>
+                    <Animations>
+                        <AnimationGroup parentKey="animIn">
+                            <Alpha fromAlpha="0" toAlpha="1" duration="0.2" order="1"/>
+                            <Alpha fromAlpha="1" toAlpha="0" duration="0.5" order="2"/>
+                            <Scripts>
+                                <OnFinished>
+                                    self:GetParent():Hide();
+                                </OnFinished>
+                            </Scripts>
+                        </AnimationGroup>
+                    </Animations>
+                </Texture>
+                <Texture atlas="ui-achievement-alert-glow-shine" useAtlasSize="true" alphaMode="ADD" hidden="true" parentKey="shine">
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT" x="0" y="8"/>
+                    </Anchors>
+                    <Animations>
+                        <AnimationGroup parentKey="animIn">
+                            <Alpha fromAlpha="0" toAlpha="1" duration="0.2" order="1"/>
+                            <Translation offsetX="240" offsetY="0" duration="0.85" order="2"/>
+                            <Alpha startDelay="0.35" fromAlpha="1" toAlpha="0" duration="0.5" order="2"/>
+                            <Scripts>
+                                <OnFinished>
+                                    self:GetParent():Hide();
+                                </OnFinished>
+                            </Scripts>
+                        </AnimationGroup>
+                    </Animations>
+                </Texture>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Frame parentKey="Icon">
+                <Size x="78" y="75"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="-4" y="-15"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="ARTWORK">
+                        <Texture parentKey="Texture">
+                            <Anchors>
+                                <Anchor point="CENTER" x="0" y="0"/>
+                            </Anchors>
+                            <Size x="52" y="52"/>
+                        </Texture>
+                    </Layer>
+                    <Layer level="OVERLAY">
+                        <Texture parentKey="Overlay" atlas="ui-achievement-iconframe" useAtlasSize="true">
+                            <Anchors>
+                                <Anchor point="CENTER" x="-1" y="1"/>
+                            </Anchors>
+                        </Texture>
+                    </Layer>
+                </Layers>
+            </Frame>
+        </Frames>
+        <Scripts>
+            <OnClick function="ClubbingCollectionAlertFrame_OnClick" />
+        </Scripts>
+    </ContainedAlertFrame>
+</Ui>
