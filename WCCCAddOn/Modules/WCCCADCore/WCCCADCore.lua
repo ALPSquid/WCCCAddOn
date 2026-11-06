@@ -6,8 +6,8 @@
 local _, ns = ...
 local WCCCAD = ns.WCCCAD
 
-WCCCAD.version = 1716
-WCCCAD.versionString = "1.7.16"
+WCCCAD.version = 1717
+WCCCAD.versionString = "1.7.17"
 WCCCAD.versionType = ns.consts.VERSION_TYPE.RELEASE
 --WCCCAD.versionType = ns.consts.VERSION_TYPE.BETA
 WCCCAD.newVersionAvailable = false
@@ -86,7 +86,7 @@ function WCCCADCore:OnEnable()
         self.moduleDB.guildPlayerCharacters = {}
         self.moduleDB.lastCharactersDataWipeVersion = WCCCADCore.charactersDataWipeVersion
     end
-    self:RegisterLocalPlayerCharacter(playerGUID, UnitName("player"))
+    self:RegisterLocalPlayerCharacter(playerGUID, ns.utils.GetPlayerFacingName("player"))
     self:BuildPlayerCharactersLookup()
     self:InitiateSync()
 end

@@ -74,8 +74,7 @@ ns.consts.EVENTS =
 ---
 
 ns.utils.GetPlayerNameRealmString = function()
-    local name, realm = UnitFullName("player")
-    return name.."-"..realm
+    return GetUnitName("player", true)
 end
 
 ---

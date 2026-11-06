@@ -1,3 +1,6 @@
+# v1.7.17
+* Forever name fixes.
+
 # v1.7.16
 * Updated for Forever
 * Added Clubbing Collection (coming soon)
