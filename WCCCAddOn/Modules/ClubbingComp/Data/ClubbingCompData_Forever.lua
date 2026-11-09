@@ -41,8 +41,8 @@ ClubbingComp.RACES =
     ["NightElf"] =
     {
         type = "NightElf",
-        name = "Elf",
-        pluralName = "Elves",
+        name = "Night Elf",
+        pluralName = "Night Elves",
         score = 1
     },
 

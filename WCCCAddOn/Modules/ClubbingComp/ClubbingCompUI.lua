@@ -206,7 +206,7 @@ local CLUBBINGCOMP_UI_CONFIG =
                                 if seasonRace == nil then
                                     return "Sync Required"
                                 end
-                                return seasonRace .. " Season" -- (1.5x)
+                                return ClubbingComp.RACES[seasonRace].name .. " Season" -- (1.5x)
                             end,
                             order = 1.11          
                         },
@@ -358,7 +358,7 @@ You can use the club button on the Clubbing HUD and/or use the commands or macro
 Below is a handy macro script to paste into a new macro which makes using your club much easier!\
 \
 |cFFE97300Seasons:|r\
-Each month, a new season will start focussing on a different race, allowing you to club Worgen and the season race.\
+Each month, a new season will start focussing on a different race, allowing you to club "..ClubbingComp.PRIMARY_RACE.pluralName.." and the season race.\
 At the end of each season, we'll hold a Clubbing Ceremony to share scores and award prize to the top 3 clubbers! These clubbers will be shown in the Clubbing Competition window for all to see.\
 \
 |cFFE97300Happy Clubbing!|r",
@@ -418,8 +418,8 @@ At the end of each season, we'll hold a Clubbing Ceremony to share scores and aw
                 toggleGuildMemberNotifications = 
                 {
                     type = "toggle",
-                    name = "Guildy Clubbed a Worgen Notification",
-                    desc = "Whether to show a chat message when a guild member clubs a Worgen.",
+                    name = "Guildy Clubbed a "..ClubbingComp.PRIMARY_RACE.name.." Notification",
+                    desc = "Whether to show a chat message when a guild member clubs a "..ClubbingComp.PRIMARY_RACE.name..".",
                     width = "full",
                     set = function(info, val) ClubbingComp.moduleDB.showGuildMemberClubNotification = val end,
                     get = function() return ClubbingComp.moduleDB.showGuildMemberClubNotification end,

@@ -1,3 +1,7 @@
+# v1.7.18
+* Corrected instances of "Worgen" on the Forever UI to "Gnome".
+* Clarified elves on Forever to be Night Elves.
+
 # v1.7.17
 * Forever name fixes.
 
